@@ -1,0 +1,78 @@
+import { useState } from 'react';
+import { ViewRow, EditRow } from './HikeRow.jsx';
+
+const COLS = [
+  { key: 'name',       label: 'Name' },
+  { key: 'time',       label: 'Time (h)' },
+  { key: 'distance',   label: 'Distance (km)' },
+  { key: 'tip',        label: 'Type' },
+  { key: 'up',         label: 'Up (m)' },
+  { key: 'down',       label: 'Down (m)' },
+  { key: 'difficulty', label: 'Difficulty' },
+  { key: 'mountains',  label: 'Mountains' },
+  { key: 'status',     label: 'Status' },
+  { key: 'completed',  label: 'Completed' },
+  { key: 'zone',       label: 'Zone' },
+];
+
+function parseDate(s) {
+  if (!s) return 0;
+  const [d, m, y] = s.split('/');
+  return new Date(y, m - 1, d).getTime();
+}
+
+export default function HikingTable({ hikes, editingId, onEdit, onSave, onCancel, onDelete }) {
+  const [sortCol, setSortCol] = useState(null);
+  const [sortDir, setSortDir] = useState(1);
+
+  function handleSort(key) {
+    if (editingId) return;
+    if (sortCol === key) {
+      setSortDir((d) => d * -1);
+    } else {
+      setSortCol(key);
+      setSortDir(1);
+    }
+  }
+
+  const sorted = [...hikes].sort((a, b) => {
+    if (!sortCol) return 0;
+    let av = a[sortCol] ?? '';
+    let bv = b[sortCol] ?? '';
+    if (sortCol === 'completed') { av = parseDate(av); bv = parseDate(bv); }
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+
+  return (
+    <div className="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            {COLS.map(({ key, label }) => {
+              const cls = sortCol === key ? (sortDir === 1 ? 'asc' : 'desc') : '';
+              return (
+                <th key={key} className={cls} onClick={() => handleSort(key)}>
+                  {label} <span className="sort-icon"></span>
+                </th>
+              );
+            })}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.length === 0 ? (
+            <tr><td colSpan={12} className="no-results">No hikes match your filters.</td></tr>
+          ) : (
+            sorted.map((hike) =>
+              hike._id === editingId ? (
+                <EditRow key={hike._id} hike={hike} onSave={onSave} onCancel={onCancel} onDelete={onDelete} />
+              ) : (
+                <ViewRow key={hike._id} hike={hike} onEdit={() => onEdit(hike._id)} />
+              )
+            )
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
