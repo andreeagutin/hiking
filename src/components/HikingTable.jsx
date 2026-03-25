@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ViewRow, EditRow } from './HikeRow.jsx';
+import { ViewRow } from './HikeRow.jsx';
 
 const COLS = [
   { key: 'name',       label: 'Name' },
@@ -21,18 +21,13 @@ function parseDate(s) {
   return new Date(y, m - 1, d).getTime();
 }
 
-export default function HikingTable({ hikes, editingId, onEdit, onSave, onCancel, onDelete }) {
+export default function HikingTable({ hikes }) {
   const [sortCol, setSortCol] = useState(null);
   const [sortDir, setSortDir] = useState(1);
 
   function handleSort(key) {
-    if (editingId) return;
-    if (sortCol === key) {
-      setSortDir((d) => d * -1);
-    } else {
-      setSortCol(key);
-      setSortDir(1);
-    }
+    if (sortCol === key) setSortDir((d) => d * -1);
+    else { setSortCol(key); setSortDir(1); }
   }
 
   const sorted = [...hikes].sort((a, b) => {
@@ -56,20 +51,13 @@ export default function HikingTable({ hikes, editingId, onEdit, onSave, onCancel
                 </th>
               );
             })}
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {sorted.length === 0 ? (
-            <tr><td colSpan={12} className="no-results">No hikes match your filters.</td></tr>
+            <tr><td colSpan={11} className="no-results">No hikes match your filters.</td></tr>
           ) : (
-            sorted.map((hike) =>
-              hike._id === editingId ? (
-                <EditRow key={hike._id} hike={hike} onSave={onSave} onCancel={onCancel} onDelete={onDelete} />
-              ) : (
-                <ViewRow key={hike._id} hike={hike} onEdit={() => onEdit(hike._id)} />
-              )
-            )
+            sorted.map((hike) => <ViewRow key={hike._id} hike={hike} />)
           )}
         </tbody>
       </table>

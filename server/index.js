@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectDB } from './db.js';
 import hikesRouter from './routes/hikes.js';
+import authRouter from './routes/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -14,6 +15,7 @@ const isProd = process.env.NODE_ENV === 'production';
 if (!isProd) app.use(cors());
 app.use(express.json());
 
+app.use('/api/auth', authRouter);
 app.use('/api/hikes', hikesRouter);
 
 if (isProd) {

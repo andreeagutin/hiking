@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import Hike from '../models/Hike.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST create hike
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
     const hike = await Hike.create(req.body);
     res.status(201).json(hike);
@@ -24,7 +25,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update hike
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
     const hike = await Hike.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -38,7 +39,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE hike
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const hike = await Hike.findByIdAndDelete(req.params.id);
     if (!hike) return res.status(404).json({ error: 'Not found' });

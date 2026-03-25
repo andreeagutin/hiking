@@ -1,4 +1,13 @@
+import { getToken } from './auth.js';
+
 const BASE = '/api/hikes';
+
+function authHeaders() {
+  const token = getToken();
+  return token
+    ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    : { 'Content-Type': 'application/json' };
+}
 
 export async function fetchHikes() {
   const res = await fetch(BASE);
@@ -9,7 +18,7 @@ export async function fetchHikes() {
 export async function createHike(data) {
   const res = await fetch(BASE, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to create hike');
@@ -19,7 +28,7 @@ export async function createHike(data) {
 export async function updateHike(id, data) {
   const res = await fetch(`${BASE}/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update hike');
@@ -27,7 +36,10 @@ export async function updateHike(id, data) {
 }
 
 export async function deleteHike(id) {
-  const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${BASE}/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to delete hike');
   return res.json();
 }

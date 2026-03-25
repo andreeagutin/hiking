@@ -1,4 +1,4 @@
-export default function Controls({ filters, onChange, hikes, onAdd }) {
+export default function Controls({ filters, onChange, hikes }) {
   const mountains = [...new Set(hikes.map((h) => h.mountains).filter(Boolean))].sort();
   const zones = [...new Set(hikes.map((h) => h.zone).filter(Boolean))].sort();
 
@@ -38,7 +38,6 @@ export default function Controls({ filters, onChange, hikes, onAdd }) {
           <option>Dus</option>
         </select>
       </div>
-      <button className="btn btn-add" onClick={onAdd}>+ Add row</button>
     </div>
   );
 }
