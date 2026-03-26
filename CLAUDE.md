@@ -14,7 +14,7 @@ A full-stack hiking trail tracker. Users browse hikes publicly (read-only). An a
 | Styling | Plain CSS (no framework) |
 
 ## Project Structure
-```
+```text
 hiking/
 ├── server/
 │   ├── index.js              # Express entry point

@@ -33,37 +33,49 @@ MongoDB Atlas
 - dotenv
 - typescript - // TODO
 db data:
-user: dagutin
-pass: hik#02
+DB_USER=<your_user>
+DB_PASS=<your_pass>
+> **Note:** Never commit real credentials. Load them from a `.env` file (see `.env` setup) or a secrets manager.
 ---
 ## Project Structure
-hiking/
-client/ # React app
-server/ #ode.js API
+```
+hiking/               # repo root — package.json, vite.config.js, index.html live here
+├── src/              # React frontend (Vite)
+├── server/           # Node.js / Express API
+│   ├── index.js
+│   ├── models/
+│   └── routes/
+├── data/             # seed script
+├── .env              # environment variables (never commit)
+└── package.json      # root deps — runs both frontend and backend via concurrently
+```
 ---
-##n Getting Started
+## Getting Started
 ### 1. Clone the repository
+```bash
 git clone git@github.com:andreeagutin/hiking.git
 cd hiking
-### 2. Run with Docker (recommended)
-docker-compose up --build
-### 3. Run manually (without Docker)
-Backend
+```
+### 2. Install dependencies & start (frontend + backend together)
+```bash
+npm install       # install root deps (React, Vite, Express, etc.)
+npm run dev       # starts Express (port 3001) + Vite dev server concurrently
+```
+### 3. Backend only
+```bash
 cd server
-npm install
-npm run dev
-Frontend
-cd client
-npm install
-npm start
+npm install       # only needed if server has separate deps
+npm run dev       # nodemon watches server/
+```
+> **Note:** Docker support is not currently configured. Remove this note once a `docker-compose.yml` is added.
 ---
 ## API (initial design)
 ### Hikes
-- GET /hikes ® list all hikes
-- GET /hikes/:id ® get hike details
-- POST /hikes ® create hike
-- PUT /hikes/:id ® update hike
-- DELETE /hikes/:id ® delete hike
+- GET /api/hikes ® list all hikes
+- GET /api/hikes/:id ® get hike details
+- POST /api/hikes ® create hike
+- PUT /api/hikes/:id ® update hike
+- DELETE /api/hikes/:id ® delete hike
 ---
 ## Testing
 Run backend tests:

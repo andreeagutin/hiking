@@ -79,7 +79,7 @@ Protected routes use the `requireAuth` middleware (`server/middleware/auth.js`) 
 - On success: signs a JWT with `JWT_SECRET`, expires in 8h
 - Wrap `jwt.sign()` in try/catch — if `JWT_SECRET` is undefined it throws silently
 
-**Client side** (`src/api/auth.js`):
+**Client-side** (`src/api/auth.js`):
 - `login()` — POST to `/api/auth/login`, stores token in `localStorage`
 - `isLoggedIn()` — decodes JWT payload (base64), checks `exp` against `Date.now()`
 - `getToken()` — used by `src/api/hikes.js` to attach `Authorization` header
