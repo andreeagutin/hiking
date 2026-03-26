@@ -1,5 +1,9 @@
 # Hiking App
 A fullstack application for tracking, managing, and sharing hiking routes.
+
+## Production
+- **Frontend:** https://hiking-high.netlify.app/
+- **API:** https://hiking-1.onrender.com/api/hikes
 ---
 ## Overview
 Hiking App allows users to:
@@ -71,11 +75,11 @@ npm run dev       # nodemon watches server/
 ---
 ## API (initial design)
 ### Hikes
-- GET /api/hikes ® list all hikes
-- GET /api/hikes/:id ® get hike details
-- POST /api/hikes ® create hike
-- PUT /api/hikes/:id ® update hike
-- DELETE /api/hikes/:id ® delete hike
+- GET /api/hikes → list all hikes
+- GET /api/hikes/:id → get hike details
+- POST /api/hikes → create hike
+- PUT /api/hikes/:id → update hike
+- DELETE /api/hikes/:id → delete hike
 ---
 ## Testing
 Run backend tests:

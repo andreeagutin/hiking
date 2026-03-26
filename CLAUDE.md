@@ -59,7 +59,7 @@ ADMIN_PASS=<your_password>
 **Important:**
 - Database name in the URI must match exactly (case-sensitive): `hikingDb`
 - Special characters in password must be percent-encoded: `#` → `%23`
-- `JWT_SECRET` must be set or `jwt.sign()` throws and login returns empty body
+- `JWT_SECRET` must be set or `jwt.sign()` throws and the login route returns HTTP 500 with `{ error: <jwt.sign() message> }`
 
 ## Commands
 ```bash
@@ -97,17 +97,16 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 ```js
 {
   name:       String (required)
-  time:       Number          // hours
-  distance:   Number          // km
-  tip:        'Dus-intors' | 'Dus'
-  up:         Number          // elevation gain (m)
-  down:       Number          // elevation loss (m)
-  difficulty: 'easy' | 'medium' | 'hard'
-  mountains:  String
-  status:     'Done' | 'In progress' | 'Not started'
-  completed:  String          // format: dd/mm/yyyy
-  zone:       String
-  imageUrl:   String          // URL to photo — enables carousel card
+  time:       Number | null   // hours
+  distance:   Number | null   // km
+  tip:        'Dus-intors' | 'Dus' | null
+  up:         Number | null   // elevation gain (m)
+  down:       Number | null   // elevation loss (m)
+  difficulty: 'easy' | 'medium' | null
+  mountains:  String | null
+  status:     'Done' | 'In progress' | 'Not started'  // default: 'Not started'
+  completed:  String | null   // format: dd/mm/yyyy
+  zone:       String | null
 }
 ```
 
