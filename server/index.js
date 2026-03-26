@@ -12,13 +12,15 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
 
-if (!isProd) app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || '*',
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRouter);
 app.use('/api/hikes', hikesRouter);
 
-if (isProd) {
+if (isProd && !process.env.RENDER) {
   const distPath = path.join(__dirname, '..', 'dist');
   app.use(express.static(distPath));
   app.get('*', (_req, res) => res.sendFile(path.join(distPath, 'index.html')));
