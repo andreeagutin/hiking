@@ -28,9 +28,10 @@ MongoDB Atlas
 - Docker – containerized development environment
 - GitHub – version control (branches, pull requests)
 - CodeRabbit – AI-powered code review on pull requests
-- Jest – unit testing for backend logic
+- Jest – unit testing for backend logic -  // TODO
 - Netlify – frontend deployment (CI/CD from GitHub)
 - dotenv
+- typescript - // TODO
 db data:
 user: dagutin
 pass: hik#02
