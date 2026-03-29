@@ -7,7 +7,7 @@ import { uploadImage } from '../../api/upload.js';
 const EMPTY = {
   name: '', time: null, distance: null, tip: null,
   up: null, down: null, difficulty: null, mountains: null,
-  status: 'Not started', completed: null, zone: null, imageUrl: null,
+  status: 'Not started', completed: null, zone: null, imageUrl: null, description: null,
 };
 
 function Field({ label, children, full }) {
@@ -205,6 +205,19 @@ export default function AdminHikeForm({ id }) {
                   <span className="upload-filename">{form.imageUrl.split('/').pop()}</span>
                 )}
               </div>
+            </Field>
+          </div>
+
+          <div className="form-section-title">Description</div>
+          <div className="form-grid">
+            <Field label="Description" full>
+              <textarea
+                className="form-textarea"
+                value={form.description ?? ''}
+                onChange={set('description')}
+                placeholder="Descriere traseu, puncte de interes, sfaturi…"
+                rows={4}
+              />
             </Field>
           </div>
 

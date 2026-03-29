@@ -1,4 +1,4 @@
-# Hiking High — Project Guide for Claude
+# Trail Mix — Project Guide for Claude
 
 ## Overview
 A full-stack hiking trail tracker. Users browse hikes publicly (read-only). An admin at `/admin` manages all data (CRUD) behind JWT authentication.
@@ -25,21 +25,28 @@ hiking/
 │   │   └── Hike.js           # Mongoose schema
 │   └── routes/
 │       ├── auth.js           # POST /api/auth/login
-│       └── hikes.js          # GET/POST/PUT/DELETE /api/hikes
+│       ├── hikes.js          # GET/POST/PUT/DELETE /api/hikes
+│       └── upload.js         # POST /api/upload (Cloudinary)
 ├── src/
-│   ├── App.jsx               # Root — routes / vs /admin
+│   ├── App.jsx               # Root — routes / vs /admin vs /hike/:id
 │   ├── index.css             # All styles (design tokens + components)
 │   ├── api/
 │   │   ├── auth.js           # login(), getToken(), isLoggedIn()
-│   │   └── hikes.js          # fetchHikes(), createHike(), updateHike(), deleteHike()
+│   │   ├── hikes.js          # fetchHikes(), fetchHike(), createHike(), updateHike(), deleteHike()
+│   │   └── upload.js         # uploadImage()
 │   └── components/
+│       ├── HeroSearch.jsx    # Hero section with search + filters (public)
 │       ├── Controls.jsx      # Filter bar (public, read-only)
-│       ├── HikingTable.jsx   # Sortable table (public, read-only)
+│       ├── HikingTable.jsx   # Sortable card grid (public, read-only)
 │       ├── HikeRow.jsx       # ViewRow only (public)
+│       ├── HikeDetail.jsx    # Full hike detail page (/hike/:id)
 │       ├── HikeCarousel.jsx  # Auto-sliding carousel (hikes with imageUrl)
 │       └── admin/
-│           ├── AdminLogin.jsx  # Login form
-│           └── AdminPanel.jsx  # Full CRUD table
+│           ├── AdminLogin.jsx   # Login form
+│           ├── AdminPanel.jsx   # Full CRUD table with image thumbnails
+│           └── AdminHikeForm.jsx # Edit/create hike form with prev/next nav
+├── public/
+│   └── favicon.svg           # SVG hiker icon
 ├── data/
 │   └── seed.js               # One-time DB seed script
 ├── .env                      # Never commit this
@@ -54,6 +61,9 @@ PORT=3001
 JWT_SECRET=<random_strong_string>
 ADMIN_USER=admin
 ADMIN_PASS=<your_password>
+CLOUDINARY_CLOUD_NAME=<cloud_name>
+CLOUDINARY_API_KEY=<api_key>
+CLOUDINARY_API_SECRET=<api_secret>
 ```
 
 **Important:**
@@ -74,10 +84,12 @@ npm run build     # Production build
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/hikes` | public | List all hikes |
+| GET | `/api/hikes/:id` | public | Get single hike |
 | POST | `/api/hikes` | Bearer JWT | Create hike |
 | PUT | `/api/hikes/:id` | Bearer JWT | Update hike |
 | DELETE | `/api/hikes/:id` | Bearer JWT | Delete hike |
 | POST | `/api/auth/login` | — | Returns JWT token |
+| POST | `/api/upload` | Bearer JWT | Upload image to Cloudinary |
 
 ## Authentication Flow
 1. `POST /api/auth/login` with `{ username, password }` → returns `{ token }`
@@ -88,25 +100,30 @@ npm run build     # Production build
 
 ## Routing (no react-router)
 `App.jsx` checks `window.location.pathname`:
-- `/` → public view (read-only table + carousel)
+- `/` → public view (hero + card grid + carousel)
+- `/hike/:id` → public hike detail page (`HikeDetail`)
 - `/admin` → `AdminLogin` → `AdminPanel` (if token valid)
+- `/admin/hike/:id/edit` → `AdminHikeForm` (edit existing)
+- `/admin/hike/new` → `AdminHikeForm` (create new)
 
 Vite handles SPA fallback automatically in dev. In production, Express serves `dist/` and catches all routes with `index.html`.
 
 ## Hike Schema
 ```js
 {
-  name:       String (required)
-  time:       Number | null   // hours
-  distance:   Number | null   // km
-  tip:        'Dus-intors' | 'Dus' | null
-  up:         Number | null   // elevation gain (m)
-  down:       Number | null   // elevation loss (m)
-  difficulty: 'easy' | 'medium' | null
-  mountains:  String | null
-  status:     'Done' | 'In progress' | 'Not started'  // default: 'Not started'
-  completed:  String | null   // format: dd/mm/yyyy
-  zone:       String | null
+  name:        String (required)
+  time:        Number | null   // hours
+  distance:    Number | null   // km
+  tip:         'Dus-intors' | 'Dus' | null
+  up:          Number | null   // elevation gain (m)
+  down:        Number | null   // elevation loss (m)
+  difficulty:  'easy' | 'medium' | null
+  mountains:   String | null
+  status:      'Done' | 'In progress' | 'Not started'  // default: 'Not started'
+  completed:   String | null   // format: dd/mm/yyyy
+  zone:        String | null
+  imageUrl:    String | null
+  description: String | null   // free-text trail description
 }
 ```
 
@@ -114,7 +131,15 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 - Only shows hikes that have `imageUrl` set
 - Gradient placeholder shown when no image
 - Auto-advances every 5 seconds
-- To add a photo: set `imageUrl` on a hike document in MongoDB Atlas or via Admin Panel
+- To add a photo: upload via Admin Panel (Cloudinary) or set `imageUrl` directly in Atlas
+
+## Admin Panel Features
+- **Table** with image thumbnails (88×56px) as first column
+- **Edit form** (`AdminHikeForm`) opens at `/admin/hike/:id/edit`
+- **Prev/Next navigation** in edit form header — arrows to move between hikes in order
+- **Unsaved changes guard** — confirm dialog if navigating away with dirty form
+- **Image upload** via Cloudinary (`/api/upload`)
+- **Description** textarea field (free text, stored in DB)
 
 ## Known Gotchas
 - Port 3001 conflict: run `cmd //c "taskkill /F /IM node.exe"` then `npm run dev`
@@ -124,8 +149,10 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 
 ## Design System
 All CSS variables are in `src/index.css` under `:root`. Color palette:
-- `--forest-*`: primary greens (header, buttons, badges)
+- **Purple theme** (hero, admin header, primary buttons): `#1e1b4b → #2e1065 → #3b0764`
+- **Purple accents**: `#7c3aed` (buttons, focus rings, borders)
+- **Purple light**: `#c4b5fd` (subtext on dark bg), `#f5f3ff` (hover backgrounds)
+- `--forest-*`: greens used for badges (Done, difficulty)
 - `--neutral-*`: grays (text, borders, backgrounds)
 - `--amber-*`: in-progress badge
 - `--red-*`: delete / error states
-- `--blue-*`: easy difficulty badge

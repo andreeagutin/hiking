@@ -1,127 +1,122 @@
-# Hiking App
+# Trail Mix
+
 A fullstack application for tracking, managing, and sharing hiking routes.
 
 ## Production
 - **Frontend:** https://hiking-high.netlify.app/
 - **API:** https://hiking-1.onrender.com/api/hikes
+
 ---
+
 ## Overview
-Hiking App allows users to:
-- track hikes with key metrics (distance, elevation, duration)
-- explore and filter hikes
-- manage data through an admin interface
-- (future) get intelligent recommendations based on preferences
-The goal of this project is to build a clean, production-like fullstack system while experimenting with
-modern tooling and AI-assisted development.
+
+Trail Mix allows users to:
+- Browse hikes publicly with search, filters, and a detail page per trail
+- Track key metrics: distance, elevation, duration, difficulty
+- Manage all data through a protected admin interface (CRUD)
+- Upload trail photos via Cloudinary
+
 ---
+
 ## Architecture
-Client (React)
-¯
+
+```
+Client (React + Vite)
+        ↓
 REST API (Node.js / Express)
-¯
+        ↓
 MongoDB Atlas
+```
+
 - Frontend communicates with backend via REST API
 - Backend handles business logic, validation, and data access
 - MongoDB stores structured hike data
-- Docker ensures consistent local development
+- Images hosted on Cloudinary, URLs stored in DB
+
 ---
+
 ## Tech Stack
-- React – frontend SPA for displaying and filtering hikes
-- Node.js (Express) – backend API (CRUD, validation, business logic)
-- MongoDB Atlas – cloud database for storing hike data
-- Docker – containerized development environment
-- GitHub – version control (branches, pull requests)
-- CodeRabbit – AI-powered code review on pull requests
-- Jest – unit testing for backend logic -  // TODO
-- Netlify – frontend deployment (CI/CD from GitHub)
-- dotenv
-- typescript - // TODO
-db data:
-DB_USER=<your_user>
-DB_PASS=<your_pass>
-> **Note:** Never commit real credentials. Load them from a `.env` file (see `.env` setup) or a secrets manager.
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, Vite |
+| Backend | Node.js, Express (ESM) |
+| Database | MongoDB Atlas (Mongoose) |
+| Auth | JWT (jsonwebtoken) |
+| Image upload | Cloudinary + multer |
+| Dev runner | concurrently + nodemon |
+| Styling | Plain CSS (design tokens, no framework) |
+| Deployment | Netlify (frontend), Render (backend) |
+
 ---
+
 ## Project Structure
+
 ```
-hiking/               # repo root — package.json, vite.config.js, index.html live here
-├── src/              # React frontend (Vite)
+hiking/
 ├── server/           # Node.js / Express API
 │   ├── index.js
-│   ├── models/
-│   └── routes/
+│   ├── db.js
+│   ├── middleware/
+│   ├── models/       # Mongoose schemas
+│   └── routes/       # hikes, auth, upload
+├── src/              # React frontend (Vite)
+│   ├── api/          # fetch helpers
+│   └── components/   # public + admin components
+├── public/
+│   └── favicon.svg
 ├── data/             # seed script
-├── .env              # environment variables (never commit)
-└── package.json      # root deps — runs both frontend and backend via concurrently
+├── .env              # never commit
+└── package.json
 ```
+
 ---
+
 ## Getting Started
-### 1. Clone the repository
+
 ```bash
 git clone git@github.com:andreeagutin/hiking.git
 cd hiking
+npm install
+npm run dev        # Express (port 3001) + Vite concurrently
 ```
-### 2. Install dependencies & start (frontend + backend together)
-```bash
-npm install       # install root deps (React, Vite, Express, etc.)
-npm run dev       # starts Express (port 3001) + Vite dev server concurrently
-```
-### 3. Backend only
-```bash
-cd server
-npm install       # only needed if server has separate deps
-npm run dev       # nodemon watches server/
-```
-> **Note:** Docker support is not currently configured. Remove this note once a `docker-compose.yml` is added.
+
+Copy `.env.example` to `.env` and fill in your credentials.
+
 ---
-## API (initial design)
-### Hikes
-- GET /api/hikes → list all hikes
-- GET /api/hikes/:id → get hike details
-- POST /api/hikes → create hike
-- PUT /api/hikes/:id → update hike
-- DELETE /api/hikes/:id → delete hike
+
+## API
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/hikes` | public | List all hikes |
+| GET | `/api/hikes/:id` | public | Get single hike |
+| POST | `/api/hikes` | JWT | Create hike |
+| PUT | `/api/hikes/:id` | JWT | Update hike |
+| DELETE | `/api/hikes/:id` | JWT | Delete hike |
+| POST | `/api/auth/login` | — | Returns JWT token |
+| POST | `/api/upload` | JWT | Upload image to Cloudinary |
+
 ---
-## Testing
-Run backend tests:
-cd server
-npm run test
-Tests are written using Jest and focus on:
-- business logic
-- validation
-- API behavior
----
-## Development Workflow
-- create feature branch
-git switch -c feature/feature-name
-- commit changes
-git commit -m "feat: add hike filtering"
-- push & open Pull Request
-- CodeRabbit reviews PR automatically
----
+
 ## Features
-### Current
-- basic project setup (frontend + backend)
-- initial API structure
-### Planned
-- admin panel for managing hikes
-- public hikes list with filters (distance, elevation, duration)
-- map integration (display routes)
-- user authentication
-- favorites / saved hikes
-- AI-based hike recommendations
+
+### Public
+- Hero section with search bar and filters (status, difficulty, mountains, zone, trip type)
+- Card grid with hike thumbnails
+- Auto-sliding carousel (hikes with photos)
+- Detail page per hike (`/hike/:id`) with stats and description
+
+### Admin (`/admin`)
+- JWT login (8h token)
+- CRUD table with image thumbnails
+- Edit form per hike with prev/next navigation arrows
+- Unsaved changes guard (confirm dialog before leaving)
+- Cloudinary image upload
+- Description field (free text)
+
 ---
-## Future Improvements
-- caching (Redis)
-- pagination & performance optimization
-- advanced filtering (multi-criteria)
-- mobile-friendly UI
-- offline support
----
-## Why this project
-This project is used to:
-- improve fullstack architecture skills
-- experiment with AI-assisted development (CodeRabbit, Claude)
-- build a portfolio-ready application
----
+
 ## License
+
 MIT

@@ -73,6 +73,12 @@ export default function HikeDetail({ id }) {
           <StatItem icon="🔄" value={hike.tip} label="Trip type" />
           <StatItem icon="✓" value={hike.completed} label="Completed on" />
         </div>
+        {hike.description && (
+          <div className="detail-description-section">
+            <div className="detail-description-label">About this trail</div>
+            <p className="detail-description">{hike.description}</p>
+          </div>
+        )}
       </div>
     </div>
   );
