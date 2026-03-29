@@ -11,7 +11,13 @@ function authHeaders() {
 
 export async function fetchHikes() {
   const res = await fetch(BASE);
-  if (!res.ok) throw new Error('');
+  if (!res.ok) throw new Error('Failed to load hikes');
+  return res.json();
+}
+
+export async function fetchHike(id) {
+  const res = await fetch(`${BASE}/${id}`);
+  if (!res.ok) throw new Error('Hike not found');
   return res.json();
 }
 

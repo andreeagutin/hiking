@@ -14,6 +14,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET single hike
+router.get('/:id', async (req, res) => {
+  try {
+    const hike = await Hike.findById(req.params.id);
+    if (!hike) return res.status(404).json({ error: 'Not found' });
+    res.json(hike);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST create hike
 router.post('/', requireAuth, async (req, res) => {
   try {

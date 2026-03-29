@@ -59,7 +59,8 @@ export default function HikeCarousel({ hikes }) {
         {/* Main card */}
         <div
           className={`carousel-card ${animating ? 'animating' : ''}`}
-          style={{ background: gradient }}
+          style={{ background: gradient, cursor: 'pointer' }}
+          onClick={() => { window.location.href = `/hike/${hike._id}`; }}
         >
           {hike.imageUrl ? (
             <img className="carousel-img" src={hike.imageUrl} alt={hike.name} />

@@ -13,6 +13,7 @@ const hikeSchema = new mongoose.Schema(
     status:     { type: String, enum: ['Done', 'In progress', 'Not started'], default: 'Not started' },
     completed:  { type: String, default: null },
     zone:       { type: String, default: null },
+    imageUrl:   { type: String, default: null },
   },
   { timestamps: true }
 );

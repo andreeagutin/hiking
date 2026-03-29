@@ -1,33 +1,35 @@
 import { useState, useEffect } from 'react';
 import Controls from './components/Controls.jsx';
-import HikingTable from './components/HikingTable.jsx';
+import HikeCard from './components/HikeCard.jsx';
 import HikeCarousel from './components/HikeCarousel.jsx';
+import HikeDetail from './components/HikeDetail.jsx';
 import AdminLogin from './components/admin/AdminLogin.jsx';
 import AdminPanel from './components/admin/AdminPanel.jsx';
+import AdminHikeForm from './components/admin/AdminHikeForm.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
 
 const EMPTY_FILTERS = { q: '', status: '', difficulty: '', mountains: '', zone: '', tip: '' };
 
-const isAdminRoute = window.location.pathname === '/admin';
+const pathname = window.location.pathname;
+const hikeDetailMatch = pathname.match(/^\/hike\/([^/]+)$/);
+const adminEditMatch  = pathname.match(/^\/admin\/hike\/([^/]+)\/edit$/);
+const isAdminNewRoute = pathname === '/admin/hike/new';
+const isAdminRoute    = pathname === '/admin' || !!adminEditMatch || isAdminNewRoute;
 
-export default function App() {
-  // ── Admin routing ──────────────────────────────────────────────
-  if (isAdminRoute) {
-    const [loggedIn, setLoggedIn] = useState(isLoggedIn());
-    if (!loggedIn) return <AdminLogin onSuccess={() => setLoggedIn(true)} />;
-    return <AdminPanel />;
-  }
+function AdminAuthGate({ children }) {
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+  if (!loggedIn) return <AdminLogin onSuccess={() => setLoggedIn(true)} />;
+  return children;
+}
 
-  // ── Public view ────────────────────────────────────────────────
-  const [hikes, setHikes] = useState([]);
+function PublicApp() {
+  const [hikes, setHikes]   = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
-  const [error, setError] = useState('');
+  const [error, setError]   = useState('');
 
   useEffect(() => {
-    fetchHikes()
-      .then(setHikes)
-      .catch((e) => setError(e.message));
+    fetchHikes().then(setHikes).catch((e) => setError(e.message));
   }, []);
 
   const filtered = hikes.filter((h) => {
@@ -59,12 +61,12 @@ export default function App() {
             <span className="header-stat-label">Trails</span>
           </div>
           <div className="header-stat">
-            <span className="header-stat-value">{hikes.filter(h => h.status === 'Done').length}</span>
+            <span className="header-stat-value">{hikes.filter((h) => h.status === 'Done').length}</span>
             <span className="header-stat-label">Done</span>
           </div>
           <div className="header-stat">
             <span className="header-stat-value">
-              {hikes.filter(h => h.status === 'Done').reduce((s, h) => s + (h.distance || 0), 0).toFixed(0)}
+              {hikes.filter((h) => h.status === 'Done').reduce((s, h) => s + (h.distance || 0), 0).toFixed(0)}
             </span>
             <span className="header-stat-label">km hiked</span>
           </div>
@@ -76,13 +78,30 @@ export default function App() {
       <div className="page-content">
         {error && <div className="error-banner">⚠ {error}</div>}
         <Controls filters={filters} onChange={setFilters} hikes={hikes} />
-        <div className="stats">
+        <div className="results-bar">
           {filtered.length === hikes.length
-            ? `Showing all ${hikes.length} hikes`
-            : `Showing ${filtered.length} of ${hikes.length} hikes`}
+            ? `${hikes.length} trails`
+            : `${filtered.length} of ${hikes.length} trails`}
         </div>
-        <HikingTable hikes={filtered} />
+        {filtered.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">🥾</div>
+            <div className="empty-state-text">No hikes match your filters.</div>
+          </div>
+        ) : (
+          <div className="hike-grid">
+            {filtered.map((h) => <HikeCard key={h._id} hike={h} />)}
+          </div>
+        )}
       </div>
     </>
   );
+}
+
+export default function App() {
+  if (hikeDetailMatch) return <HikeDetail id={hikeDetailMatch[1]} />;
+  if (isAdminNewRoute)  return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
+  if (adminEditMatch)   return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
+  if (isAdminRoute)     return <AdminAuthGate><AdminPanel /></AdminAuthGate>;
+  return <PublicApp />;
 }
