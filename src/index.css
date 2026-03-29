@@ -1289,6 +1289,43 @@ td input.edit-input[type="number"] { max-width: 90px; }
   cursor: pointer;
 }
 
+.form-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-upload {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  border: 1.5px solid var(--neutral-200);
+  padding: 9px 18px;
+  font-size: 0.85rem;
+}
+.btn-upload:hover:not(:disabled) { background: var(--neutral-200); }
+.btn-upload:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-upload-remove {
+  background: var(--red-100);
+  color: var(--red-600);
+  border: 1.5px solid #fca5a5;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+}
+.btn-upload-remove:hover { background: #fecaca; }
+
+.upload-filename {
+  font-size: 0.78rem;
+  color: var(--neutral-500);
+  font-weight: 500;
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
 .admin-form-actions {
   display: flex;
   align-items: center;

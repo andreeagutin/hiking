@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { connectDB } from './db.js';
 import hikesRouter from './routes/hikes.js';
 import authRouter from './routes/auth.js';
+import uploadRouter from './routes/upload.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -16,9 +17,11 @@ app.use(cors({
   origin: process.env.CLIENT_ORIGIN || '*',
 }));
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/auth', authRouter);
 app.use('/api/hikes', hikesRouter);
+app.use('/api/upload', uploadRouter);
 
 if (isProd && !process.env.RENDER) {
   const distPath = path.join(__dirname, '..', 'dist');

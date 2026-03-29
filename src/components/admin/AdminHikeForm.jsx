@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchHike, createHike, updateHike, deleteHike } from '../../api/hikes.js';
 import { clearToken } from '../../api/auth.js';
+import { uploadImage } from '../../api/upload.js';
 
 const EMPTY = {
   name: '', time: null, distance: null, tip: null,
@@ -20,9 +21,11 @@ function Field({ label, children, full }) {
 export default function AdminHikeForm({ id }) {
   const isNew = !id;
   const [form, setForm]     = useState(EMPTY);
-  const [loading, setLoading] = useState(!isNew);
-  const [saving, setSaving] = useState(false);
-  const [error, setError]   = useState('');
+  const [loading, setLoading]   = useState(!isNew);
+  const [saving, setSaving]     = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError]       = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!isNew) {
@@ -31,6 +34,21 @@ export default function AdminHikeForm({ id }) {
         .catch((e) => { setError(e.message); setLoading(false); });
     }
   }, [id, isNew]);
+
+  async function handleImagePick(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    try {
+      const { url } = await uploadImage(file);
+      setForm((f) => ({ ...f, imageUrl: url }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function set(key) {
     const NUM = ['time', 'distance', 'up', 'down'];
@@ -109,8 +127,36 @@ export default function AdminHikeForm({ id }) {
 
           <div className="form-section-title">Photo</div>
           <div className="form-grid">
-            <Field label="Image URL" full>
-              <input type="url" value={form.imageUrl ?? ''} onChange={set('imageUrl')} placeholder="https://…" />
+            <Field label="Upload image" full>
+              <div className="form-upload-row">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleImagePick}
+                />
+                <button
+                  type="button"
+                  className="btn btn-upload"
+                  onClick={() => fileInputRef.current.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? 'Uploading…' : form.imageUrl ? 'Replace photo' : 'Choose photo'}
+                </button>
+                {form.imageUrl && (
+                  <button
+                    type="button"
+                    className="btn btn-upload-remove"
+                    onClick={() => setForm((f) => ({ ...f, imageUrl: null }))}
+                  >
+                    Remove
+                  </button>
+                )}
+                {form.imageUrl && (
+                  <span className="upload-filename">{form.imageUrl.split('/').pop()}</span>
+                )}
+              </div>
             </Field>
           </div>
 
