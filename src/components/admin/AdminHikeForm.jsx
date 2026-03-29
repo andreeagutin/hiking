@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { fetchHike, createHike, updateHike, deleteHike } from '../../api/hikes.js';
+import { fetchHikes, fetchHike, createHike, updateHike, deleteHike } from '../../api/hikes.js';
 import { clearToken } from '../../api/auth.js';
 import { uploadImage } from '../../api/upload.js';
 
@@ -21,20 +21,37 @@ function Field({ label, children, full }) {
 
 export default function AdminHikeForm({ id }) {
   const isNew = !id;
-  const [form, setForm]     = useState(EMPTY);
+  const [form, setForm]         = useState(EMPTY);
+  const [original, setOriginal] = useState(EMPTY);
+  const [allHikes, setAllHikes] = useState([]);
   const [loading, setLoading]   = useState(!isNew);
   const [saving, setSaving]     = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError]       = useState('');
   const fileInputRef = useRef(null);
 
+  const isDirty = JSON.stringify(form) !== JSON.stringify(original);
+
+  useEffect(() => {
+    fetchHikes().then(setAllHikes).catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (!isNew) {
       fetchHike(id)
-        .then((h) => { setForm(h); setLoading(false); })
+        .then((h) => { setForm(h); setOriginal(h); setLoading(false); })
         .catch((e) => { setError(e.message); setLoading(false); });
     }
   }, [id, isNew]);
+
+  const currentIndex = allHikes.findIndex((h) => h._id === id);
+  const prevHike = currentIndex > 0 ? allHikes[currentIndex - 1] : null;
+  const nextHike = currentIndex !== -1 && currentIndex < allHikes.length - 1 ? allHikes[currentIndex + 1] : null;
+
+  function navigateTo(hike) {
+    if (isDirty && !confirm('Ai modificari nesalvate. Esti sigur ca vrei sa pleci?')) return;
+    window.location.href = `/admin/hike/${hike._id}/edit`;
+  }
 
   async function handleImagePick(e) {
     const file = e.target.files?.[0];
@@ -92,6 +109,11 @@ export default function AdminHikeForm({ id }) {
     }
   }
 
+  function handleBack() {
+    if (isDirty && !confirm('Ai modificari nesalvate. Esti sigur ca vrei sa pleci?')) return;
+    window.location.href = '/admin';
+  }
+
   function handleLogout() {
     clearToken();
     window.location.href = '/admin';
@@ -103,7 +125,7 @@ export default function AdminHikeForm({ id }) {
     <div className="admin-wrap">
       <header className="admin-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button className="admin-back-btn" onClick={() => window.location.href = '/admin'}>
+          <button className="admin-back-btn" onClick={handleBack}>
             ← Back
           </button>
           <div>
@@ -111,7 +133,32 @@ export default function AdminHikeForm({ id }) {
             {!isNew && form.name && <div className="admin-header-sub">{form.name}</div>}
           </div>
         </div>
-        <button className="admin-logout" onClick={handleLogout}>Sign out</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {!isNew && (
+            <div className="admin-hike-nav">
+              <button
+                className="admin-nav-btn"
+                onClick={() => prevHike && navigateTo(prevHike)}
+                disabled={!prevHike}
+                title={prevHike ? prevHike.name : ''}
+              >
+                ‹
+              </button>
+              <span className="admin-nav-pos">
+                {currentIndex + 1} / {allHikes.length}
+              </span>
+              <button
+                className="admin-nav-btn"
+                onClick={() => nextHike && navigateTo(nextHike)}
+                disabled={!nextHike}
+                title={nextHike ? nextHike.name : ''}
+              >
+                ›
+              </button>
+            </div>
+          )}
+          <button className="admin-logout" onClick={handleLogout}>Sign out</button>
+        </div>
       </header>
 
       <div className="admin-form-content">
@@ -177,10 +224,10 @@ export default function AdminHikeForm({ id }) {
           <div className="form-section-title">Stats</div>
           <div className="form-grid">
             <Field label="Distance (km)">
-              <input type="number" step="0.1" min="0" value={form.distance ?? ''} onChange={set('distance')} placeholder="0.0" />
+              <input type="number" step="any" min="0" value={form.distance ?? ''} onChange={set('distance')} placeholder="0.0" />
             </Field>
             <Field label="Time (hours)">
-              <input type="number" step="0.5" min="0" value={form.time ?? ''} onChange={set('time')} placeholder="0.0" />
+              <input type="number" step="any" min="0" value={form.time ?? ''} onChange={set('time')} placeholder="0.0" />
             </Field>
             <Field label="Elevation up (m)">
               <input type="number" min="0" value={form.up ?? ''} onChange={set('up')} placeholder="0" />
@@ -223,7 +270,7 @@ export default function AdminHikeForm({ id }) {
             <button type="submit" className="btn btn-form-save" disabled={saving}>
               {saving ? 'Saving…' : 'Save hike'}
             </button>
-            <button type="button" className="btn btn-form-cancel" onClick={() => window.location.href = '/admin'}>
+            <button type="button" className="btn btn-form-cancel" onClick={handleBack}>
               Cancel
             </button>
             {!isNew && (
