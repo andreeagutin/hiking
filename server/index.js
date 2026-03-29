@@ -17,7 +17,6 @@ app.use(cors({
   origin: process.env.CLIENT_ORIGIN || '*',
 }));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/auth', authRouter);
 app.use('/api/hikes', hikesRouter);
