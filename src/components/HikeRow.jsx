@@ -1,3 +1,4 @@
+import React from 'react';
 const n = (v) => v ?? '';
 
 function Badge({ value, prefix }) {

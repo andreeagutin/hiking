@@ -1,3 +1,4 @@
+import React from 'react';
 const GRADIENTS = [
   'linear-gradient(145deg, #0d2318 0%, #2d6a4f 100%)',
   'linear-gradient(145deg, #1e3a5f 0%, #1d4ed8 100%)',

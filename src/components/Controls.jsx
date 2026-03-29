@@ -1,3 +1,4 @@
+import React from 'react';
 export default function Controls({ filters, onChange, hikes }) {
   const mountains = [...new Set(hikes.map((h) => h.mountains).filter(Boolean))].sort();
   const zones = [...new Set(hikes.map((h) => h.zone).filter(Boolean))].sort();

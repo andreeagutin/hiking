@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { fetchHike } from '../api/hikes.js';
 
