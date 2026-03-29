@@ -28,7 +28,7 @@ export default function AdminLogin({ onSuccess }) {
       <form className="admin-login-card" onSubmit={handleSubmit}>
         <div className="admin-login-icon">🏔️</div>
         <h1 className="admin-login-title">Admin Panel</h1>
-        <p className="admin-login-sub">Hiking Vision 2025</p>
+        <p className="admin-login-sub">Trail Mix</p>
 
         {error && <div className="admin-login-error">{error}</div>}
 

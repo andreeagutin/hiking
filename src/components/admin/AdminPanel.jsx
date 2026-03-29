@@ -14,6 +14,11 @@ function ViewRow({ hike, onDelete }) {
 
   return (
     <tr className="admin-row" onClick={() => { window.location.href = `/admin/hike/${hike._id}/edit`; }}>
+      <td className="admin-cell-img">
+        {hike.imageUrl
+          ? <img src={hike.imageUrl} alt="" className="admin-thumb" />
+          : <div className="admin-thumb-placeholder" />}
+      </td>
       <td className="admin-cell-name">{hike.name || <em className="admin-no-name">Unnamed</em>}</td>
       <td>{n(hike.mountains)}</td>
       <td>{n(hike.zone)}</td>
@@ -97,7 +102,7 @@ export default function AdminPanel() {
           <span style={{ fontSize: '1.4rem' }}>🏔️</span>
           <div>
             <div className="admin-header-title">Admin Panel</div>
-            <div className="admin-header-sub">Hiking High</div>
+            <div className="admin-header-sub">Trail Mix</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -124,6 +129,7 @@ export default function AdminPanel() {
           <table>
             <thead>
               <tr>
+                <th style={{ width: '100px' }}></th>
                 <th>Name</th>
                 <th>Mountains</th>
                 <th>Zone</th>
@@ -137,7 +143,7 @@ export default function AdminPanel() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={9} className="no-results">No hikes found.</td></tr>
+                <tr><td colSpan={10} className="no-results">No hikes found.</td></tr>
               ) : (
                 filtered.map((hike) => (
                   <ViewRow key={hike._id} hike={hike} onDelete={handleDelete} />
@@ -147,6 +153,7 @@ export default function AdminPanel() {
           </table>
         </div>
       </div>
+
 
       {toast && <div className="toast show">{toast}</div>}
     </div>

@@ -15,7 +15,7 @@ export default function HeroSearch({ filters, onChange, hikes }) {
   return (
     <div className="hero">
       <div className="hero-inner">
-        <p className="hero-eyebrow">🏔️ Hiking High</p>
+        <p className="hero-eyebrow"><img src="/favicon.svg" alt="" style={{width:'1.1em', height:'1.1em', verticalAlign:'middle', marginRight:'6px'}} />Trail Mix</p>
         <h1 className="hero-title">Where would you like to hike?</h1>
 
         <div className="hero-search-box">
