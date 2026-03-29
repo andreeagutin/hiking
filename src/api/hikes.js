@@ -9,16 +9,24 @@ function authHeaders() {
     : { 'Content-Type': 'application/json' };
 }
 
+async function parseJSON(res) {
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    throw new Error('Server is starting up — please refresh in a moment.');
+  }
+  return res.json();
+}
+
 export async function fetchHikes() {
   const res = await fetch(BASE);
   if (!res.ok) throw new Error('Failed to load hikes');
-  return res.json();
+  return parseJSON(res);
 }
 
 export async function fetchHike(id) {
   const res = await fetch(`${BASE}/${id}`);
   if (!res.ok) throw new Error('Hike not found');
-  return res.json();
+  return parseJSON(res);
 }
 
 export async function createHike(data) {

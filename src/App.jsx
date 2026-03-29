@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import Controls from './components/Controls.jsx';
+import React, { useState, useEffect } from 'react';
+import HeroSearch from './components/HeroSearch.jsx';
 import HikeCard from './components/HikeCard.jsx';
-import HikeCarousel from './components/HikeCarousel.jsx';
 import HikeDetail from './components/HikeDetail.jsx';
 import AdminLogin from './components/admin/AdminLogin.jsx';
 import AdminPanel from './components/admin/AdminPanel.jsx';
@@ -47,37 +46,10 @@ function PublicApp() {
 
   return (
     <>
-      <header className="page-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div className="page-header-icon">🏔️</div>
-          <div className="page-header-text">
-            <h1>Hiking High</h1>
-            <p>Trail tracker &amp; planner</p>
-          </div>
-        </div>
-        <div className="page-header-stats">
-          <div className="header-stat">
-            <span className="header-stat-value">{hikes.length}</span>
-            <span className="header-stat-label">Trails</span>
-          </div>
-          <div className="header-stat">
-            <span className="header-stat-value">{hikes.filter((h) => h.status === 'Done').length}</span>
-            <span className="header-stat-label">Done</span>
-          </div>
-          <div className="header-stat">
-            <span className="header-stat-value">
-              {hikes.filter((h) => h.status === 'Done').reduce((s, h) => s + (h.distance || 0), 0).toFixed(0)}
-            </span>
-            <span className="header-stat-label">km hiked</span>
-          </div>
-        </div>
-      </header>
-
-      <HikeCarousel hikes={hikes} />
+      <HeroSearch filters={filters} onChange={setFilters} hikes={hikes} />
 
       <div className="page-content">
         {error && <div className="error-banner">⚠ {error}</div>}
-        <Controls filters={filters} onChange={setFilters} hikes={hikes} />
         <div className="results-bar">
           {filtered.length === hikes.length
             ? `${hikes.length} trails`

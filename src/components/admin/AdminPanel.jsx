@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { fetchHikes, createHike, deleteHike } from '../../api/hikes.js';
 import { clearToken } from '../../api/auth.js';
