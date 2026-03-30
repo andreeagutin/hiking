@@ -4,12 +4,13 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res) => {
   try {
     const list = await Restaurant.find().sort({ name: 1 });
     res.json(list);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -19,7 +20,8 @@ router.get('/:id', async (req, res) => {
     if (!r) return res.status(404).json({ error: 'Not found' });
     res.json(r);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -48,7 +50,8 @@ router.delete('/:id', requireAuth, async (req, res) => {
     if (!r) return res.status(404).json({ error: 'Not found' });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

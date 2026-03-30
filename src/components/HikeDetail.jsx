@@ -3,6 +3,13 @@ import { fetchHike } from '../api/hikes.js';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+function isSafeUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch { return false; }
+}
+
 function formatDate(val) {
   if (!val) return null;
   let date;
@@ -135,7 +142,7 @@ export default function HikeDetail({ id }) {
                   )}
                   {r.address && <div className="detail-restaurant-address">{r.address}</div>}
                   {r.notes && <div className="detail-restaurant-notes">{r.notes}</div>}
-                  {r.link && <a href={r.link} target="_blank" rel="noopener noreferrer" className="detail-restaurant-link">View →</a>}
+                  {r.link && isSafeUrl(r.link) && <a href={r.link} target="_blank" rel="noopener noreferrer" className="detail-restaurant-link">View →</a>}
                 </div>
               ))}
             </div>
