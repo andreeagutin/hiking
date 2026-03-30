@@ -1,4 +1,3 @@
-import React from 'react';
 const GRADIENTS = [
   'linear-gradient(145deg, #0d2318 0%, #2d6a4f 100%)',
   'linear-gradient(145deg, #1e3a5f 0%, #1d4ed8 100%)',
@@ -16,7 +15,7 @@ function cardGradient(name) {
   return GRADIENTS[Math.abs(h) % GRADIENTS.length];
 }
 
-export default function HikeCard({ hike }) {
+export default function HikeCard({ hike, distance }) {
   const bg = hike.imageUrl ? undefined : cardGradient(hike.name);
 
   return (
@@ -51,6 +50,11 @@ export default function HikeCard({ hike }) {
           {hike.distance  && <span className="hike-card-stat"><span className="hike-stat-icon">📏</span>{hike.distance} km</span>}
           {hike.time      && <span className="hike-card-stat"><span className="hike-stat-icon">⏱</span>{hike.time} h</span>}
           {hike.up        && <span className="hike-card-stat"><span className="hike-stat-icon">↑</span>{hike.up} m</span>}
+          {distance != null && (
+            <span className="hike-card-stat hike-card-stat-distance">
+              <span className="hike-stat-icon">📍</span>{distance < 1 ? `${(distance * 1000).toFixed(0)} m` : `${distance.toFixed(0)} km`} away
+            </span>
+          )}
         </div>
 
         {hike.difficulty && (

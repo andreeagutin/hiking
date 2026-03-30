@@ -1,6 +1,86 @@
-import React from 'react';
+import { useState } from 'react';
 
-export default function HeroSearch({ filters, onChange, hikes }) {
+async function geocodeCity(query) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+  const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+  const data = await res.json();
+  if (!data.length) throw new Error('Location not found');
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), label: data[0].display_name.split(',')[0] };
+}
+
+function LocationWidget({ userLocation, onLocationChange }) {
+  const [cityInput, setCityInput] = useState('');
+  const [mode, setMode]           = useState('idle'); // idle | input | loading | error
+  const [errMsg, setErrMsg]       = useState('');
+
+  function requestGeo() {
+    if (!navigator.geolocation) { setMode('input'); return; }
+    setMode('loading');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        onLocationChange({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: 'Your location' });
+        setMode('idle');
+      },
+      () => { setMode('input'); }
+    );
+  }
+
+  async function handleCitySubmit(e) {
+    e.preventDefault();
+    if (!cityInput.trim()) return;
+    setMode('loading');
+    setErrMsg('');
+    try {
+      const loc = await geocodeCity(cityInput.trim());
+      onLocationChange(loc);
+      setCityInput('');
+      setMode('idle');
+    } catch {
+      setErrMsg('Location not found');
+      setMode('input');
+    }
+  }
+
+  if (userLocation) {
+    return (
+      <div className="hero-location-pill">
+        <span className="hero-location-icon">📍</span>
+        <span className="hero-location-label">{userLocation.label}</span>
+        <button className="hero-location-clear" onClick={() => { onLocationChange(null); setMode('idle'); }} title="Clear location">×</button>
+      </div>
+    );
+  }
+
+  if (mode === 'loading') {
+    return <div className="hero-location-pill hero-location-loading">Locating…</div>;
+  }
+
+  if (mode === 'input') {
+    return (
+      <form className="hero-location-form" onSubmit={handleCitySubmit}>
+        <input
+          className="hero-location-input"
+          value={cityInput}
+          onChange={(e) => setCityInput(e.target.value)}
+          placeholder="Enter your city…"
+          autoFocus
+        />
+        <button className="hero-location-submit" type="submit">Go</button>
+        <button className="hero-location-cancel" type="button" onClick={() => setMode('idle')}>×</button>
+        {errMsg && <span className="hero-location-err">{errMsg}</span>}
+      </form>
+    );
+  }
+
+  return (
+    <div className="hero-location-prompt">
+      <button className="hero-location-btn" onClick={requestGeo}>📍 Show distances from me</button>
+      <button className="hero-location-btn-alt" onClick={() => setMode('input')}>Enter city</button>
+    </div>
+  );
+}
+
+export default function HeroSearch({ filters, onChange, hikes, userLocation, onLocationChange }) {
   const mountains = [...new Set(hikes.map((h) => h.mountains).filter(Boolean))].sort();
   const zones     = [...new Set(hikes.map((h) => h.zone).filter(Boolean))].sort();
 
@@ -58,6 +138,8 @@ export default function HeroSearch({ filters, onChange, hikes }) {
             <option>Dus</option>
           </select>
         </div>
+
+        <LocationWidget userLocation={userLocation} onLocationChange={onLocationChange} />
 
         <div className="hero-stats">
           <span><strong>{hikes.length}</strong> trails</span>

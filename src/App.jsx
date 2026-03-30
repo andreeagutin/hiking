@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import HeroSearch from './components/HeroSearch.jsx';
 import HikeCard from './components/HikeCard.jsx';
 import HikeDetail from './components/HikeDetail.jsx';
@@ -30,14 +30,32 @@ function AdminAuthGate({ children }) {
   return children;
 }
 
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 function PublicApp() {
-  const [hikes, setHikes]   = useState([]);
-  const [filters, setFilters] = useState(EMPTY_FILTERS);
-  const [error, setError]   = useState('');
+  const [hikes, setHikes]       = useState([]);
+  const [filters, setFilters]   = useState(EMPTY_FILTERS);
+  const [error, setError]       = useState('');
+  const [userLocation, setUserLocation] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('userLocation')); } catch { return null; }
+  });
 
   useEffect(() => {
     fetchHikes().then(setHikes).catch((e) => setError(e.message));
   }, []);
+
+  function handleLocationChange(loc) {
+    setUserLocation(loc);
+    if (loc) sessionStorage.setItem('userLocation', JSON.stringify(loc));
+    else sessionStorage.removeItem('userLocation');
+  }
 
   const filtered = hikes.filter((h) => {
     if (filters.status     && h.status     !== filters.status)     return false;
@@ -54,7 +72,7 @@ function PublicApp() {
 
   return (
     <>
-      <HeroSearch filters={filters} onChange={setFilters} hikes={hikes} />
+      <HeroSearch filters={filters} onChange={setFilters} hikes={hikes} userLocation={userLocation} onLocationChange={handleLocationChange} />
 
       <div className="page-content">
         {error && <div className="error-banner">⚠ {error}</div>}
@@ -70,7 +88,13 @@ function PublicApp() {
           </div>
         ) : (
           <div className="hike-grid">
-            {filtered.map((h) => <HikeCard key={h._id} hike={h} />)}
+            {filtered.map((h) => (
+              <HikeCard key={h._id} hike={h}
+                distance={userLocation && h.startLat && h.startLng
+                  ? haversineKm(userLocation.lat, userLocation.lng, h.startLat, h.startLng)
+                  : null}
+              />
+            ))}
           </div>
         )}
       </div>

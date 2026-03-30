@@ -1,13 +1,49 @@
 import { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { fetchHikes, fetchHike, createHike, updateHike, deleteHike, addHistory, updateHistory, deleteHistory } from '../../api/hikes.js';
 import { fetchRestaurants } from '../../api/restaurants.js';
 import { clearToken } from '../../api/auth.js';
 import { uploadImage } from '../../api/upload.js';
 
+// Fix Leaflet default marker icons with Vite bundler
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+});
+
+function MapClickHandler({ onChange }) {
+  useMapEvents({ click(e) { onChange(e.latlng.lat, e.latlng.lng); } });
+  return null;
+}
+
+function FlyTo({ lat, lng }) {
+  const map = useMap();
+  useEffect(() => { if (lat && lng) map.flyTo([lat, lng], 13, { duration: 1 }); }, [lat, lng, map]);
+  return null;
+}
+
+function StartMap({ lat, lng, onChange }) {
+  const center = lat && lng ? [lat, lng] : [45.5, 25.0];
+  const zoom   = lat && lng ? 13 : 7;
+  return (
+    <MapContainer center={center} zoom={zoom} style={{ height: 320, borderRadius: 12, zIndex: 0 }}>
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+      <MapClickHandler onChange={onChange} />
+      <FlyTo lat={lat} lng={lng} />
+      {lat && lng && <Marker position={[lat, lng]} />}
+    </MapContainer>
+  );
+}
+
 const EMPTY = {
   name: '', time: null, distance: null, tip: null,
   up: null, down: null, difficulty: null, mountains: null,
   status: 'Not started', completed: null, zone: null, imageUrl: null, description: null,
+  startLat: null, startLng: null,
 };
 
 // YYYY-MM-DD → DD-MM-YYYY (display)
@@ -359,6 +395,22 @@ export default function AdminHikeForm({ id }) {
                 onChange={(e) => setForm((f) => ({ ...f, completed: fromDisplay(e.target.value) }))}
               />
             </Field>
+          </div>
+
+          <div className="form-section-title">Starting point</div>
+          <div className="start-map-wrap">
+            <p className="start-map-hint">Click on the map to set the trail starting point.</p>
+            <StartMap
+              lat={form.startLat}
+              lng={form.startLng}
+              onChange={(lat, lng) => setForm((f) => ({ ...f, startLat: lat, startLng: lng }))}
+            />
+            {form.startLat && form.startLng && (
+              <div className="start-map-coords">
+                <span>📍 {form.startLat.toFixed(5)}, {form.startLng.toFixed(5)}</span>
+                <button type="button" className="start-map-clear" onClick={() => setForm((f) => ({ ...f, startLat: null, startLng: null }))}>Clear point</button>
+              </div>
+            )}
           </div>
 
           {!isNew && (
