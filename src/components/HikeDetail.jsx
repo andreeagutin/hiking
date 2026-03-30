@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { marked } from 'marked';
 import { fetchHike } from '../api/hikes.js';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -98,7 +99,7 @@ export default function HikeDetail({ id }) {
         {hike.description && (
           <div className="detail-description-section">
             <div className="detail-description-label">About this trail</div>
-            <p className="detail-description">{hike.description}</p>
+            <div className="detail-description" dangerouslySetInnerHTML={{ __html: marked.parse(hike.description) }} />
           </div>
         )}
 

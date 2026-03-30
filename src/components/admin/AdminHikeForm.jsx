@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { marked } from 'marked';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -64,6 +65,150 @@ function fromDisplay(val) {
     return `${y}-${m}-${d}`;
   }
   return val;
+}
+
+const TOOLBAR_COLORS = [
+  { label: 'Default',  hex: null },
+  { label: 'Purple',   hex: '#7c3aed' },
+  { label: 'Blue',     hex: '#2563eb' },
+  { label: 'Teal',     hex: '#0d9488' },
+  { label: 'Green',    hex: '#16a34a' },
+  { label: 'Orange',   hex: '#ea580c' },
+  { label: 'Red',      hex: '#dc2626' },
+  { label: 'Rose',     hex: '#e11d48' },
+  { label: 'Gold',     hex: '#b45309' },
+  { label: 'Gray',     hex: '#6b7280' },
+];
+
+function TbIcon({ d, size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
+}
+
+function DescriptionEditor({ value, onChange }) {
+  const ref = useRef(null);
+  const [preview, setPreview] = useState(false);
+  const words = value ? value.trim().split(/\s+/).filter(Boolean).length : 0;
+
+  function wrap(before, after) {
+    const el = ref.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end   = el.selectionEnd;
+    const sel   = value.slice(start, end) || 'text';
+    const next  = value.slice(0, start) + before + sel + after + value.slice(end);
+    onChange(next);
+    setTimeout(() => {
+      el.focus();
+      el.selectionStart = start + before.length;
+      el.selectionEnd   = start + before.length + sel.length;
+    }, 0);
+  }
+
+  function insertPrefix(prefix) {
+    const el    = ref.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const ls    = value.lastIndexOf('\n', start - 1) + 1;
+    const next  = value.slice(0, ls) + prefix + value.slice(ls);
+    onChange(next);
+    setTimeout(() => { el.focus(); el.selectionStart = el.selectionEnd = start + prefix.length; }, 0);
+  }
+
+  function insertLink() {
+    const el  = ref.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end   = el.selectionEnd;
+    const sel   = value.slice(start, end) || 'link text';
+    const next  = value.slice(0, start) + `[${sel}](url)` + value.slice(end);
+    onChange(next);
+    setTimeout(() => { el.focus(); el.selectionStart = el.selectionEnd = start + sel.length + 3; }, 0);
+  }
+
+  function insertHr() {
+    const el    = ref.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const next  = value.slice(0, start) + '\n\n---\n\n' + value.slice(start);
+    onChange(next);
+    setTimeout(() => { el.focus(); el.selectionStart = el.selectionEnd = start + 7; }, 0);
+  }
+
+  return (
+    <div className="desc-editor">
+      {/* Row 1: text formatting */}
+      <div className="desc-toolbar">
+        <span className="desc-tb-group">
+          <button type="button" className="desc-tb-btn" title="Bold (select text first)"      onClick={() => wrap('**', '**')}><b>B</b></button>
+          <button type="button" className="desc-tb-btn desc-tb-italic" title="Italic"          onClick={() => wrap('*', '*')}><i>I</i></button>
+          <button type="button" className="desc-tb-btn desc-tb-strike" title="Strikethrough"   onClick={() => wrap('~~', '~~')}><s>S</s></button>
+          <button type="button" className="desc-tb-btn desc-tb-code"   title="Inline code"     onClick={() => wrap('`', '`')}>{'<>'}</button>
+        </span>
+        <span className="desc-tb-sep" />
+        <span className="desc-tb-group">
+          <button type="button" className="desc-tb-btn" title="Heading 1" onClick={() => insertPrefix('# ')}>H1</button>
+          <button type="button" className="desc-tb-btn" title="Heading 2" onClick={() => insertPrefix('## ')}>H2</button>
+          <button type="button" className="desc-tb-btn" title="Heading 3" onClick={() => insertPrefix('### ')}>H3</button>
+        </span>
+        <span className="desc-tb-sep" />
+        <span className="desc-tb-group">
+          <button type="button" className="desc-tb-btn" title="Bullet list"    onClick={() => insertPrefix('- ')}>
+            <TbIcon d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" />
+          </button>
+          <button type="button" className="desc-tb-btn" title="Numbered list"  onClick={() => insertPrefix('1. ')}>
+            <TbIcon d="M10 6h11M10 12h11M10 18h11M3.5 6l1-1v4M3.5 18h2m-2-2 2 2" />
+          </button>
+          <button type="button" className="desc-tb-btn" title="Blockquote"     onClick={() => insertPrefix('> ')}>
+            <TbIcon d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1zm12 0c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+          </button>
+          <button type="button" className="desc-tb-btn" title="Link"           onClick={insertLink}>
+            <TbIcon d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </button>
+          <button type="button" className="desc-tb-btn" title="Horizontal rule" onClick={insertHr}>—</button>
+        </span>
+        <span className="desc-tb-sep" />
+        {/* Colors */}
+        <span className="desc-tb-group desc-tb-colors">
+          {TOOLBAR_COLORS.map((c) =>
+            c.hex ? (
+              <button key={c.hex} type="button" className="desc-color-btn" title={c.label}
+                style={{ background: c.hex }} onClick={() => wrap(`<span style="color:${c.hex}">`, '</span>')} />
+            ) : (
+              <button key="default" type="button" className="desc-color-btn desc-color-default" title="Default color"
+                onClick={() => { /* just insert selected text as-is */ ref.current?.focus(); }} >A</button>
+            )
+          )}
+        </span>
+        <span className="desc-tb-sep" />
+        <button type="button" className={`desc-tb-btn desc-tb-preview${preview ? ' active' : ''}`}
+          onClick={() => setPreview((p) => !p)}>
+          {preview ? '✏ Edit' : '👁 Preview'}
+        </button>
+      </div>
+
+      {preview ? (
+        <div className="desc-preview" dangerouslySetInnerHTML={{ __html: marked.parse(value || '') }} />
+      ) : (
+        <textarea
+          ref={ref}
+          className="form-textarea desc-textarea"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={'Write your trail description here…\n\n**bold**, *italic*, ~~strikethrough~~, `code`\n## Heading, - bullet list, 1. numbered list, > quote'}
+          rows={10}
+        />
+      )}
+
+      <div className="desc-footer">
+        <span className="desc-word-count">{words} word{words !== 1 ? 's' : ''}</span>
+        <span className="desc-hint">Markdown supported · <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank" rel="noopener noreferrer">Cheat sheet</a></span>
+      </div>
+    </div>
+  );
 }
 
 function Field({ label, children, full }) {
@@ -322,17 +467,10 @@ export default function AdminHikeForm({ id }) {
           </div>
 
           <div className="form-section-title">Description</div>
-          <div className="form-grid">
-            <Field label="Description" full>
-              <textarea
-                className="form-textarea"
-                value={form.description ?? ''}
-                onChange={set('description')}
-                placeholder="Descriere traseu, puncte de interes, sfaturi…"
-                rows={4}
-              />
-            </Field>
-          </div>
+          <DescriptionEditor
+            value={form.description ?? ''}
+            onChange={(v) => setForm((f) => ({ ...f, description: v }))}
+          />
 
           <div className="form-section-title">Basic info</div>
           <div className="form-grid">
