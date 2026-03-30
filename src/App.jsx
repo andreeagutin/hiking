@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HeroSearch from './components/HeroSearch.jsx';
 import HikeCard from './components/HikeCard.jsx';
 import HikeDetail from './components/HikeDetail.jsx';
+import StatsPage from './components/StatsPage.jsx';
 import AdminLogin from './components/admin/AdminLogin.jsx';
 import AdminPanel from './components/admin/AdminPanel.jsx';
 import AdminHikeForm from './components/admin/AdminHikeForm.jsx';
@@ -19,6 +20,7 @@ const adminRestaurantEdit   = pathname.match(/^\/admin\/restaurant\/([^/]+)\/edi
 const isAdminNewRoute       = pathname === '/admin/hike/new';
 const isAdminRestaurantsRoute = pathname === '/admin/restaurants';
 const isAdminNewRestaurant  = pathname === '/admin/restaurant/new';
+const isStatsRoute          = pathname === '/stats';
 const isAdminRoute          = pathname === '/admin' || !!adminEditMatch || isAdminNewRoute
   || isAdminRestaurantsRoute || !!adminRestaurantEdit || isAdminNewRestaurant;
 
@@ -78,6 +80,7 @@ function PublicApp() {
 
 export default function App() {
   if (hikeDetailMatch)        return <HikeDetail id={hikeDetailMatch[1]} />;
+  if (isStatsRoute)           return <StatsPage />;
   if (isAdminNewRoute)        return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
   if (adminEditMatch)         return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
   if (isAdminNewRestaurant)   return <AdminAuthGate><AdminRestaurantForm /></AdminAuthGate>;

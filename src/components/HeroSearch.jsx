@@ -65,6 +65,8 @@ export default function HeroSearch({ filters, onChange, hikes }) {
           <span><strong>{done}</strong> completed</span>
           <span className="hero-stat-dot">·</span>
           <span><strong>{kmHiked}</strong> km hiked</span>
+          <span className="hero-stat-dot">·</span>
+          <a className="hero-stats-link" href="/stats">View stats →</a>
         </div>
       </div>
 
