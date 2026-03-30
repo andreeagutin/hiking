@@ -5,16 +5,22 @@ import HikeDetail from './components/HikeDetail.jsx';
 import AdminLogin from './components/admin/AdminLogin.jsx';
 import AdminPanel from './components/admin/AdminPanel.jsx';
 import AdminHikeForm from './components/admin/AdminHikeForm.jsx';
+import AdminRestaurants from './components/admin/AdminRestaurants.jsx';
+import AdminRestaurantForm from './components/admin/AdminRestaurantForm.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
 
 const EMPTY_FILTERS = { q: '', status: '', difficulty: '', mountains: '', zone: '', tip: '' };
 
 const pathname = window.location.pathname;
-const hikeDetailMatch = pathname.match(/^\/hike\/([^/]+)$/);
-const adminEditMatch  = pathname.match(/^\/admin\/hike\/([^/]+)\/edit$/);
-const isAdminNewRoute = pathname === '/admin/hike/new';
-const isAdminRoute    = pathname === '/admin' || !!adminEditMatch || isAdminNewRoute;
+const hikeDetailMatch       = pathname.match(/^\/hike\/([^/]+)$/);
+const adminEditMatch        = pathname.match(/^\/admin\/hike\/([^/]+)\/edit$/);
+const adminRestaurantEdit   = pathname.match(/^\/admin\/restaurant\/([^/]+)\/edit$/);
+const isAdminNewRoute       = pathname === '/admin/hike/new';
+const isAdminRestaurantsRoute = pathname === '/admin/restaurants';
+const isAdminNewRestaurant  = pathname === '/admin/restaurant/new';
+const isAdminRoute          = pathname === '/admin' || !!adminEditMatch || isAdminNewRoute
+  || isAdminRestaurantsRoute || !!adminRestaurantEdit || isAdminNewRestaurant;
 
 function AdminAuthGate({ children }) {
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
@@ -71,9 +77,12 @@ function PublicApp() {
 }
 
 export default function App() {
-  if (hikeDetailMatch) return <HikeDetail id={hikeDetailMatch[1]} />;
-  if (isAdminNewRoute)  return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
-  if (adminEditMatch)   return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
-  if (isAdminRoute)     return <AdminAuthGate><AdminPanel /></AdminAuthGate>;
+  if (hikeDetailMatch)        return <HikeDetail id={hikeDetailMatch[1]} />;
+  if (isAdminNewRoute)        return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
+  if (adminEditMatch)         return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
+  if (isAdminNewRestaurant)   return <AdminAuthGate><AdminRestaurantForm /></AdminAuthGate>;
+  if (adminRestaurantEdit)    return <AdminAuthGate><AdminRestaurantForm id={adminRestaurantEdit[1]} /></AdminAuthGate>;
+  if (isAdminRestaurantsRoute) return <AdminAuthGate><AdminRestaurants /></AdminAuthGate>;
+  if (isAdminRoute)           return <AdminAuthGate><AdminPanel /></AdminAuthGate>;
   return <PublicApp />;
 }

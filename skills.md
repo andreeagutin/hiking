@@ -51,11 +51,14 @@ Special chars in password must be percent-encoded (`#` → `%23`) in the URI onl
 
 `server/models/Hike.js` — Mongoose schema with `timestamps: true`.
 
-Fields: `name`, `time`, `distance`, `tip`, `up`, `down`, `difficulty`, `mountains`, `status`, `completed`, `zone`, `imageUrl`, `description`.
+Fields: `name`, `time`, `distance`, `tip`, `up`, `down`, `difficulty`, `mountains`, `status`, `completed`, `zone`, `imageUrl`, `description`, `history`, `restaurants`.
 
 - All fields except `name` are optional (default `null`)
 - `description` — free-text String, shown on the public detail page
 - `imageUrl` — Cloudinary URL, used in carousel and detail hero
+- `completed` — String stored as `YYYY-MM-DD`; displayed as `DD-MM-YYYY` in admin, `DD-Mon-YYYY` in public
+- `history` — array of subdocuments: `{ time, is_hike, distance, up, down, updatedAt }`
+- `restaurants` — array of ObjectId refs to `Restaurant` collection; populated on `GET /api/hikes/:id`
 
 To seed the database:
 ```bash
@@ -143,6 +146,9 @@ Flow:
 - Prev/Next arrow navigation (fetches full hike list, finds current index)
 - Unsaved changes guard: `isDirty` = `JSON.stringify(form) !== JSON.stringify(original)` — triggers confirm dialog on Back, Cancel, or arrow navigation
 - `step="any"` on number inputs to allow any decimal value
+- **History section** — table of past entries with inline add/edit form; each entry saved via separate `POST/PUT/DELETE /api/hikes/:id/history/:entryId` requests without affecting the main form save
+- **Restaurants section** in hike edit form — checklist of all restaurants; toggling a checkbox updates `form.restaurants` (array of IDs); saved with main form via `PUT /api/hikes/:id`
+- **Date format**: date fields use `type="text"` displaying `DD-MM-YYYY`. Helpers `toDisplay()` / `fromDisplay()` convert to/from `YYYY-MM-DD` (storage format). Legacy `dd/mm/yyyy` strings converted on load via `toInputDate()`. Never use `type="date"` — browser locale overrides the display format unpredictably
 
 ---
 
@@ -185,13 +191,30 @@ All in `src/index.css`. No external CSS library.
 
 ---
 
-## 11. Favicon
+## 11. Restaurants
+
+`server/models/Restaurant.js` — separate Mongoose collection with fields: `name` (required), `type` (enum), `mountains`, `zone`, `address`, `link`, `notes`.
+
+`server/routes/restaurants.js` — full CRUD, all mutating routes protected. Registered in `server/index.js` as `/api/restaurants`.
+
+**Admin pages:**
+- `AdminRestaurants.jsx` — list/delete table at `/admin/restaurants`. Creates with placeholder name `"New restaurant"` to satisfy `required` validation (empty string fails Mongoose required check).
+- `AdminRestaurantForm.jsx` — edit/create form at `/admin/restaurant/:id/edit`
+- `AdminNavTabs` — shared component exported from `AdminRestaurants.jsx`, used in both `AdminPanel` and `AdminRestaurants` for tab navigation (Hikes | Restaurants)
+
+**Public:** `HikeDetail.jsx` shows linked restaurants as cards (name, type badge, zone, address, notes, link) in a "Nearby restaurants" section.
+
+**Linking:** `Hike.restaurants` is an array of ObjectIds. On `GET /api/hikes/:id`, Mongoose `.populate('restaurants')` resolves them. In the hike edit form, a checklist lets the admin toggle which restaurants are linked; saved with the main hike save.
+
+---
+
+## 12. Favicon
 
 `public/favicon.svg` — custom SVG of a hiker with backpack and hiking stick, in forest green palette. Referenced in `index.html` as `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Also used inline in `HeroSearch.jsx` as `<img src="/favicon.svg">` next to the app name.
 
 ---
 
-## 12. Common Issues & Fixes
+## 13. Common Issues & Fixes
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
@@ -202,3 +225,5 @@ All in `src/index.css`. No external CSS library.
 | Carousel hook order error | `return null` before hooks | Move early return AFTER all hook calls |
 | `#` in password fails URI | `#` = fragment in URLs | Use `%23` in `MONGODB_URI`, plain `#` in `ADMIN_PASS` |
 | Number input validation error | `step` attribute restricts values | Use `step="any"` to allow any decimal |
+| Date input shows MM/DD/YYYY | `type="date"` uses browser locale | Use `type="text"` + `toDisplay()`/`fromDisplay()` helpers instead |
+| "Failed to create restaurant" on add | Empty `name` fails Mongoose `required` | Create with placeholder `"New restaurant"`, not `""` |

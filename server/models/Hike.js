@@ -1,5 +1,14 @@
 import mongoose from 'mongoose';
 
+const historySchema = new mongoose.Schema({
+  time:      { type: Number, default: null },
+  is_hike:   { type: Boolean, default: true },
+  distance:  { type: Number, default: null },
+  up:        { type: Number, default: null },
+  down:      { type: Number, default: null },
+  updatedAt: { type: Date, default: Date.now },
+});
+
 const hikeSchema = new mongoose.Schema(
   {
     name:       { type: String, required: true },
@@ -15,6 +24,8 @@ const hikeSchema = new mongoose.Schema(
     zone:       { type: String, default: null },
     imageUrl:    { type: String, default: null },
     description: { type: String, default: null },
+    history:     { type: [historySchema], default: [] },
+    restaurants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' }],
   },
   { timestamps: true }
 );

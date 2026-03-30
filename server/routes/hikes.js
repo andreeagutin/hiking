@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 // GET single hike
 router.get('/:id', async (req, res) => {
   try {
-    const hike = await Hike.findById(req.params.id);
+    const hike = await Hike.findById(req.params.id).populate('restaurants');
     if (!hike) return res.status(404).json({ error: 'Not found' });
     res.json(hike);
   } catch (err) {
@@ -46,6 +46,47 @@ router.put('/:id', requireAuth, async (req, res) => {
     res.json(hike);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// POST add history entry
+router.post('/:id/history', requireAuth, async (req, res) => {
+  try {
+    const hike = await Hike.findById(req.params.id);
+    if (!hike) return res.status(404).json({ error: 'Not found' });
+    hike.history.push(req.body);
+    await hike.save();
+    res.status(201).json(hike.history[hike.history.length - 1]);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// PUT update history entry
+router.put('/:id/history/:entryId', requireAuth, async (req, res) => {
+  try {
+    const hike = await Hike.findById(req.params.id);
+    if (!hike) return res.status(404).json({ error: 'Not found' });
+    const entry = hike.history.id(req.params.entryId);
+    if (!entry) return res.status(404).json({ error: 'Entry not found' });
+    Object.assign(entry, req.body);
+    await hike.save();
+    res.json(entry);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE history entry
+router.delete('/:id/history/:entryId', requireAuth, async (req, res) => {
+  try {
+    const hike = await Hike.findById(req.params.id);
+    if (!hike) return res.status(404).json({ error: 'Not found' });
+    hike.history.pull(req.params.entryId);
+    await hike.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

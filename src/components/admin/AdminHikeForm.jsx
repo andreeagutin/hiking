@@ -1,6 +1,6 @@
-import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { fetchHikes, fetchHike, createHike, updateHike, deleteHike } from '../../api/hikes.js';
+import { fetchHikes, fetchHike, createHike, updateHike, deleteHike, addHistory, updateHistory, deleteHistory } from '../../api/hikes.js';
+import { fetchRestaurants } from '../../api/restaurants.js';
 import { clearToken } from '../../api/auth.js';
 import { uploadImage } from '../../api/upload.js';
 
@@ -9,6 +9,26 @@ const EMPTY = {
   up: null, down: null, difficulty: null, mountains: null,
   status: 'Not started', completed: null, zone: null, imageUrl: null, description: null,
 };
+
+// YYYY-MM-DD → DD-MM-YYYY (display)
+function toDisplay(val) {
+  if (!val) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    const [y, m, d] = val.split('-');
+    return `${d}-${m}-${y}`;
+  }
+  return val;
+}
+
+// DD-MM-YYYY → YYYY-MM-DD (storage)
+function fromDisplay(val) {
+  if (!val) return '';
+  if (/^\d{2}-\d{2}-\d{4}$/.test(val)) {
+    const [d, m, y] = val.split('-');
+    return `${y}-${m}-${d}`;
+  }
+  return val;
+}
 
 function Field({ label, children, full }) {
   return (
@@ -25,21 +45,42 @@ export default function AdminHikeForm({ id }) {
   const [original, setOriginal] = useState(EMPTY);
   const [allHikes, setAllHikes] = useState([]);
   const [loading, setLoading]   = useState(!isNew);
-  const [saving, setSaving]     = useState(false);
+  const [saving, setSaving]       = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError]       = useState('');
+  const [error, setError]         = useState('');
+  const [historyEdit, setHistoryEdit] = useState(null);
+  const [historyForm, setHistoryForm] = useState({});
+  const [allRestaurants, setAllRestaurants] = useState([]);
   const fileInputRef = useRef(null);
+
+  const EMPTY_HISTORY = { time: '', is_hike: true, distance: '', up: '', down: '', updatedAt: new Date().toISOString().slice(0, 10) };
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(original);
 
   useEffect(() => {
     fetchHikes().then(setAllHikes).catch(() => {});
+    fetchRestaurants().then(setAllRestaurants).catch(() => {});
   }, []);
+
+  function toInputDate(val) {
+    if (!val) return '';
+    // convert dd/mm/yyyy → yyyy-mm-dd
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+      const [d, m, y] = val.split('/');
+      return `${y}-${m}-${d}`;
+    }
+    return val; // already ISO or empty
+  }
 
   useEffect(() => {
     if (!isNew) {
       fetchHike(id)
-        .then((h) => { setForm(h); setOriginal(h); setLoading(false); })
+        .then((h) => {
+          const normalized = { ...h, completed: toInputDate(h.completed) };
+          setForm(normalized);
+          setOriginal(normalized);
+          setLoading(false);
+        })
         .catch((e) => { setError(e.message); setLoading(false); });
     }
   }, [id, isNew]);
@@ -96,6 +137,42 @@ export default function AdminHikeForm({ id }) {
     } catch (err) {
       setError(err.message);
       setSaving(false);
+    }
+  }
+
+  async function handleHistorySave() {
+    const data = {
+      ...historyForm,
+      time:     historyForm.time     !== '' ? parseFloat(historyForm.time)     : null,
+      distance: historyForm.distance !== '' ? parseFloat(historyForm.distance) : null,
+      up:       historyForm.up       !== '' ? parseFloat(historyForm.up)       : null,
+      down:     historyForm.down     !== '' ? parseFloat(historyForm.down)     : null,
+      updatedAt: historyForm.updatedAt || new Date().toISOString().slice(0, 10),
+    };
+    try {
+      if (historyEdit === 'new') {
+        const entry = await addHistory(id, data);
+        setForm((f) => ({ ...f, history: [...(f.history || []), entry] }));
+        setOriginal((f) => ({ ...f, history: [...(f.history || []), entry] }));
+      } else {
+        const entry = await updateHistory(id, historyEdit, data);
+        setForm((f) => ({ ...f, history: f.history.map((h) => h._id === historyEdit ? entry : h) }));
+        setOriginal((f) => ({ ...f, history: f.history.map((h) => h._id === historyEdit ? entry : h) }));
+      }
+      setHistoryEdit(null);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  async function handleHistoryDelete(entryId) {
+    if (!confirm('Delete this history entry?')) return;
+    try {
+      await deleteHistory(id, entryId);
+      setForm((f) => ({ ...f, history: f.history.filter((h) => h._id !== entryId) }));
+      setOriginal((f) => ({ ...f, history: f.history.filter((h) => h._id !== entryId) }));
+    } catch (e) {
+      setError(e.message);
     }
   }
 
@@ -274,10 +351,109 @@ export default function AdminHikeForm({ id }) {
                 <option>Done</option>
               </select>
             </Field>
-            <Field label="Completed (dd/mm/yyyy)">
-              <input type="text" value={form.completed ?? ''} onChange={set('completed')} placeholder="dd/mm/yyyy" />
+            <Field label="Completed">
+              <input
+                type="text"
+                placeholder="DD-MM-YYYY"
+                value={toDisplay(form.completed ?? '')}
+                onChange={(e) => setForm((f) => ({ ...f, completed: fromDisplay(e.target.value) }))}
+              />
             </Field>
           </div>
+
+          {!isNew && (
+            <>
+              <div className="form-section-title">Restaurants</div>
+              <div className="restaurant-link-list">
+                {allRestaurants.length === 0 && (
+                  <p className="restaurant-link-empty">No restaurants yet. <a href="/admin/restaurants">Add one →</a></p>
+                )}
+                {allRestaurants.map((r) => {
+                  const linked = (form.restaurants || []).some((x) => (x._id || x) === r._id);
+                  return (
+                    <label key={r._id} className={`restaurant-link-item${linked ? ' linked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={linked}
+                        onChange={() => {
+                          setForm((f) => {
+                            const ids = (f.restaurants || []).map((x) => x._id || x);
+                            return {
+                              ...f,
+                              restaurants: linked
+                                ? ids.filter((id) => id !== r._id)
+                                : [...ids, r._id],
+                            };
+                          });
+                        }}
+                      />
+                      <span className="restaurant-link-name">{r.name}</span>
+                      {r.type && <span className="restaurant-link-type">{r.type}</span>}
+                      {r.zone && <span className="restaurant-link-zone">{r.zone}</span>}
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="form-section-title">History</div>
+              <div className="history-admin-wrap">
+                {(form.history || []).length > 0 && (
+                  <table className="history-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Hike?</th>
+                        <th>Distance</th>
+                        <th>Time</th>
+                        <th>↑</th>
+                        <th>↓</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(form.history || []).map((h) => (
+                        <tr key={h._id}>
+                          <td>{h.updatedAt ? (() => { const d = new Date(h.updatedAt); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; })() : '—'}</td>
+                          <td>{h.is_hike ? '✓' : '—'}</td>
+                          <td>{h.distance != null ? `${h.distance} km` : '—'}</td>
+                          <td>{h.time != null ? `${h.time} h` : '—'}</td>
+                          <td>{h.up != null ? `↑${h.up}m` : '—'}</td>
+                          <td>{h.down != null ? `↓${h.down}m` : '—'}</td>
+                          <td className="history-actions">
+                            <button type="button" className="btn-edit" onClick={() => { setHistoryEdit(h._id); setHistoryForm({ ...h, updatedAt: h.updatedAt ? new Date(h.updatedAt).toISOString().slice(0,10) : '' }); }}>Edit</button>
+                            <button type="button" className="btn-delete" onClick={() => handleHistoryDelete(h._id)}>✕</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+
+                {historyEdit && (
+                  <div className="history-form">
+                    <div className="history-form-grid">
+                      <label>Date<input type="text" placeholder="DD-MM-YYYY" value={toDisplay(historyForm.updatedAt || '')} onChange={(e) => setHistoryForm((f) => ({ ...f, updatedAt: fromDisplay(e.target.value) }))} /></label>
+                      <label>Hike?<select value={historyForm.is_hike ? 'true' : 'false'} onChange={(e) => setHistoryForm((f) => ({ ...f, is_hike: e.target.value === 'true' }))}><option value="true">Yes</option><option value="false">No</option></select></label>
+                      <label>Distance (km)<input type="number" step="any" min="0" value={historyForm.distance ?? ''} onChange={(e) => setHistoryForm((f) => ({ ...f, distance: e.target.value }))} /></label>
+                      <label>Time (h)<input type="number" step="any" min="0" value={historyForm.time ?? ''} onChange={(e) => setHistoryForm((f) => ({ ...f, time: e.target.value }))} /></label>
+                      <label>Up (m)<input type="number" min="0" value={historyForm.up ?? ''} onChange={(e) => setHistoryForm((f) => ({ ...f, up: e.target.value }))} /></label>
+                      <label>Down (m)<input type="number" min="0" value={historyForm.down ?? ''} onChange={(e) => setHistoryForm((f) => ({ ...f, down: e.target.value }))} /></label>
+                    </div>
+                    <div className="history-form-actions">
+                      <button type="button" className="btn btn-form-save" style={{padding:'8px 20px', fontSize:'0.82rem'}} onClick={handleHistorySave}>Save entry</button>
+                      <button type="button" className="btn btn-form-cancel" onClick={() => setHistoryEdit(null)}>Cancel</button>
+                    </div>
+                  </div>
+                )}
+
+                {!historyEdit && (
+                  <button type="button" className="btn btn-add" style={{marginTop: 12}} onClick={() => { setHistoryEdit('new'); setHistoryForm({ ...EMPTY_HISTORY }); }}>
+                    + Add entry
+                  </button>
+                )}
+              </div>
+            </>
+          )}
 
           <div className="admin-form-actions">
             <button type="submit" className="btn btn-form-save" disabled={saving}>

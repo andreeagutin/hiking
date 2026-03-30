@@ -90,12 +90,16 @@ Copy `.env.example` to `.env` and fill in your credentials.
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/hikes` | public | List all hikes |
-| GET | `/api/hikes/:id` | public | Get single hike |
+| GET | `/api/hikes/:id` | public | Get single hike (restaurants populated) |
 | POST | `/api/hikes` | JWT | Create hike |
 | PUT | `/api/hikes/:id` | JWT | Update hike |
 | DELETE | `/api/hikes/:id` | JWT | Delete hike |
 | POST | `/api/auth/login` | — | Returns JWT token |
 | POST | `/api/upload` | JWT | Upload image to Cloudinary |
+| GET | `/api/restaurants` | public | List all restaurants |
+| POST | `/api/restaurants` | JWT | Create restaurant |
+| PUT | `/api/restaurants/:id` | JWT | Update restaurant |
+| DELETE | `/api/restaurants/:id` | JWT | Delete restaurant |
 
 ---
 

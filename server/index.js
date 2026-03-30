@@ -7,6 +7,7 @@ import { connectDB } from './db.js';
 import hikesRouter from './routes/hikes.js';
 import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
+import restaurantsRouter from './routes/restaurants.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/hikes', hikesRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/restaurants', restaurantsRouter);
 
 if (isProd && !process.env.RENDER) {
   const distPath = path.join(__dirname, '..', 'dist');

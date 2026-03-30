@@ -84,12 +84,20 @@ npm run build     # Production build
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/hikes` | public | List all hikes |
-| GET | `/api/hikes/:id` | public | Get single hike |
+| GET | `/api/hikes/:id` | public | Get single hike (restaurants populated) |
 | POST | `/api/hikes` | Bearer JWT | Create hike |
 | PUT | `/api/hikes/:id` | Bearer JWT | Update hike |
 | DELETE | `/api/hikes/:id` | Bearer JWT | Delete hike |
+| POST | `/api/hikes/:id/history` | Bearer JWT | Add history entry |
+| PUT | `/api/hikes/:id/history/:entryId` | Bearer JWT | Update history entry |
+| DELETE | `/api/hikes/:id/history/:entryId` | Bearer JWT | Delete history entry |
 | POST | `/api/auth/login` | — | Returns JWT token |
 | POST | `/api/upload` | Bearer JWT | Upload image to Cloudinary |
+| GET | `/api/restaurants` | public | List all restaurants |
+| GET | `/api/restaurants/:id` | public | Get single restaurant |
+| POST | `/api/restaurants` | Bearer JWT | Create restaurant |
+| PUT | `/api/restaurants/:id` | Bearer JWT | Update restaurant |
+| DELETE | `/api/restaurants/:id` | Bearer JWT | Delete restaurant |
 
 ## Authentication Flow
 1. `POST /api/auth/login` with `{ username, password }` → returns `{ token }`
@@ -102,9 +110,12 @@ npm run build     # Production build
 `App.jsx` checks `window.location.pathname`:
 - `/` → public view (hero + card grid + carousel)
 - `/hike/:id` → public hike detail page (`HikeDetail`)
-- `/admin` → `AdminLogin` → `AdminPanel` (if token valid)
+- `/admin` → `AdminLogin` → `AdminPanel` hikes (if token valid)
 - `/admin/hike/:id/edit` → `AdminHikeForm` (edit existing)
 - `/admin/hike/new` → `AdminHikeForm` (create new)
+- `/admin/restaurants` → `AdminRestaurants` list
+- `/admin/restaurant/:id/edit` → `AdminRestaurantForm` (edit)
+- `/admin/restaurant/new` → `AdminRestaurantForm` (create)
 
 Vite handles SPA fallback automatically in dev. In production, Express serves `dist/` and catches all routes with `index.html`.
 
@@ -120,10 +131,25 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
   difficulty:  'easy' | 'medium' | null
   mountains:   String | null
   status:      'Done' | 'In progress' | 'Not started'  // default: 'Not started'
-  completed:   String | null   // format: dd/mm/yyyy
+  completed:   String | null   // stored as YYYY-MM-DD, displayed as DD-MM-YYYY in admin / DD-Mon-YYYY in public
   zone:        String | null
   imageUrl:    String | null
   description: String | null   // free-text trail description
+  history:     Array<{ time, is_hike, distance, up, down, updatedAt }>
+  restaurants: Array<ObjectId ref 'Restaurant'>  // populated on GET /:id
+}
+```
+
+## Restaurant Schema
+```js
+{
+  name:      String (required)
+  type:      'Restaurant' | 'Cabana' | 'Pensiune' | 'Cafenea' | null
+  mountains: String | null
+  zone:      String | null
+  address:   String | null
+  link:      String | null   // website / Google Maps URL
+  notes:     String | null
 }
 ```
 
@@ -140,6 +166,10 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 - **Unsaved changes guard** — confirm dialog if navigating away with dirty form
 - **Image upload** via Cloudinary (`/api/upload`)
 - **Description** textarea field (free text, stored in DB)
+- **History** section per hike — add/edit/delete entries with date, is_hike, distance, time, up, down
+- **Restaurants** section in hike edit form — checklist to link/unlink restaurants; stored as ObjectId array
+- **Date inputs** are `type="text"` displaying `DD-MM-YYYY`; stored internally as `YYYY-MM-DD`. Conversion helpers `toDisplay()` / `fromDisplay()` in `AdminHikeForm.jsx`. Legacy `dd/mm/yyyy` strings converted on load via `toInputDate()`
+- **Tab navigation** (Hikes / Restaurants) via `AdminNavTabs` component shared across admin pages. New restaurant created with placeholder name "New restaurant" to satisfy `required` validation
 
 ## Known Gotchas
 - Port 3001 conflict: run `cmd //c "taskkill /F /IM node.exe"` then `npm run dev`

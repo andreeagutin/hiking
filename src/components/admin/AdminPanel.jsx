@@ -1,7 +1,7 @@
-import React from 'react';
 import { useState, useEffect } from 'react';
 import { fetchHikes, createHike, deleteHike } from '../../api/hikes.js';
 import { clearToken } from '../../api/auth.js';
+import { AdminNavTabs } from './AdminRestaurants.jsx';
 
 const n = (v) => (v != null && v !== '' ? v : '—');
 
@@ -113,6 +113,7 @@ export default function AdminPanel() {
 
       <div className="admin-content">
         {error && <div className="error-banner">⚠ {error}</div>}
+        <AdminNavTabs active="hikes" />
 
         <div className="admin-toolbar">
           <input

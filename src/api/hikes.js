@@ -57,3 +57,32 @@ export async function deleteHike(id) {
   if (!res.ok) throw new Error('Failed to delete hike');
   return res.json();
 }
+
+export async function addHistory(hikeId, data) {
+  const res = await fetch(`${BASE}/${hikeId}/history`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to add history entry');
+  return res.json();
+}
+
+export async function updateHistory(hikeId, entryId, data) {
+  const res = await fetch(`${BASE}/${hikeId}/history/${entryId}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update history entry');
+  return res.json();
+}
+
+export async function deleteHistory(hikeId, entryId) {
+  const res = await fetch(`${BASE}/${hikeId}/history/${entryId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to delete history entry');
+  return res.json();
+}
