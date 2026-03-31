@@ -44,7 +44,7 @@ const EMPTY = {
   name: '', time: null, distance: null, tip: null,
   up: null, down: null, difficulty: null, mountains: null,
   status: 'Not started', completed: null, zone: null, imageUrl: null, description: null,
-  startLat: null, startLng: null,
+  startLat: null, startLng: null, mapUrl: null,
 };
 
 // YYYY-MM-DD → DD-MM-YYYY (display)
@@ -550,6 +550,22 @@ export default function AdminHikeForm({ id }) {
               </div>
             )}
           </div>
+
+          <div className="form-section-title">Trail map (Mapy.cz)</div>
+          <Field label="Paste iframe code from Mapy.cz">
+            <textarea
+              rows={3}
+              placeholder={'<iframe style="border:none" src="https://mapy.com/s/..." width="500" height="333" frameborder="0"></iframe>'}
+              value={form.mapUrl ?? ''}
+              onChange={(e) => {
+                const val = e.target.value.trim();
+                if (!val) { setForm((f) => ({ ...f, mapUrl: null })); return; }
+                const match = val.match(/src="([^"]+)"/);
+                setForm((f) => ({ ...f, mapUrl: match ? match[1] : val }));
+              }}
+            />
+            {form.mapUrl && <div className="map-url-preview">✓ {form.mapUrl}</div>}
+          </Field>
 
           {!isNew && (
             <>

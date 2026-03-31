@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { marked } from 'marked';
 import { fetchHike } from '../api/hikes.js';
+import WeatherForecast from './WeatherForecast.jsx';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -96,6 +97,22 @@ export default function HikeDetail({ id }) {
           <StatItem icon="🔄" value={hike.tip} label="Trip type" />
           <StatItem icon="✓" value={formatDate(hike.completed)} label="Completed on" />
         </div>
+        {hike.startLat != null && hike.startLng != null && (
+          <WeatherForecast lat={hike.startLat} lng={hike.startLng} />
+        )}
+
+        {hike.mapUrl && (
+          <div className="detail-map-section">
+            <iframe
+              src={hike.mapUrl.replace(/^https?:\/\/(www\.|en\.)?mapy\.(cz|com)/, 'https://frame.mapy.cz')}
+              className="detail-map-iframe"
+              title="Trail map"
+              style={{ border: 'none' }}
+              allowFullScreen
+            />
+          </div>
+        )}
+
         {hike.description && (
           <div className="detail-description-section">
             <div className="detail-description-label">About this trail</div>

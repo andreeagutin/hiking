@@ -26,6 +26,7 @@ const hikeSchema = new mongoose.Schema(
     description: { type: String, default: null },
     startLat:    { type: Number, default: null },
     startLng:    { type: Number, default: null },
+    mapUrl:      { type: String, default: null },
     history:     { type: [historySchema], default: [] },
     restaurants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' }],
   },
