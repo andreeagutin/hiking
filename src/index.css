@@ -1371,6 +1371,10 @@ td input.edit-input[type="number"] { max-width: 90px; }
   background: #f5f3ff;
 }
 
+.weather-day--weekend {
+  background: #fff7ed;
+}
+
 .weather-day-name {
   font-size: 0.68rem;
   font-weight: 600;

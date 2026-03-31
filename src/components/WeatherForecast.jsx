@@ -94,8 +94,14 @@ export default function WeatherForecast({ lat, lng }) {
         {visible.length}-day forecast · near trailhead{location ? ` (${location})` : ''}
       </div>
       <div className="weather-strip-row" ref={rowRef}>
-        {visible.map((d, i) => (
-          <div key={i} className={`weather-day${i === 0 ? ' weather-day--today' : ''}`}>
+        {visible.map((d, i) => {
+          const dow = d.date.getDay();
+          const isWeekend = dow === 0 || dow === 6;
+          let cls = 'weather-day';
+          if (i === 0)       cls += ' weather-day--today';
+          else if (isWeekend) cls += ' weather-day--weekend';
+          return (
+          <div key={i} className={cls}>
             <div className="weather-day-name">{i === 0 ? 'Today' : DAY_SHORT[d.date.getDay()]}</div>
             <div className="weather-day-icon" title={WMO_LABEL(d.code)}>{WMO_ICON(d.code)}</div>
             <div className="weather-day-temps">
@@ -103,7 +109,8 @@ export default function WeatherForecast({ lat, lng }) {
               <span className="weather-temp-min">{d.min}°</span>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

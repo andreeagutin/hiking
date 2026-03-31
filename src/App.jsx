@@ -39,10 +39,34 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+async function fetchDrivingDistances(userLoc, hikes) {
+  const targets = hikes.filter((h) => h.startLat != null && h.startLng != null);
+  if (!targets.length) return {};
+
+  const coords = [
+    `${userLoc.lng},${userLoc.lat}`,
+    ...targets.map((h) => `${h.startLng},${h.startLat}`),
+  ].join(';');
+
+  const url = `https://router.project-osrm.org/table/v1/driving/${coords}?sources=0&annotations=distance`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('OSRM error');
+  const data = await res.json();
+  const distances = data.distances[0]; // metres from source to each destination
+
+  const map = {};
+  targets.forEach((h, i) => {
+    const metres = distances[i + 1]; // index 0 is source→source = 0
+    map[h._id] = metres != null ? metres / 1000 : null;
+  });
+  return map;
+}
+
 function PublicApp() {
-  const [hikes, setHikes]       = useState([]);
-  const [filters, setFilters]   = useState(EMPTY_FILTERS);
-  const [error, setError]       = useState('');
+  const [hikes, setHikes]             = useState([]);
+  const [filters, setFilters]         = useState(EMPTY_FILTERS);
+  const [error, setError]             = useState('');
+  const [drivingMap, setDrivingMap]   = useState({});
   const [userLocation, setUserLocation] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('userLocation')); } catch { return null; }
   });
@@ -50,6 +74,13 @@ function PublicApp() {
   useEffect(() => {
     fetchHikes().then(setHikes).catch((e) => setError(e.message));
   }, []);
+
+  useEffect(() => {
+    if (!userLocation || !hikes.length) { setDrivingMap({}); return; }
+    fetchDrivingDistances(userLocation, hikes)
+      .then(setDrivingMap)
+      .catch(() => setDrivingMap({})); // fallback to haversine on error
+  }, [userLocation, hikes]);
 
   function handleLocationChange(loc) {
     setUserLocation(loc);
@@ -91,7 +122,7 @@ function PublicApp() {
             {filtered.map((h) => (
               <HikeCard key={h._id} hike={h}
                 distance={userLocation && h.startLat && h.startLng
-                  ? haversineKm(userLocation.lat, userLocation.lng, h.startLat, h.startLng)
+                  ? (drivingMap[h._id] ?? haversineKm(userLocation.lat, userLocation.lng, h.startLat, h.startLng))
                   : null}
               />
             ))}
