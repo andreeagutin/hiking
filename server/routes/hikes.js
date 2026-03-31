@@ -7,7 +7,8 @@ const router = Router();
 // GET all hikes
 router.get('/', async (req, res) => {
   try {
-    const hikes = await Hike.find().sort({ createdAt: 1 });
+    const filter = req.query.all === 'true' ? {} : { active: { $ne: false } };
+    const hikes = await Hike.find(filter).sort({ createdAt: 1 });
     res.json(hikes);
   } catch (err) {
     console.error(err);
@@ -18,7 +19,7 @@ router.get('/', async (req, res) => {
 // GET single hike
 router.get('/:id', async (req, res) => {
   try {
-    const hike = await Hike.findById(req.params.id).populate('restaurants');
+    const hike = await Hike.findById(req.params.id).populate('restaurants').populate('caves');
     if (!hike) return res.status(404).json({ error: 'Not found' });
     res.json(hike);
   } catch (err) {

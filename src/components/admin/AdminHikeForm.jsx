@@ -5,6 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { fetchHikes, fetchHike, createHike, updateHike, deleteHike, addHistory, updateHistory, deleteHistory } from '../../api/hikes.js';
 import { fetchRestaurants } from '../../api/restaurants.js';
+import { fetchCaves } from '../../api/caves.js';
 import { clearToken } from '../../api/auth.js';
 import { uploadImage } from '../../api/upload.js';
 
@@ -44,7 +45,7 @@ const EMPTY = {
   name: '', time: null, distance: null, tip: null,
   up: null, down: null, difficulty: null, mountains: null,
   status: 'Not started', completed: null, zone: null, imageUrl: null, description: null,
-  startLat: null, startLng: null, mapUrl: null,
+  startLat: null, startLng: null, mapUrl: null, caves: [],
 };
 
 // YYYY-MM-DD → DD-MM-YYYY (display)
@@ -232,6 +233,7 @@ export default function AdminHikeForm({ id }) {
   const [historyEdit, setHistoryEdit] = useState(null);
   const [historyForm, setHistoryForm] = useState({});
   const [allRestaurants, setAllRestaurants] = useState([]);
+  const [allCaves, setAllCaves] = useState([]);
   const fileInputRef = useRef(null);
 
   const EMPTY_HISTORY = { time: '', is_hike: true, distance: '', up: '', down: '', updatedAt: new Date().toISOString().slice(0, 10) };
@@ -241,6 +243,7 @@ export default function AdminHikeForm({ id }) {
   useEffect(() => {
     fetchHikes().then(setAllHikes).catch(() => {});
     fetchRestaurants().then(setAllRestaurants).catch(() => {});
+    fetchCaves().then(setAllCaves).catch(() => {});
   }, []);
 
   function toInputDate(val) {
@@ -271,7 +274,7 @@ export default function AdminHikeForm({ id }) {
   const nextHike = currentIndex !== -1 && currentIndex < allHikes.length - 1 ? allHikes[currentIndex + 1] : null;
 
   function navigateTo(hike) {
-    if (isDirty && !confirm('Ai modificari nesalvate. Esti sigur ca vrei sa pleci?')) return;
+    if (isDirty && !confirm('You have unsaved changes. Are you sure you want to leave?')) return;
     window.location.href = `/admin/hike/${hike._id}/edit`;
   }
 
@@ -368,7 +371,7 @@ export default function AdminHikeForm({ id }) {
   }
 
   function handleBack() {
-    if (isDirty && !confirm('Ai modificari nesalvate. Esti sigur ca vrei sa pleci?')) return;
+    if (isDirty && !confirm('You have unsaved changes. Are you sure you want to leave?')) return;
     window.location.href = '/admin';
   }
 
@@ -596,6 +599,38 @@ export default function AdminHikeForm({ id }) {
                       <span className="restaurant-link-name">{r.name}</span>
                       {r.type && <span className="restaurant-link-type">{r.type}</span>}
                       {r.zone && <span className="restaurant-link-zone">{r.zone}</span>}
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="form-section-title">Caves</div>
+              <div className="restaurant-link-list">
+                {allCaves.length === 0 && (
+                  <p className="restaurant-link-empty">No caves yet. <a href="/admin/caves">Add one →</a></p>
+                )}
+                {allCaves.map((c) => {
+                  const linked = (form.caves || []).some((x) => (x._id || x) === c._id);
+                  return (
+                    <label key={c._id} className={`restaurant-link-item${linked ? ' linked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={linked}
+                        onChange={() => {
+                          setForm((f) => {
+                            const ids = (f.caves || []).map((x) => x._id || x);
+                            return {
+                              ...f,
+                              caves: linked
+                                ? ids.filter((cid) => cid !== c._id)
+                                : [...ids, c._id],
+                            };
+                          });
+                        }}
+                      />
+                      <span className="restaurant-link-name">{c.name}</span>
+                      {c.mountains && <span className="restaurant-link-type">{c.mountains}</span>}
+                      {c.denivelare != null && <span className="restaurant-link-zone">↕{c.denivelare}m</span>}
                     </label>
                   );
                 })}

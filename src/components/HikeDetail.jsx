@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { marked } from 'marked';
 import { fetchHike } from '../api/hikes.js';
 import WeatherForecast from './WeatherForecast.jsx';
+import t from '../i18n.js';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -49,16 +50,14 @@ export default function HikeDetail({ id }) {
     return (
       <div className="detail-error-wrap">
         <div className="error-banner">⚠ {error}</div>
-        <button className="detail-back-btn" onClick={() => window.location.href = '/'}>← Back to trails</button>
+        <button className="detail-back-btn" onClick={() => window.location.href = '/'}>{t('common.backToError')}</button>
       </div>
     );
   }
 
-  if (!hike) {
-    return <div className="detail-loading">Loading…</div>;
-  }
+  if (!hike) return <div className="detail-loading">{t('common.loading')}</div>;
 
-  const heroBg = hike.imageUrl ? undefined : 'linear-gradient(145deg, #0d2318 0%, #2d6a4f 100%)';
+  const heroBg = hike.imageUrl ? undefined : 'linear-gradient(145deg, #1e1b4b 0%, #2e1065 50%, #3b0764 100%)';
 
   return (
     <div className="detail-page">
@@ -67,7 +66,7 @@ export default function HikeDetail({ id }) {
         {hike.imageUrl && <img src={hike.imageUrl} alt={hike.name} className="detail-hero-img" />}
         <div className="detail-hero-overlay">
           <button className="detail-back-btn" onClick={() => window.location.href = '/'}>
-            ← All trails
+            {t('common.backToTrails')}
           </button>
           <div className="detail-hero-content">
             <div className="detail-hero-crumbs">
@@ -77,10 +76,10 @@ export default function HikeDetail({ id }) {
             <h1 className="detail-hero-title">{hike.name}</h1>
             <div className="detail-hero-badges">
               {hike.status && (
-                <span className={`badge status-${hike.status.replace(' ', '-')}`}>{hike.status}</span>
+                <span className={`badge status-${hike.status.replace(' ', '-')}`}>{t(`status.${hike.status}`)}</span>
               )}
               {hike.difficulty && (
-                <span className={`badge diff-${hike.difficulty}`}>{hike.difficulty}</span>
+                <span className={`badge diff-${hike.difficulty}`}>{t(`difficulty.${hike.difficulty}`)}</span>
               )}
             </div>
           </div>
@@ -90,13 +89,14 @@ export default function HikeDetail({ id }) {
       {/* Content */}
       <div className="detail-content">
         <div className="detail-stats-grid">
-          <StatItem icon="📏" value={hike.distance ? `${hike.distance} km` : null} label="Distance" />
-          <StatItem icon="⏱" value={hike.time ? `${hike.time} h` : null} label="Duration" />
-          <StatItem icon="↑" value={hike.up ? `${hike.up} m` : null} label="Elevation gain" />
-          <StatItem icon="↓" value={hike.down ? `${hike.down} m` : null} label="Elevation loss" />
-          <StatItem icon="🔄" value={hike.tip} label="Trip type" />
-          <StatItem icon="✓" value={formatDate(hike.completed)} label="Completed on" />
+          <StatItem icon="📏" value={hike.distance ? `${hike.distance} km` : null} label={t('stat.distance')} />
+          <StatItem icon="⏱"  value={hike.time     ? `${hike.time} h`     : null} label={t('stat.duration')} />
+          <StatItem icon="↑"  value={hike.up        ? `${hike.up} m`       : null} label={t('stat.elevationGain')} />
+          <StatItem icon="↓"  value={hike.down      ? `${hike.down} m`     : null} label={t('stat.elevationLoss')} />
+          <StatItem icon="🔄" value={hike.tip ? t(`tripType.${hike.tip}`) : null} label={t('stat.tripType')} />
+          <StatItem icon="✓"  value={formatDate(hike.completed)} label={t('stat.completedOn')} />
         </div>
+
         {hike.startLat != null && hike.startLng != null && (
           <WeatherForecast lat={hike.startLat} lng={hike.startLng} />
         )}
@@ -115,26 +115,26 @@ export default function HikeDetail({ id }) {
 
         {hike.description && (
           <div className="detail-description-section">
-            <div className="detail-description-label">About this trail</div>
+            <div className="detail-description-label">{t('hike.aboutTrail')}</div>
             <div className="detail-description" dangerouslySetInnerHTML={{ __html: marked.parse(hike.description) }} />
           </div>
         )}
 
         {hike.history && hike.history.length > 0 && (
           <div className="detail-history-section">
-            <div className="detail-history-title">History</div>
+            <div className="detail-history-title">{t('hike.history')}</div>
             <div className="detail-history-list">
               {[...hike.history].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).map((h) => (
                 <div key={h._id} className={`detail-history-entry${h.is_hike ? ' is-hike' : ''}`}>
                   <div className="detail-history-date">
                     {h.updatedAt ? new Date(h.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-') : '—'}
                   </div>
-                  <div className="detail-history-badge">{h.is_hike ? 'Hike' : 'Recon'}</div>
+                  <div className="detail-history-badge">{h.is_hike ? t('history.hike') : t('history.recon')}</div>
                   <div className="detail-history-stats">
-                    {h.distance != null && <span><strong>{h.distance} km</strong> dist.</span>}
-                    {h.time != null && <span><strong>{h.time} h</strong> time</span>}
-                    {h.up != null && <span><strong>↑{h.up}m</strong></span>}
-                    {h.down != null && <span><strong>↓{h.down}m</strong></span>}
+                    {h.distance != null && <span><strong>{h.distance} km</strong> {t('history.dist')}</span>}
+                    {h.time     != null && <span><strong>{h.time} h</strong> {t('history.time')}</span>}
+                    {h.up       != null && <span><strong>↑{h.up}m</strong></span>}
+                    {h.down     != null && <span><strong>↓{h.down}m</strong></span>}
                   </div>
                 </div>
               ))}
@@ -144,7 +144,7 @@ export default function HikeDetail({ id }) {
 
         {hike.restaurants && hike.restaurants.length > 0 && (
           <div className="detail-restaurants-section">
-            <div className="detail-restaurants-title">Nearby restaurants</div>
+            <div className="detail-restaurants-title">{t('hike.nearbyRestaurants')}</div>
             <div className="detail-restaurants-list">
               {hike.restaurants.map((r) => (
                 <div key={r._id} className="detail-restaurant-card">
@@ -160,8 +160,38 @@ export default function HikeDetail({ id }) {
                   )}
                   {r.address && <div className="detail-restaurant-address">{r.address}</div>}
                   {r.notes && <div className="detail-restaurant-notes">{r.notes}</div>}
-                  {r.link && isSafeUrl(r.link) && <a href={r.link} target="_blank" rel="noopener noreferrer" className="detail-restaurant-link">View →</a>}
+                  {r.link && isSafeUrl(r.link) && <a href={r.link} target="_blank" rel="noopener noreferrer" className="detail-restaurant-link">{t('common.view')}</a>}
                 </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {hike.caves && hike.caves.length > 0 && (
+          <div className="detail-caves-section">
+            <div className="detail-caves-title">{t('hike.nearbyCaves')}</div>
+            <div className="detail-caves-list">
+              {hike.caves.map((c) => (
+                <a key={c._id} href={`/cave/${c._id}`} className="detail-cave-card">
+                  {c.mainPhoto && (
+                    <div className="detail-cave-thumb">
+                      <img src={c.mainPhoto} alt={c.name} />
+                    </div>
+                  )}
+                  <div className="detail-cave-body">
+                    <div className="detail-cave-top">
+                      <span className="detail-cave-name">{c.name}</span>
+                      <span className="detail-cave-icon">🦇</span>
+                    </div>
+                    {c.mountains && <div className="detail-cave-mountains">{c.mountains}</div>}
+                    <div className="detail-cave-stats">
+                      {c.development != null && <span>↔ {c.development} m</span>}
+                      {c.verticalExtent != null && <span>↕ {c.verticalExtent} m</span>}
+                      {c.altitude != null && <span>⛰ {c.altitude} m</span>}
+                      {c.rockType && <span>{c.rockType}</span>}
+                    </div>
+                  </div>
+                </a>
               ))}
             </div>
           </div>

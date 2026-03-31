@@ -1,3 +1,5 @@
+import t from '../i18n.js';
+
 const GRADIENTS = [
   'linear-gradient(145deg, #0d2318 0%, #2d6a4f 100%)',
   'linear-gradient(145deg, #1e3a5f 0%, #1d4ed8 100%)',
@@ -52,15 +54,15 @@ export default function HikeCard({ hike, distance }) {
           {hike.up        && <span className="hike-card-stat"><span className="hike-stat-icon">↑</span>{hike.up} m</span>}
           {distance != null && (
             <span className="hike-card-stat hike-card-stat-distance">
-              <span className="hike-stat-icon">📍</span>{distance < 1 ? `${(distance * 1000).toFixed(0)} m` : `${distance.toFixed(0)} km`} away
+              <span className="hike-stat-icon">📍</span>{distance < 1 ? `${(distance * 1000).toFixed(0)} m` : `${distance.toFixed(0)} km`} {t('card.away')}
             </span>
           )}
         </div>
 
         {hike.difficulty && (
           <div className="hike-card-footer">
-            <span className={`badge diff-${hike.difficulty}`}>{hike.difficulty}</span>
-            {hike.tip && <span className="hike-card-tip">{hike.tip}</span>}
+            <span className={`badge diff-${hike.difficulty}`}>{t(`difficulty.${hike.difficulty}`)}</span>
+            {hike.tip && <span className="hike-card-tip">{t(`tripType.${hike.tip}`)}</span>}
           </div>
         )}
       </div>

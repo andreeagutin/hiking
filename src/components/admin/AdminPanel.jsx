@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { fetchHikes, createHike, deleteHike } from '../../api/hikes.js';
+import { fetchHikes, createHike, deleteHike, updateHike } from '../../api/hikes.js';
 import { clearToken } from '../../api/auth.js';
 import { AdminNavTabs } from './AdminRestaurants.jsx';
 
 const n = (v) => (v != null && v !== '' ? v : '—');
 
-function ViewRow({ hike, onDelete }) {
+function ViewRow({ hike, onDelete, onToggleActive }) {
   function handleDelete(e) {
     e.stopPropagation();
     if (!confirm(`Delete "${hike.name}"?`)) return;
@@ -13,7 +13,7 @@ function ViewRow({ hike, onDelete }) {
   }
 
   return (
-    <tr className="admin-row" onClick={() => { window.location.href = `/admin/hike/${hike._id}/edit`; }}>
+    <tr className={`admin-row${hike.active === false ? ' admin-row--inactive' : ''}`} onClick={() => { window.location.href = `/admin/hike/${hike._id}/edit`; }}>
       <td className="admin-cell-img">
         {hike.imageUrl
           ? <img src={hike.imageUrl} alt="" className="admin-thumb" />
@@ -35,6 +35,15 @@ function ViewRow({ hike, onDelete }) {
           ? <span className={`badge status-${hike.status.replace(' ', '-')}`}>{hike.status}</span>
           : '—'}
       </td>
+      <td onClick={(e) => e.stopPropagation()}>
+        <input
+          type="checkbox"
+          className="admin-active-toggle"
+          checked={hike.active !== false}
+          onChange={() => onToggleActive(hike._id, hike.active !== false)}
+          title="Visible on site"
+        />
+      </td>
       <td className="actions" onClick={(e) => e.stopPropagation()}>
         <button
           className="btn-edit"
@@ -55,7 +64,7 @@ export default function AdminPanel() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetchHikes().then(setHikes).catch((e) => setError(e.message));
+    fetchHikes({ all: true }).then(setHikes).catch((e) => setError(e.message));
   }, []);
 
   function showToast(msg) {
@@ -81,6 +90,15 @@ export default function AdminPanel() {
       await deleteHike(id);
       setHikes((prev) => prev.filter((h) => h._id !== id));
       showToast('Deleted');
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  async function handleToggleActive(id, currentActive) {
+    try {
+      await updateHike(id, { active: !currentActive });
+      setHikes((prev) => prev.map((h) => h._id === id ? { ...h, active: !currentActive } : h));
     } catch (e) {
       setError(e.message);
     }
@@ -139,15 +157,16 @@ export default function AdminPanel() {
                 <th>Elevation ↑</th>
                 <th>Difficulty</th>
                 <th>Status</th>
+                <th title="Visible on site">Active</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={10} className="no-results">No hikes found.</td></tr>
+                <tr><td colSpan={11} className="no-results">No hikes found.</td></tr>
               ) : (
                 filtered.map((hike) => (
-                  <ViewRow key={hike._id} hike={hike} onDelete={handleDelete} />
+                  <ViewRow key={hike._id} hike={hike} onDelete={handleDelete} onToggleActive={handleToggleActive} />
                 ))
               )}
             </tbody>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import t from '../i18n.js';
 
 const WMO_ICON = (code) => {
   if (code === 0)   return '☀️';
@@ -15,16 +16,16 @@ const WMO_ICON = (code) => {
 };
 
 const WMO_LABEL = (code) => {
-  if (code === 0)  return 'Clear';
-  if (code <= 2)   return 'Partly cloudy';
-  if (code === 3)  return 'Overcast';
-  if (code <= 48)  return 'Foggy';
-  if (code <= 55)  return 'Drizzle';
-  if (code <= 65)  return 'Rain';
-  if (code <= 77)  return 'Snow';
-  if (code <= 82)  return 'Showers';
-  if (code <= 86)  return 'Snow showers';
-  if (code <= 99)  return 'Thunderstorm';
+  if (code === 0)  return t('weather.clear');
+  if (code <= 2)   return t('weather.partlyCloudy');
+  if (code === 3)  return t('weather.overcast');
+  if (code <= 48)  return t('weather.foggy');
+  if (code <= 55)  return t('weather.drizzle');
+  if (code <= 65)  return t('weather.rain');
+  if (code <= 77)  return t('weather.snow');
+  if (code <= 82)  return t('weather.showers');
+  if (code <= 86)  return t('weather.snowShowers');
+  if (code <= 99)  return t('weather.thunderstorm');
   return '';
 };
 
@@ -91,7 +92,7 @@ export default function WeatherForecast({ lat, lng }) {
   return (
     <div className="weather-strip">
       <div className="weather-strip-label">
-        {visible.length}-day forecast · near trailhead{location ? ` (${location})` : ''}
+        {t('weather.forecastLabel', { n: visible.length })}{location ? ` (${location})` : ''}
       </div>
       <div className="weather-strip-row" ref={rowRef}>
         {visible.map((d, i) => {
@@ -102,7 +103,7 @@ export default function WeatherForecast({ lat, lng }) {
           else if (isWeekend) cls += ' weather-day--weekend';
           return (
           <div key={i} className={cls}>
-            <div className="weather-day-name">{i === 0 ? 'Today' : DAY_SHORT[d.date.getDay()]}</div>
+            <div className="weather-day-name">{i === 0 ? t('weather.today') : DAY_SHORT[d.date.getDay()]}</div>
             <div className="weather-day-icon" title={WMO_LABEL(d.code)}>{WMO_ICON(d.code)}</div>
             <div className="weather-day-temps">
               <span className="weather-temp-max">{d.max}°</span>

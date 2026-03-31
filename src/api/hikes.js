@@ -17,8 +17,8 @@ async function parseJSON(res) {
   return res.json();
 }
 
-export async function fetchHikes() {
-  const res = await fetch(BASE);
+export async function fetchHikes({ all = false } = {}) {
+  const res = await fetch(all ? `${BASE}?all=true` : BASE);
   if (!res.ok) throw new Error('Failed to load hikes');
   return parseJSON(res);
 }

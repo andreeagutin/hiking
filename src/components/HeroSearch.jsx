@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import t from '../i18n.js';
 
 async function geocodeCity(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
@@ -18,7 +19,7 @@ function LocationWidget({ userLocation, onLocationChange }) {
     setMode('loading');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        onLocationChange({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: 'Your location' });
+        onLocationChange({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: t('location.yourLocation') });
         setMode('idle');
       },
       () => { setMode('input'); }
@@ -36,7 +37,7 @@ function LocationWidget({ userLocation, onLocationChange }) {
       setCityInput('');
       setMode('idle');
     } catch {
-      setErrMsg('Location not found');
+      setErrMsg(t('location.notFound'));
       setMode('input');
     }
   }
@@ -52,7 +53,7 @@ function LocationWidget({ userLocation, onLocationChange }) {
   }
 
   if (mode === 'loading') {
-    return <div className="hero-location-pill hero-location-loading">Locating…</div>;
+    return <div className="hero-location-pill hero-location-loading">{t('location.locating')}</div>;
   }
 
   if (mode === 'input') {
@@ -62,10 +63,10 @@ function LocationWidget({ userLocation, onLocationChange }) {
           className="hero-location-input"
           value={cityInput}
           onChange={(e) => setCityInput(e.target.value)}
-          placeholder="Enter your city…"
+          placeholder={t('location.cityPlaceholder')}
           autoFocus
         />
-        <button className="hero-location-submit" type="submit">Go</button>
+        <button className="hero-location-submit" type="submit">{t('location.go')}</button>
         <button className="hero-location-cancel" type="button" onClick={() => setMode('idle')}>×</button>
         {errMsg && <span className="hero-location-err">{errMsg}</span>}
       </form>
@@ -74,8 +75,8 @@ function LocationWidget({ userLocation, onLocationChange }) {
 
   return (
     <div className="hero-location-prompt">
-      <button className="hero-location-btn" onClick={requestGeo}>📍 Show distances from me</button>
-      <button className="hero-location-btn-alt" onClick={() => setMode('input')}>Enter city</button>
+      <button className="hero-location-btn" onClick={requestGeo}>{t('location.showDistances')}</button>
+      <button className="hero-location-btn-alt" onClick={() => setMode('input')}>{t('location.enterCity')}</button>
     </div>
   );
 }
@@ -95,8 +96,8 @@ export default function HeroSearch({ filters, onChange, hikes, userLocation, onL
   return (
     <div className="hero">
       <div className="hero-inner">
-        <p className="hero-eyebrow"><img src="/favicon.svg" alt="" style={{width:'1.1em', height:'1.1em', verticalAlign:'middle', marginRight:'6px'}} />Trail Mix</p>
-        <h1 className="hero-title">Where would you like to hike?</h1>
+        <p className="hero-eyebrow"><img src="/favicon.svg" alt="" style={{width:'1.1em', height:'1.1em', verticalAlign:'middle', marginRight:'6px'}} />{t('hero.appName')}</p>
+        <h1 className="hero-title">{t('hero.title')}</h1>
 
         <div className="hero-search-box">
           <svg className="hero-search-icon" width="20" height="20" fill="none" viewBox="0 0 24 24">
@@ -106,7 +107,7 @@ export default function HeroSearch({ filters, onChange, hikes, userLocation, onL
           <input
             className="hero-search-input"
             type="search"
-            placeholder="Search by name, mountains, zone…"
+            placeholder={t('hero.searchPlaceholder')}
             value={filters.q}
             onChange={set('q')}
           />
@@ -114,41 +115,41 @@ export default function HeroSearch({ filters, onChange, hikes, userLocation, onL
 
         <div className="hero-filters">
           <select value={filters.status}     onChange={set('status')}     className="hero-select">
-            <option value="">All statuses</option>
-            <option>Done</option>
-            <option>In progress</option>
-            <option>Not started</option>
+            <option value="">{t('filter.allStatuses')}</option>
+            <option value="Done">{t('status.Done')}</option>
+            <option value="In progress">{t('status.In progress')}</option>
+            <option value="Not started">{t('status.Not started')}</option>
           </select>
           <select value={filters.difficulty} onChange={set('difficulty')} className="hero-select">
-            <option value="">All difficulties</option>
-            <option>easy</option>
-            <option>medium</option>
+            <option value="">{t('filter.allDifficulties')}</option>
+            <option value="easy">{t('difficulty.easy')}</option>
+            <option value="medium">{t('difficulty.medium')}</option>
           </select>
           <select value={filters.mountains}  onChange={set('mountains')}  className="hero-select">
-            <option value="">All mountains</option>
+            <option value="">{t('filter.allMountains')}</option>
             {mountains.map((m) => <option key={m}>{m}</option>)}
           </select>
           <select value={filters.zone}       onChange={set('zone')}       className="hero-select">
-            <option value="">All zones</option>
+            <option value="">{t('filter.allZones')}</option>
             {zones.map((z) => <option key={z}>{z}</option>)}
           </select>
           <select value={filters.tip}        onChange={set('tip')}        className="hero-select">
-            <option value="">All trip types</option>
-            <option>Dus-intors</option>
-            <option>Dus</option>
+            <option value="">{t('filter.allTripTypes')}</option>
+            <option value="Dus-intors">{t('tripType.Dus-intors')}</option>
+            <option value="Dus">{t('tripType.Dus')}</option>
           </select>
         </div>
 
         <LocationWidget userLocation={userLocation} onLocationChange={onLocationChange} />
 
         <div className="hero-stats">
-          <span><strong>{hikes.length}</strong> trails</span>
+          <span><strong>{hikes.length}</strong> {t('hero.trails')}</span>
           <span className="hero-stat-dot">·</span>
-          <span><strong>{done}</strong> completed</span>
+          <span><strong>{done}</strong> {t('hero.completed')}</span>
           <span className="hero-stat-dot">·</span>
-          <span><strong>{kmHiked}</strong> km hiked</span>
+          <span><strong>{kmHiked}</strong> {t('hero.kmHiked')}</span>
           <span className="hero-stat-dot">·</span>
-          <a className="hero-stats-link" href="/stats">View stats →</a>
+          <a className="hero-stats-link" href="/stats">{t('hero.viewStats')}</a>
         </div>
       </div>
 

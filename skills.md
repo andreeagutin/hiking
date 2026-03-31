@@ -191,7 +191,116 @@ All in `src/index.css`. No external CSS library.
 
 ---
 
-## 11. Restaurants
+## 11. Stats Page (`/stats`)
+
+Install Recharts:
+```bash
+npm install recharts
+```
+
+`src/components/StatsPage.jsx` — fetches all hikes on mount, aggregates client-side:
+- **Summary cards**: total km, elevation gain (m), hours on trail, completed trail count
+- **Charts**: status breakdown (PieChart), difficulty breakdown (PieChart), hiking by month (BarChart), distance by mountains (BarChart)
+- Hikes with no `completed` date are excluded from the monthly chart
+
+Linked from `HeroSearch.jsx` via "View stats →" button.
+
+---
+
+## 12. Trail Starting Point Map
+
+Admin hike form includes an interactive Leaflet map (`react-leaflet`) to set `startLat` / `startLng`:
+
+```bash
+npm install react-leaflet leaflet
+```
+
+- Click on map → coordinates stored in form state → saved with hike
+- Default center: Romania (`45.9432, 24.9668`), zoom 7
+- Marker shown when coordinates set; "Clear point" button removes them
+- Used by `WeatherForecast` and OSRM distance calculation
+
+---
+
+## 13. User Location & Driving Distances
+
+`App.jsx` — `fetchDrivingDistances(userLoc, hikes)`:
+1. Filters hikes that have `startLat`/`startLng`
+2. Sends a single OSRM Table API request: `router.project-osrm.org/table/v1/driving/{coords}?sources=0&annotations=distance`
+3. Returns a map `{ hikeId → km }` used to render "X km away" on cards
+4. Falls back to straight-line Haversine when OSRM fails
+
+User location is obtained via:
+- Browser `navigator.geolocation`
+- Or city name → Nominatim geocoding (`nominatim.openstreetmap.org/search`)
+
+Location persisted in `sessionStorage` so it survives detail page navigation.
+
+---
+
+## 14. Weather Forecast
+
+`src/components/WeatherForecast.jsx` — shown on `HikeDetail` when `startLat`/`startLng` are set.
+
+- Fetches from Open-Meteo (`api.open-meteo.com`) — free, no API key
+- Displays a 7-day forecast strip: date, weather icon, min/max temp
+- Weekend days (Sat/Sun) are visually highlighted with a different background
+- WMO weather code mapped to emoji + label via local lookup table
+
+---
+
+## 15. Mapy.cz Trail Map
+
+Admin hike form has a "Trail map" textarea. Paste the `<iframe>` embed code from Mapy.cz.
+
+`HikeDetail.jsx` renders the map:
+```jsx
+src={hike.mapUrl.replace(/^https?:\/\/(www\.|en\.)?mapy\.(cz|com)/, 'https://frame.mapy.cz')}
+```
+The domain rewrite is needed because only `frame.mapy.cz` allows embedding.
+
+---
+
+## 16. Markdown Description Editor
+
+`AdminHikeForm.jsx` — description field uses a rich markdown editor (toolbar buttons for bold, italic, headings, lists, links, etc.).
+
+`HikeDetail.jsx` renders via `marked`:
+```bash
+npm install marked
+```
+```jsx
+<div dangerouslySetInnerHTML={{ __html: marked.parse(hike.description) }} />
+```
+
+---
+
+## 17. Caves
+
+New collection alongside hikes and restaurants.
+
+**Model** (`server/models/Cave.js`):
+```js
+{ name, photos: [String], mainPhoto, mountains, development, verticalExtent, altitude, rockType, lat, lng }
+```
+
+**API** (`server/routes/caves.js`): full CRUD at `/api/caves`, all mutating routes protected.
+
+**Admin:**
+- `AdminCaves.jsx` — list/search/delete table at `/admin/caves`
+- `AdminCaveForm.jsx` — edit/create form: photo gallery (multiple uploads), Leaflet map for entrance, fields for all cave stats
+
+**Public:**
+- `CaveDetail.jsx` — hero (photo or dark blue gradient), stats grid, photo gallery, linked hikes list
+- `HikeDetail.jsx` — "Nearby caves" section shows linked cave cards
+
+**Linking:** `Hike.caves` is an array of ObjectIds populated on `GET /api/hikes/:id`. In the hike edit form, a checklist lets the admin toggle which caves are linked.
+
+**Cave photo gallery:** multiple Cloudinary uploads stored in `photos[]`; `mainPhoto` is shown in hero and admin thumbnail.
+
+---
+
+## 18. Restaurants
 
 `server/models/Restaurant.js` — separate Mongoose collection with fields: `name` (required), `type` (enum), `mountains`, `zone`, `address`, `link`, `notes`.
 
@@ -208,13 +317,29 @@ All in `src/index.css`. No external CSS library.
 
 ---
 
-## 12. Favicon
+## 19. i18n
+
+`src/i18n.js` — single source of truth for all UI strings.
+
+```js
+import t from '../i18n.js';
+t('stat.distance')          // → 'Distance'
+t('weather.forecastLabel', { n: 7 }) // → '7-day forecast · near trailhead'
+```
+
+- All keys organized by section in `TRANSLATIONS.en`
+- `setLang()` / `getLang()` for future multi-language support (stored in `localStorage`)
+- Never hardcode display strings in components — always use `t('key')`
+
+---
+
+## 20. Favicon
 
 `public/favicon.svg` — custom SVG of a hiker with backpack and hiking stick, in forest green palette. Referenced in `index.html` as `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Also used inline in `HeroSearch.jsx` as `<img src="/favicon.svg">` next to the app name.
 
 ---
 
-## 13. Common Issues & Fixes
+## 21. Common Issues & Fixes
 
 | Problem | Cause | Fix |
 |---------|-------|-----|

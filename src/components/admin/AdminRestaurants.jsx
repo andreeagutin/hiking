@@ -9,6 +9,7 @@ function AdminNavTabs({ active }) {
     <div className="admin-nav-tabs">
       <button className={`admin-nav-tab${active === 'hikes' ? ' active' : ''}`} onClick={() => { window.location.href = '/admin'; }}>Hikes</button>
       <button className={`admin-nav-tab${active === 'restaurants' ? ' active' : ''}`} onClick={() => { window.location.href = '/admin/restaurants'; }}>Restaurants</button>
+      <button className={`admin-nav-tab${active === 'caves' ? ' active' : ''}`} onClick={() => { window.location.href = '/admin/caves'; }}>Caves</button>
     </div>
   );
 }

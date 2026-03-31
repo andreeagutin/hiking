@@ -1587,6 +1587,170 @@ td input.edit-input[type="number"] { max-width: 90px; }
 
 .restaurant-link-zone { font-size: 0.75rem; color: var(--neutral-400); }
 
+/* ── Caves (public) ──────────────────────────────────────────────── */
+.detail-caves-section { margin-top: 32px; }
+
+.detail-caves-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--neutral-400);
+  margin-bottom: 12px;
+}
+
+.detail-caves-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.detail-cave-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--neutral-150);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.detail-cave-card:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 2px 12px rgba(124,58,237,.12);
+}
+
+.detail-cave-thumb {
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  background: var(--neutral-100);
+}
+.detail-cave-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-cave-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-cave-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.detail-cave-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--neutral-900);
+}
+
+.detail-cave-icon { font-size: 1rem; }
+
+.detail-cave-mountains {
+  font-size: 0.78rem;
+  color: var(--neutral-500);
+}
+
+.detail-cave-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.detail-cave-stats span {
+  font-size: 0.75rem;
+  color: var(--neutral-600, var(--neutral-500));
+  background: var(--neutral-100);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* ── Cave photo grid (admin form) ────────────────────────────────── */
+.cave-photos-section { margin-bottom: 8px; }
+
+.cave-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.cave-photo-thumb {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--neutral-200);
+  cursor: pointer;
+  aspect-ratio: 4/3;
+  transition: border-color 0.15s;
+}
+.cave-photo-thumb:hover { border-color: #7c3aed; }
+.cave-photo-thumb.cave-photo-main { border-color: #7c3aed; box-shadow: 0 0 0 2px rgba(124,58,237,.25); }
+
+.cave-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cave-photo-main-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(124,58,237,.85);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 2px 0;
+}
+
+.cave-photo-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.cave-photo-remove:hover { background: rgba(220,38,38,.85); }
+
+/* ── Cave hike links (admin form) ───────────────────────────────── */
+.cave-hike-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--neutral-150);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.85rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cave-hike-link:hover { border-color: #7c3aed; background: #faf8ff; }
+.cave-hike-link-arrow { margin-left: auto; color: #7c3aed; font-weight: 700; }
+
 .detail-history-title {
   font-size: 0.7rem;
   font-weight: 700;
@@ -1991,6 +2155,8 @@ td input.edit-input[type="number"] { max-width: 90px; }
 /* Admin panel row clickable */
 .admin-row { cursor: pointer; }
 .admin-row:hover { background: var(--forest-50) !important; }
+.admin-row--inactive { opacity: 0.45; }
+.admin-active-toggle { width: 16px; height: 16px; cursor: pointer; accent-color: #7c3aed; }
 .admin-cell-img { padding: 6px 8px 6px 16px; width: 100px; }
 .admin-thumb {
   width: 88px;

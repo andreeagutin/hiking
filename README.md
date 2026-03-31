@@ -54,19 +54,25 @@ MongoDB Atlas
 
 ```
 hiking/
-├── server/           # Node.js / Express API
+├── server/
 │   ├── index.js
 │   ├── db.js
 │   ├── middleware/
-│   ├── models/       # Mongoose schemas
-│   └── routes/       # hikes, auth, upload
-├── src/              # React frontend (Vite)
-│   ├── api/          # fetch helpers
-│   └── components/   # public + admin components
+│   ├── models/         # Hike.js, Restaurant.js, Cave.js
+│   └── routes/         # hikes, restaurants, caves, auth, upload
+├── src/
+│   ├── api/            # hikes.js, restaurants.js, caves.js, auth.js, upload.js
+│   ├── i18n.js         # UI string translations
+│   └── components/
+│       ├── HikeDetail.jsx
+│       ├── CaveDetail.jsx
+│       ├── StatsPage.jsx
+│       ├── WeatherForecast.jsx
+│       └── admin/      # AdminPanel, AdminHikeForm, AdminRestaurants, AdminRestaurantForm, AdminCaves, AdminCaveForm
 ├── public/
 │   └── favicon.svg
-├── data/             # seed script
-├── .env              # never commit
+├── data/               # seed.js, migrate-active.js
+├── .env
 └── package.json
 ```
 
@@ -90,16 +96,24 @@ Copy `.env.example` to `.env` and fill in your credentials.
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/hikes` | public | List all hikes |
-| GET | `/api/hikes/:id` | public | Get single hike (restaurants populated) |
+| GET | `/api/hikes/:id` | public | Get single hike (restaurants + caves populated) |
 | POST | `/api/hikes` | JWT | Create hike |
 | PUT | `/api/hikes/:id` | JWT | Update hike |
 | DELETE | `/api/hikes/:id` | JWT | Delete hike |
+| POST | `/api/hikes/:id/history` | JWT | Add history entry |
+| PUT | `/api/hikes/:id/history/:entryId` | JWT | Update history entry |
+| DELETE | `/api/hikes/:id/history/:entryId` | JWT | Delete history entry |
 | POST | `/api/auth/login` | — | Returns JWT token |
 | POST | `/api/upload` | JWT | Upload image to Cloudinary |
 | GET | `/api/restaurants` | public | List all restaurants |
 | POST | `/api/restaurants` | JWT | Create restaurant |
 | PUT | `/api/restaurants/:id` | JWT | Update restaurant |
 | DELETE | `/api/restaurants/:id` | JWT | Delete restaurant |
+| GET | `/api/caves` | public | List all caves |
+| GET | `/api/caves/:id` | public | Get single cave |
+| POST | `/api/caves` | JWT | Create cave |
+| PUT | `/api/caves/:id` | JWT | Update cave |
+| DELETE | `/api/caves/:id` | JWT | Delete cave |
 
 ---
 
@@ -109,15 +123,23 @@ Copy `.env.example` to `.env` and fill in your credentials.
 - Hero section with search bar and filters (status, difficulty, mountains, zone, trip type)
 - Card grid with hike thumbnails
 - Auto-sliding carousel (hikes with photos)
-- Detail page per hike (`/hike/:id`) with stats and description
+- Detail page per hike (`/hike/:id`) with stats, markdown description, weather forecast, Mapy.cz trail map, history log, linked restaurants and caves
+- Cave detail page (`/cave/:id`) with photo gallery and linked hikes
+- Stats page (`/stats`) with charts — total km, elevation, hours, status/difficulty breakdown, hiking by month, distance by mountains
+- Driving distance from user location via OSRM (geolocation or city search)
 
 ### Admin (`/admin`)
 - JWT login (8h token)
-- CRUD table with image thumbnails
+- CRUD table for hikes, restaurants, and caves (tab navigation)
 - Edit form per hike with prev/next navigation arrows
 - Unsaved changes guard (confirm dialog before leaving)
 - Cloudinary image upload
-- Description field (free text)
+- Markdown description editor with full toolbar
+- Trail starting point via interactive Leaflet map
+- Mapy.cz iframe embed field
+- History entries per hike (add/edit/delete)
+- Linked restaurants and caves via checklist
+- Cave management: photos, rock type, development, vertical extent, altitude, entrance map
 
 ---
 
