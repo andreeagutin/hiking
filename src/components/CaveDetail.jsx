@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchCave } from '../api/caves.js';
 import { fetchHikes } from '../api/hikes.js';
+import WeatherForecast from './WeatherForecast.jsx';
 import t from '../i18n.js';
 
 function StatCard({ icon, value, label }) {
@@ -14,15 +15,46 @@ function StatCard({ icon, value, label }) {
   );
 }
 
+function Lightbox({ photos, index, onClose, onPrev, onNext }) {
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') onPrev();
+      if (e.key === 'ArrowRight') onNext();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, onPrev, onNext]);
+
+  return (
+    <div className="cave-lightbox" onClick={onClose}>
+      <button className="cave-lightbox-close" onClick={onClose}>✕</button>
+      {photos.length > 1 && (
+        <button className="cave-lightbox-prev" onClick={(e) => { e.stopPropagation(); onPrev(); }}>‹</button>
+      )}
+      <img
+        src={photos[index]}
+        alt=""
+        className="cave-lightbox-img"
+        onClick={(e) => e.stopPropagation()}
+      />
+      {photos.length > 1 && (
+        <button className="cave-lightbox-next" onClick={(e) => { e.stopPropagation(); onNext(); }}>›</button>
+      )}
+      <div className="cave-lightbox-counter">{index + 1} / {photos.length}</div>
+    </div>
+  );
+}
+
 export default function CaveDetail({ id }) {
-  const [cave, setCave]   = useState(null);
-  const [hikes, setHikes] = useState([]);
-  const [error, setError] = useState('');
-  const [activePhoto, setActivePhoto] = useState(null);
+  const [cave, setCave]         = useState(null);
+  const [hikes, setHikes]       = useState([]);
+  const [error, setError]       = useState('');
+  const [lightboxIdx, setLightboxIdx] = useState(null);
 
   useEffect(() => {
     fetchCave(id)
-      .then((c) => { setCave(c); setActivePhoto(c.mainPhoto || c.photos?.[0] || null); })
+      .then((c) => setCave(c))
       .catch((e) => setError(e.message));
 
     fetchHikes()
@@ -31,6 +63,13 @@ export default function CaveDetail({ id }) {
       )))
       .catch(() => {});
   }, [id]);
+
+  const photos = cave?.photos?.length ? cave.photos : (cave?.mainPhoto ? [cave.mainPhoto] : []);
+
+  const openLightbox = useCallback((i) => setLightboxIdx(i), []);
+  const closeLightbox = useCallback(() => setLightboxIdx(null), []);
+  const prevPhoto = useCallback(() => setLightboxIdx((i) => (i - 1 + photos.length) % photos.length), [photos.length]);
+  const nextPhoto = useCallback(() => setLightboxIdx((i) => (i + 1) % photos.length), [photos.length]);
 
   if (error) return (
     <div className="detail-error-wrap">
@@ -41,7 +80,7 @@ export default function CaveDetail({ id }) {
 
   if (!cave) return <div className="detail-loading">{t('common.loading')}</div>;
 
-  const heroImg = activePhoto || cave.mainPhoto || cave.photos?.[0];
+  const heroImg = cave.mainPhoto || cave.photos?.[0];
   const heroBg = heroImg ? undefined : 'linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
 
   return (
@@ -73,20 +112,32 @@ export default function CaveDetail({ id }) {
           <StatCard icon="↔" value={cave.development != null ? `${cave.development} m` : null} label={t('cave.stat.development')} />
           <StatCard icon="↕" value={cave.verticalExtent != null ? `${cave.verticalExtent} m` : null} label={t('cave.stat.verticalExtent')} />
           <StatCard icon="⛰" value={cave.altitude != null ? `${cave.altitude} m` : null} label={t('cave.stat.altitude')} />
+          <StatCard icon="🪨" value={cave.rockType || null} label={t('cave.stat.rockType')} />
+          <StatCard icon="📍" value={cave.lat != null && cave.lng != null ? `${cave.lat.toFixed(4)}, ${cave.lng.toFixed(4)}` : null} label={t('cave.stat.coordinates')} />
         </div>
 
+        {cave.lat != null && cave.lng != null && (
+          <WeatherForecast lat={cave.lat} lng={cave.lng} />
+        )}
+
         {/* Photo gallery */}
-        {cave.photos && cave.photos.length > 1 && (
-          <div className="cave-detail-gallery">
-            {cave.photos.map((url) => (
-              <button
-                key={url}
-                className={`cave-gallery-thumb${activePhoto === url ? ' active' : ''}`}
-                onClick={() => setActivePhoto(url)}
-              >
-                <img src={url} alt="" />
-              </button>
-            ))}
+        {photos.length > 0 && (
+          <div className="cave-gallery-section">
+            <div className="cave-gallery-title">Photos</div>
+            <div className={`cave-gallery-grid cave-gallery-grid--${Math.min(photos.length, 3)}`}>
+              {photos.map((url, i) => (
+                <button
+                  key={url}
+                  className="cave-gallery-item"
+                  onClick={() => openLightbox(i)}
+                >
+                  <img src={url} alt={`${cave.name} ${i + 1}`} />
+                  <div className="cave-gallery-item-overlay">
+                    <span>🔍</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -114,6 +165,17 @@ export default function CaveDetail({ id }) {
         )}
 
       </div>
+
+      {/* Lightbox */}
+      {lightboxIdx !== null && (
+        <Lightbox
+          photos={photos}
+          index={lightboxIdx}
+          onClose={closeLightbox}
+          onPrev={prevPhoto}
+          onNext={nextPhoto}
+        />
+      )}
     </div>
   );
 }

@@ -48,6 +48,7 @@ const TRANSLATIONS = {
     'cave.stat.verticalExtent':  'Vertical extent',
     'cave.stat.altitude':        'Altitude',
     'cave.stat.rockType':        'Rock type',
+    'cave.stat.coordinates':     'Coordinates',
 
     // ── HikeDetail sections ──────────────────────────────────────────────────
     'hike.aboutTrail':           'About this trail',
