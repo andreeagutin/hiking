@@ -20,21 +20,52 @@ function MapClickHandler({ onClick }) {
   return null;
 }
 
-function RecenterMap({ lat, lng }) {
+function FlyTo({ target }) {
   const map = useMap();
-  useEffect(() => { if (lat && lng) map.setView([lat, lng], map.getZoom()); }, [lat, lng, map]);
+  useEffect(() => { if (target) map.flyTo(target, 14); }, [target, map]);
   return null;
 }
 
 function CaveMap({ lat, lng, onChange }) {
   const center = lat && lng ? [lat, lng] : [45.9432, 24.9668];
+  const [query, setQuery] = useState('');
+  const [flyTarget, setFlyTarget] = useState(null);
+  const [searching, setSearching] = useState(false);
+
+  async function handleSearch() {
+    if (!query.trim()) return;
+    setSearching(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+      const data = await res.json();
+      if (data.length > 0) setFlyTarget([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+    } finally {
+      setSearching(false);
+    }
+  }
+
   return (
-    <MapContainer center={center} zoom={lat && lng ? 13 : 7} style={{ height: 280, borderRadius: 10 }}>
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <MapClickHandler onClick={onChange} />
-      {lat && lng && <Marker position={[lat, lng]} />}
-      {lat && lng && <RecenterMap lat={lat} lng={lng} />}
-    </MapContainer>
+    <div>
+      <div className="map-search-form">
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
+          placeholder="Cauta localitate, munte..."
+          className="map-search-input"
+        />
+        <button type="button" className="map-search-btn" disabled={searching} onClick={handleSearch}>
+          {searching ? '...' : 'Cauta'}
+        </button>
+      </div>
+      <MapContainer center={center} zoom={lat && lng ? 13 : 7} style={{ height: 320, borderRadius: 10 }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <MapClickHandler onClick={onChange} />
+        {lat && lng && <Marker position={[lat, lng]} />}
+        {flyTarget && <FlyTo target={flyTarget} />}
+      </MapContainer>
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
 
 /* ── Design tokens ───────────────────────────────────────────────── */
 :root {
@@ -61,7 +61,7 @@
 
 /* ── Base ────────────────────────────────────────────────────────── */
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--neutral-900);
   min-height: 100vh;
@@ -129,7 +129,7 @@ body {
   color: #ffffff;
   letter-spacing: -0.03em;
   line-height: 1;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .header-stat-label {
@@ -147,7 +147,7 @@ body {
 }
 
 .page-header-text h1 {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.75rem;
   font-weight: 700;
   color: #ffffff;
@@ -532,7 +532,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
 .admin-login-icon { font-size: 2.8rem; margin-bottom: 8px; }
 
 .admin-login-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--neutral-900);
@@ -638,7 +638,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
 }
 
 .admin-header-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.15rem;
   font-weight: 700;
   color: #fff;
@@ -849,7 +849,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
 }
 
 .carousel-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.55rem;
   font-weight: 700;
   color: #ffffff;
@@ -949,7 +949,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
 }
 
 .hero-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 700;
   color: #ffffff;
@@ -1149,7 +1149,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
 }
 
 .hike-card-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--neutral-900);
@@ -1269,7 +1269,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
 }
 
 .detail-hero-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 2.4rem;
   font-weight: 700;
   color: #fff;
@@ -1322,7 +1322,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
   color: #1e1b4b;
   letter-spacing: -0.02em;
   line-height: 1;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .detail-stat-label {
@@ -2283,7 +2283,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
   border-radius: 0 !important;
   box-shadow: none !important;
   background: #fff !important;
-  font-family: 'Plus Jakarta Sans', ui-monospace, monospace;
+  font-family: 'Source Sans 3', ui-monospace, monospace;
   font-size: 0.87rem;
   resize: vertical;
 }
@@ -2296,9 +2296,9 @@ td input.edit-input[type="number"] { max-width: 90px; }
   color: var(--neutral-800);
   background: #fffffe;
 }
-.desc-preview h1 { font-family: 'Fraunces', serif; font-size: 1.3rem; color: var(--neutral-900); margin: 16px 0 8px; }
-.desc-preview h2 { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--neutral-900); margin: 14px 0 6px; border-bottom: 1px solid var(--neutral-150); padding-bottom: 4px; }
-.desc-preview h3 { font-family: 'Fraunces', serif; font-size: 0.95rem; color: #7c3aed; margin: 12px 0 5px; }
+.desc-preview h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--neutral-900); margin: 16px 0 8px; }
+.desc-preview h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--neutral-900); margin: 14px 0 6px; border-bottom: 1px solid var(--neutral-150); padding-bottom: 4px; }
+.desc-preview h3 { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: #7c3aed; margin: 12px 0 5px; }
 .desc-preview ul, .desc-preview ol { padding-left: 22px; margin: 6px 0; }
 .desc-preview li { margin: 4px 0; }
 .desc-preview strong { color: var(--neutral-900); font-weight: 700; }
@@ -2331,7 +2331,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
 
 /* ── Rendered markdown in public detail ──────────────────────────── */
 .detail-description h1, .detail-description h2, .detail-description h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Playfair Display', serif;
   color: var(--neutral-900);
   margin: 18px 0 8px;
 }
@@ -2453,6 +2453,28 @@ td input.edit-input[type="number"] { max-width: 90px; }
 .start-map-wrap {
   padding: 0 0 8px;
 }
+.map-search-form {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.map-search-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--neutral-300);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+.map-search-btn {
+  padding: 6px 14px;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.map-search-btn:disabled { opacity: 0.6; cursor: default; }
 .start-map-hint {
   font-size: 0.82rem;
   color: var(--neutral-500);
@@ -2514,7 +2536,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
   gap: 16px;
 }
 .stats-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Playfair Display', serif;
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   color: #ffffff;
   font-weight: 700;
@@ -2557,7 +2579,7 @@ td input.edit-input[type="number"] { max-width: 90px; }
   font-size: 1.65rem;
   font-weight: 800;
   line-height: 1;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
 }
 .stats-card-label {
   font-size: 0.78rem;
