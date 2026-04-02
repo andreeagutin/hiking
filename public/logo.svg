@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 82">
+  <defs>
+    <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4c1d95"/>
+      <stop offset="50%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <clipPath id="cc">
+      <rect x="2" y="6" width="68" height="24" rx="3"/>
+    </clipPath>
+  </defs>
+
+  <!-- T stem -->
+  <rect x="28" y="24" width="22" height="52" rx="3" fill="url(#tg)"/>
+
+  <!-- T crossbar -->
+  <rect x="2" y="6" width="68" height="24" rx="3" fill="url(#tg)"/>
+
+  <!-- Mountain silhouette clipped to crossbar -->
+  <g clip-path="url(#cc)">
+    <polygon points="5,30 16,12 27,30" fill="#1e1b4b"/>
+    <polygon points="25,30 44,5 63,30" fill="#1e1b4b"/>
+  </g>
+
+  <!-- Swoosh arc -->
+  <path d="M 2,28 Q 37,40 70,28 C 75,26 77,20 74,14"
+        stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Trail winding down stem -->
+  <path d="M 46,27 C 42,36 33,42 33,50 C 33,57 42,62 41,70"
+        stroke="rgba(255,255,255,0.88)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Waypoint dots -->
+  <circle cx="46" cy="27" r="2.6" fill="white"/>
+  <circle cx="33" cy="50" r="2.6" fill="white"/>
+  <circle cx="41" cy="70" r="2.6" fill="white"/>
+
+  <!-- Trail Mix wordmark -->
+  <text x="86" y="55"
+        font-family="'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+        font-weight="700"
+        font-size="34"
+        fill="white"
+        letter-spacing="-0.5">Trail Mix</text>
+</svg>

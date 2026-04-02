@@ -43,7 +43,7 @@ export default function AdminCaves() {
     <div className="admin-wrap">
       <header className="admin-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: '1.4rem' }}>🦇</span>
+          <img src="/favicon.svg" alt="" style={{ width: '2rem', height: '2rem', borderRadius: '7px' }} />
           <div>
             <div className="admin-header-title">Caves</div>
             <div className="admin-header-sub">Trail Mix</div>
