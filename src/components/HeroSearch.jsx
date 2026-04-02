@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import t from '../i18n.js';
+import { askAI } from '../api/aiSearch.js';
 
 async function geocodeCity(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
@@ -81,12 +82,60 @@ function LocationWidget({ userLocation, onLocationChange }) {
   );
 }
 
-export default function HeroSearch({ filters, onChange, hikes, userLocation, onLocationChange }) {
+function AiSearch({ hikes, userLocation, aiExplanation, onAiSearch, onAiClear }) {
+  const [query, setQuery]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState('');
+
   const mountains = [...new Set(hikes.map((h) => h.mountains).filter(Boolean))].sort();
   const zones     = [...new Set(hikes.map((h) => h.zone).filter(Boolean))].sort();
 
-  const set = (key) => (e) => onChange({ ...filters, [key]: e.target.value });
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setLoading(true);
+    setError('');
+    try {
+      const { filters, explanation } = await askAI(query.trim(), mountains, zones);
+      onAiSearch(filters, explanation);
+      setQuery('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
+  return (
+    <div className="hero-ai-search">
+      {aiExplanation ? (
+        <div className="hero-ai-active">
+          <span className="hero-ai-sparkle">✨</span>
+          <span className="hero-ai-explanation">{aiExplanation}</span>
+          {!userLocation && <span className="hero-ai-note">{t('hero.aiDriveNote')}</span>}
+          <button className="hero-ai-clear" onClick={onAiClear} title={t('hero.aiClear')}>×</button>
+        </div>
+      ) : (
+        <form className="hero-ai-form" onSubmit={handleSubmit}>
+          <input
+            className="hero-ai-input"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('hero.aiPlaceholder')}
+            disabled={loading}
+          />
+          <button className="hero-ai-btn" type="submit" disabled={loading || !query.trim()}>
+            {loading ? t('hero.aiLoading') : t('hero.aiButton')}
+          </button>
+        </form>
+      )}
+      {error && <div className="hero-ai-error">{error}</div>}
+    </div>
+  );
+}
+
+export default function HeroSearch({ hikes, userLocation, onLocationChange, aiExplanation, onAiSearch, onAiClear }) {
   const done    = hikes.filter((h) => h.status === 'Done').length;
   const kmHiked = hikes
     .filter((h) => h.status === 'Done')
@@ -96,49 +145,10 @@ export default function HeroSearch({ filters, onChange, hikes, userLocation, onL
   return (
     <div className="hero">
       <div className="hero-inner">
-        <p className="hero-eyebrow"><img src="/logo.svg" alt="Trail Mix" style={{height:'2.4rem', verticalAlign:'middle'}} /></p>
+        <p className="hero-eyebrow"><img src="/logo.svg" alt={t('hero.appName')} style={{height:'2.4rem', verticalAlign:'middle'}} /></p>
         <h1 className="hero-title">{t('hero.title')}</h1>
 
-        <div className="hero-search-box">
-          <svg className="hero-search-icon" width="20" height="20" fill="none" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
-            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          <input
-            className="hero-search-input"
-            type="search"
-            placeholder={t('hero.searchPlaceholder')}
-            value={filters.q}
-            onChange={set('q')}
-          />
-        </div>
-
-        <div className="hero-filters">
-          <select value={filters.status}     onChange={set('status')}     className="hero-select">
-            <option value="">{t('filter.allStatuses')}</option>
-            <option value="Done">{t('status.Done')}</option>
-            <option value="In progress">{t('status.In progress')}</option>
-            <option value="Not started">{t('status.Not started')}</option>
-          </select>
-          <select value={filters.difficulty} onChange={set('difficulty')} className="hero-select">
-            <option value="">{t('filter.allDifficulties')}</option>
-            <option value="easy">{t('difficulty.easy')}</option>
-            <option value="medium">{t('difficulty.medium')}</option>
-          </select>
-          <select value={filters.mountains}  onChange={set('mountains')}  className="hero-select">
-            <option value="">{t('filter.allMountains')}</option>
-            {mountains.map((m) => <option key={m}>{m}</option>)}
-          </select>
-          <select value={filters.zone}       onChange={set('zone')}       className="hero-select">
-            <option value="">{t('filter.allZones')}</option>
-            {zones.map((z) => <option key={z}>{z}</option>)}
-          </select>
-          <select value={filters.tip}        onChange={set('tip')}        className="hero-select">
-            <option value="">{t('filter.allTripTypes')}</option>
-            <option value="Dus-intors">{t('tripType.Dus-intors')}</option>
-            <option value="Dus">{t('tripType.Dus')}</option>
-          </select>
-        </div>
+        <AiSearch hikes={hikes} userLocation={userLocation} aiExplanation={aiExplanation} onAiSearch={onAiSearch} onAiClear={onAiClear} />
 
         <LocationWidget userLocation={userLocation} onLocationChange={onLocationChange} />
 

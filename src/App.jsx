@@ -14,7 +14,6 @@ import CaveDetail from './components/CaveDetail.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
 
-const EMPTY_FILTERS = { q: '', status: '', difficulty: '', mountains: '', zone: '', tip: '' };
 
 const pathname = window.location.pathname;
 const hikeDetailMatch       = pathname.match(/^\/hike\/([^/]+)$/);
@@ -56,25 +55,31 @@ async function fetchDrivingDistances(userLoc, hikes) {
     ...targets.map((h) => `${h.startLng},${h.startLat}`),
   ].join(';');
 
-  const url = `https://router.project-osrm.org/table/v1/driving/${coords}?sources=0&annotations=distance`;
+  const url = `https://router.project-osrm.org/table/v1/driving/${coords}?sources=0&annotations=duration,distance`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('OSRM error');
   const data = await res.json();
   const distances = data.distances[0]; // metres from source to each destination
+  const durations = data.durations[0]; // seconds from source to each destination
 
-  const map = {};
+  const distanceMap = {};
+  const durationMap = {};
   targets.forEach((h, i) => {
     const metres = distances[i + 1]; // index 0 is source→source = 0
-    map[h._id] = metres != null ? metres / 1000 : null;
+    const secs   = durations[i + 1];
+    distanceMap[h._id] = metres != null ? metres / 1000 : null;
+    durationMap[h._id] = secs != null ? secs : null;
   });
-  return map;
+  return { distanceMap, durationMap };
 }
 
 function PublicApp() {
-  const [hikes, setHikes]             = useState([]);
-  const [filters, setFilters]         = useState(EMPTY_FILTERS);
-  const [error, setError]             = useState('');
-  const [drivingMap, setDrivingMap]   = useState({});
+  const [hikes, setHikes]                     = useState([]);
+  const [error, setError]                     = useState('');
+  const [drivingMap, setDrivingMap]           = useState({});
+  const [drivingDurationMap, setDrivingDurationMap] = useState({});
+  const [aiFilters, setAiFilters]             = useState(null);
+  const [aiExplanation, setAiExplanation]     = useState('');
   const [userLocation, setUserLocation] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('userLocation')); } catch { return null; }
   });
@@ -84,10 +89,13 @@ function PublicApp() {
   }, []);
 
   useEffect(() => {
-    if (!userLocation || !hikes.length) { setDrivingMap({}); return; }
+    if (!userLocation || !hikes.length) { setDrivingMap({}); setDrivingDurationMap({}); return; }
     fetchDrivingDistances(userLocation, hikes)
-      .then(setDrivingMap)
-      .catch(() => setDrivingMap({})); // fallback to haversine on error
+      .then(({ distanceMap, durationMap }) => {
+        setDrivingMap(distanceMap);
+        setDrivingDurationMap(durationMap);
+      })
+      .catch(() => { setDrivingMap({}); setDrivingDurationMap({}); }); // fallback to haversine on error
   }, [userLocation, hikes]);
 
   function handleLocationChange(loc) {
@@ -97,21 +105,33 @@ function PublicApp() {
   }
 
   const filtered = hikes.filter((h) => {
-    if (filters.status     && h.status     !== filters.status)     return false;
-    if (filters.difficulty && h.difficulty !== filters.difficulty) return false;
-    if (filters.mountains  && h.mountains  !== filters.mountains)  return false;
-    if (filters.zone       && h.zone       !== filters.zone)       return false;
-    if (filters.tip        && h.tip        !== filters.tip)        return false;
-    if (filters.q) {
-      const q = filters.q.toLowerCase();
-      if (!Object.values(h).join(' ').toLowerCase().includes(q)) return false;
+    if (!aiFilters) return true;
+    if (aiFilters.maxHikeHours   != null && h.time     > aiFilters.maxHikeHours)   return false;
+    if (aiFilters.minHikeHours   != null && h.time     < aiFilters.minHikeHours)   return false;
+    if (aiFilters.maxDistanceKm  != null && h.distance > aiFilters.maxDistanceKm)  return false;
+    if (aiFilters.minDistanceKm  != null && h.distance < aiFilters.minDistanceKm)  return false;
+    if (aiFilters.maxElevationUp != null && h.up       > aiFilters.maxElevationUp) return false;
+    if (aiFilters.difficulty && h.difficulty !== aiFilters.difficulty) return false;
+    if (aiFilters.mountains  && h.mountains  !== aiFilters.mountains)  return false;
+    if (aiFilters.zone       && h.zone       !== aiFilters.zone)       return false;
+    if (aiFilters.tip        && h.tip        !== aiFilters.tip)        return false;
+    if (aiFilters.status     && h.status     !== aiFilters.status)     return false;
+    if (aiFilters.maxDriveHours != null && userLocation) {
+      const secs = drivingDurationMap[h._id];
+      if (secs != null && secs > aiFilters.maxDriveHours * 3600) return false;
     }
     return true;
   });
 
   return (
     <>
-      <HeroSearch filters={filters} onChange={setFilters} hikes={hikes} userLocation={userLocation} onLocationChange={handleLocationChange} />
+      <HeroSearch
+        hikes={hikes}
+        userLocation={userLocation} onLocationChange={handleLocationChange}
+        aiExplanation={aiExplanation}
+        onAiSearch={(f, explanation) => { setAiFilters(f); setAiExplanation(explanation); }}
+        onAiClear={() => { setAiFilters(null); setAiExplanation(''); }}
+      />
 
       <div className="page-content">
         {error && <div className="error-banner">⚠ {error}</div>}

@@ -11,6 +11,7 @@ import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
 import restaurantsRouter from './routes/restaurants.js';
 import cavesRouter from './routes/caves.js';
+import aiSearchRouter from './routes/aiSearch.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/hikes', hikesRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/restaurants', restaurantsRouter);
 app.use('/api/caves', cavesRouter);
+app.use('/api/ai-search', aiSearchRouter);
 
 if (isProd && !process.env.RENDER) {
   const distPath = path.join(__dirname, '..', 'dist');

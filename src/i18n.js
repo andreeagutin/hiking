@@ -71,6 +71,11 @@ const TRANSLATIONS = {
     'hero.completed':            'completed',
     'hero.kmHiked':              'km hiked',
     'hero.viewStats':            'View stats →',
+    'hero.aiPlaceholder':        'Describe your dream hike… (e.g. 2h hike, max 1h drive)',
+    'hero.aiButton':             'Search with AI',
+    'hero.aiLoading':            'Thinking…',
+    'hero.aiClear':              'Clear AI filter',
+    'hero.aiDriveNote':          '(Set your location to apply drive-time filter)',
 
     // ── Filters ──────────────────────────────────────────────────────────────
     'filter.allStatuses':        'All statuses',
