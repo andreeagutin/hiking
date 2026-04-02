@@ -16,7 +16,8 @@ A full-stack hiking trail tracker. Users browse hikes and caves publicly (read-o
 | Maps | Leaflet (admin), Mapy.cz iframe (public) |
 | Weather | Open-Meteo API |
 | Distances | OSRM (driving distance) |
-| i18n | Custom `src/i18n.js` — `t('key')` helper |
+| AI Search | Claude Haiku (`claude-haiku-4-5-20251001`) via Anthropic SDK |
+| i18n | Custom `src/i18n.js` — `t('key')` helper, RO/EN dual-language |
 
 ## Project Structure
 ```text
@@ -35,19 +36,23 @@ hiking/
 │       ├── hikes.js          # GET/POST/PUT/DELETE /api/hikes + history sub-routes
 │       ├── restaurants.js    # GET/POST/PUT/DELETE /api/restaurants
 │       ├── caves.js          # GET/POST/PUT/DELETE /api/caves
-│       └── upload.js         # POST /api/upload (Cloudinary)
+│       ├── upload.js         # POST /api/upload (Cloudinary)
+│       └── aiSearch.js       # POST /api/ai-search (Claude Haiku natural language search)
 ├── src/
 │   ├── App.jsx               # Root router (pathname-based, no react-router)
 │   ├── index.css             # All styles (design tokens + components)
-│   ├── i18n.js               # UI translations — t('key') helper, single source of truth
+│   ├── i18n.js               # UI translations — t('key'), setLang(), getLang(); RO + EN
 │   ├── api/
 │   │   ├── auth.js           # login(), getToken(), isLoggedIn()
 │   │   ├── hikes.js          # fetchHikes(), fetchHike(), createHike(), updateHike(), deleteHike()
 │   │   ├── restaurants.js    # CRUD helpers for restaurants
 │   │   ├── caves.js          # fetchCaves(), fetchCave(), createCave(), updateCave(), deleteCave()
-│   │   └── upload.js         # uploadImage()
+│   │   ├── upload.js         # uploadImage()
+│   │   └── aiSearch.js       # askAI(query, mountains, zones) → { filters, explanation }
+│   ├── hooks/
+│   │   └── useLang.js        # React hook — returns current lang, re-renders on 'langchange' event
 │   └── components/
-│       ├── HeroSearch.jsx    # Hero section with search + filters (public)
+│       ├── HeroSearch.jsx    # Hero section with AI search, location widget, RO/EN switcher
 │       ├── HikeCard.jsx      # Single hike card (public grid)
 │       ├── HikeDetail.jsx    # Full hike detail page (/hike/:id)
 │       ├── CaveDetail.jsx    # Cave detail page (/cave/:id)
@@ -61,9 +66,10 @@ hiking/
 │           ├── AdminRestaurants.jsx  # Restaurants list + shared AdminNavTabs component
 │           ├── AdminRestaurantForm.jsx # Edit/create restaurant form
 │           ├── AdminCaves.jsx        # Caves CRUD table
-│           └── AdminCaveForm.jsx     # Edit/create cave form with Leaflet map
+│           └── AdminCaveForm.jsx     # Edit/create cave form with Leaflet map + location search
 ├── public/
-│   └── favicon.svg           # SVG hiker icon
+│   ├── favicon.svg           # SVG hiker icon (used in browser tab + admin header)
+│   └── logo.svg              # Trail Mix wordmark/logo (displayed in hero)
 ├── data/
 │   ├── seed.js               # One-time DB seed script
 │   └── migrate-active.js     # Migration utility (run as needed with `node data/migrate-active.js`)
@@ -82,6 +88,7 @@ ADMIN_PASS=<your_password>
 CLOUDINARY_CLOUD_NAME=<cloud_name>
 CLOUDINARY_API_KEY=<api_key>
 CLOUDINARY_API_SECRET=<api_secret>
+ANTHROPIC_API_KEY=<anthropic_api_key>
 ```
 
 **Important:**
@@ -121,6 +128,7 @@ npm run build     # Production build
 | POST | `/api/caves` | Bearer JWT | Create cave |
 | PUT | `/api/caves/:id` | Bearer JWT | Update cave |
 | DELETE | `/api/caves/:id` | Bearer JWT | Delete cave |
+| POST | `/api/ai-search` | public | Natural language hike search via Claude Haiku |
 
 ## Authentication Flow
 1. `POST /api/auth/login` with `{ username, password }` → returns `{ token }`
@@ -226,6 +234,16 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 - Driving distances fetched via OSRM Table API (`router.project-osrm.org`) — batch request for all hikes with `startLat`/`startLng` set
 - Displayed as "X km away" on each hike card
 
+## AI-Powered Natural Language Search
+- Input in hero section (`AiSearch` component inside `HeroSearch.jsx`) — separate from the regular text search
+- User types a free-form query in Romanian or English (e.g. "drumeție ușoară max 2h" or "easy hike, max 10 km")
+- `POST /api/ai-search` — handled by `server/routes/aiSearch.js` using Claude Haiku (`claude-haiku-4-5-20251001`)
+- System prompt instructs the model to return structured JSON filters; no markdown wrappers allowed
+- Supported filter fields: `maxHikeHours`, `minHikeHours`, `maxDistanceKm`, `minDistanceKm`, `maxElevationUp`, `difficulty`, `mountains`, `zone`, `tip`, `status`, `maxDriveHours`
+- `maxDriveHours` is applied client-side against OSRM distances (requires user location to be set)
+- Response includes an `explanation` string in the same language as the query — displayed as a pill in the hero
+- Requires `ANTHROPIC_API_KEY` in `.env`; query is validated (required, max 500 chars) before calling Claude
+
 ## Admin Panel Features
 - **Table** with image thumbnails (88×56px) as first column
 - **Edit form** (`AdminHikeForm`) opens at `/admin/hike/:id/edit`
@@ -241,15 +259,35 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 - **Tab navigation** (Hikes / Restaurants / Caves) via `AdminNavTabs` component shared across admin pages
 - **Date inputs** are `type="text"` displaying `DD-MM-YYYY`; stored internally as `YYYY-MM-DD`. Conversion helpers `toDisplay()` / `fromDisplay()` in `AdminHikeForm.jsx`. Legacy `dd/mm/yyyy` strings converted on load via `toInputDate()`
 - New restaurant/cave created with placeholder name to satisfy `required` validation
+- **Cave map location search** — text input above the Leaflet map in `AdminCaveForm`; queries Nominatim and calls `map.flyTo()` to animate to the result
+
+## Cave Detail (`/cave/:id`)
+- Hero image: `mainPhoto` or first of `photos`; falls back to dark blue gradient if none
+- **Photo gallery grid** — thumbnails of all photos below the stats section
+- **Lightbox** — click any thumbnail to open full-size overlay; close with ✕ or Escape key
+- **Coordinates** — displayed as `lat, lng` when `lat`/`lng` are set; links to Google Maps
+- **Weather forecast** — rendered via `WeatherForecast.jsx` when `lat`/`lng` are set (same component as hike detail)
+- **Linked hikes** — list of hikes that include this cave
 
 ## i18n
-All UI strings go through `src/i18n.js`. Use `t('key')` in components. Keys are organized by section (common, stat, cave.stat, hike, history, hero, filter, weather, stats, admin, login). Never hardcode display strings in components.
+All UI strings go through `src/i18n.js`. Two languages supported: **Romanian (`ro`)** and **English (`en`)**.
+
+- Use `t('key')` in components. Never hardcode display strings.
+- Use `t('key', { var: value })` for interpolation (e.g. `t('weather.forecastLabel', { n: 7 })`).
+- Keys are organized by section: `common`, `tripType`, `difficulty`, `status`, `stat`, `cave.stat`, `hike`, `history`, `cave`, `hero`, `filter`, `location`, `card`, `carousel`, `weather`, `stats`, `admin.*`, `login`.
+- Language is persisted in `localStorage` under key `lang`; defaults to `'en'`.
+- Change language with `setLang('ro')` / `setLang('en')` from `src/i18n.js`.
+- Components that need to re-render on language change must call `useLang()` from `src/hooks/useLang.js` — it subscribes to the `window` `'langchange'` event dispatched by `setLang()`.
+- `LangSwitcher` component lives inside `HeroSearch.jsx` (top-right of hero); buttons labeled **RO** and **EN**.
+- Admin strings are also translated so the admin UI reflects the selected language.
 
 ## Known Gotchas
 - Port 3001 conflict: run `cmd //c "taskkill /F /IM node.exe"` then `npm run dev`
 - `.env` changes require full server restart (nodemon only watches `server/`)
 - `#` in passwords must be `%23` in the MongoDB URI but written as-is in `ADMIN_PASS`
 - MongoDB Atlas: IP must be whitelisted in Network Access, database name is case-sensitive
+- `ANTHROPIC_API_KEY` missing → `/api/ai-search` returns HTTP 500; the `AiSearch` component shows the error inline
+- AI search `maxDriveHours` filter is silently ignored if user hasn't set their location (no OSRM distances available)
 
 ## Design System
 All CSS variables are in `src/index.css` under `:root`. Color palette:

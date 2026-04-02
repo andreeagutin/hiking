@@ -46,6 +46,9 @@ MongoDB Atlas
 | Image upload | Cloudinary + multer |
 | Dev runner | concurrently + nodemon |
 | Styling | Plain CSS (design tokens, no framework) |
+| Charts | Recharts |
+| Maps | Leaflet (admin), Mapy.cz iframe (public) |
+| AI Search | Claude Haiku via Anthropic SDK |
 | Deployment | Netlify (frontend), Render (backend) |
 
 ---
@@ -59,18 +62,21 @@ hiking/
 │   ├── db.js
 │   ├── middleware/
 │   ├── models/         # Hike.js, Restaurant.js, Cave.js
-│   └── routes/         # hikes, restaurants, caves, auth, upload
+│   └── routes/         # hikes, restaurants, caves, auth, upload, aiSearch
 ├── src/
-│   ├── api/            # hikes.js, restaurants.js, caves.js, auth.js, upload.js
-│   ├── i18n.js         # UI string translations
+│   ├── api/            # hikes.js, restaurants.js, caves.js, auth.js, upload.js, aiSearch.js
+│   ├── hooks/          # useLang.js
+│   ├── i18n.js         # UI translations — RO + EN, t('key'), setLang(), getLang()
 │   └── components/
 │       ├── HikeDetail.jsx
 │       ├── CaveDetail.jsx
 │       ├── StatsPage.jsx
 │       ├── WeatherForecast.jsx
+│       ├── HikeCarousel.jsx
 │       └── admin/      # AdminPanel, AdminHikeForm, AdminRestaurants, AdminRestaurantForm, AdminCaves, AdminCaveForm
 ├── public/
-│   └── favicon.svg
+│   ├── favicon.svg     # SVG hiker icon
+│   └── logo.svg        # Trail Mix wordmark logo
 ├── data/               # seed.js, migrate-active.js
 ├── .env
 └── package.json
@@ -114,17 +120,19 @@ Copy `.env.example` to `.env` and fill in your credentials.
 | POST | `/api/caves` | JWT | Create cave |
 | PUT | `/api/caves/:id` | JWT | Update cave |
 | DELETE | `/api/caves/:id` | JWT | Delete cave |
+| POST | `/api/ai-search` | public | Natural language hike search via Claude Haiku |
 
 ---
 
 ## Features
 
 ### Public
-- Hero section with search bar and filters (status, difficulty, mountains, zone, trip type)
+- Hero section with **AI natural language search** (Claude Haiku) + regular text search + 5 filter dropdowns
+- **RO/EN language switcher** in hero — language persisted in `localStorage`
 - Card grid with hike thumbnails
 - Auto-sliding carousel (hikes with photos)
 - Detail page per hike (`/hike/:id`) with stats, markdown description, weather forecast, Mapy.cz trail map, history log, linked restaurants and caves
-- Cave detail page (`/cave/:id`) with photo gallery and linked hikes
+- Cave detail page (`/cave/:id`) with photo gallery grid, **lightbox**, coordinates (with Google Maps link), **weather forecast**, and linked hikes
 - Stats page (`/stats`) with charts — total km, elevation, hours, status/difficulty breakdown, hiking by month, distance by mountains
 - Driving distance from user location via OSRM (geolocation or city search)
 
@@ -139,7 +147,7 @@ Copy `.env.example` to `.env` and fill in your credentials.
 - Mapy.cz iframe embed field
 - History entries per hike (add/edit/delete)
 - Linked restaurants and caves via checklist
-- Cave management: photos, rock type, development, vertical extent, altitude, entrance map
+- Cave management: photos, rock type, development, vertical extent, altitude, entrance map with **location search** (Nominatim)
 
 ---
 

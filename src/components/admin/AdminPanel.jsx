@@ -74,11 +74,7 @@ export default function AdminPanel() {
 
   async function handleAdd() {
     try {
-      const hike = await createHike({ ...Object.fromEntries(Object.keys({
-        name: '', time: null, distance: null, tip: null,
-        up: null, down: null, difficulty: null, mountains: null,
-        status: 'Not started', completed: null, zone: null, imageUrl: null,
-      }).map((k) => [k, null])), name: '', status: 'Not started' });
+      const hike = await createHike({ name: 'New hike', status: 'Not started' });
       window.location.href = `/admin/hike/${hike._id}/edit`;
     } catch (e) {
       setError(e.message);

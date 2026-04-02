@@ -288,15 +288,15 @@ New collection alongside hikes and restaurants.
 
 **Admin:**
 - `AdminCaves.jsx` — list/search/delete table at `/admin/caves`
-- `AdminCaveForm.jsx` — edit/create form: photo gallery (multiple uploads), Leaflet map for entrance, fields for all cave stats
+- `AdminCaveForm.jsx` — edit/create form: photo gallery (multiple uploads), Leaflet map for entrance with **location search** (Nominatim geocoding + `map.flyTo()`), fields for all cave stats
 
 **Public:**
-- `CaveDetail.jsx` — hero (photo or dark blue gradient), stats grid, photo gallery, linked hikes list
+- `CaveDetail.jsx` — hero (photo or dark blue gradient), stats grid, photo gallery grid, **photo lightbox** (click to open full-size, close with ✕ or Escape), **coordinates** displayed with Google Maps link, **weather forecast** via `WeatherForecast.jsx` when `lat`/`lng` set, linked hikes list
 - `HikeDetail.jsx` — "Nearby caves" section shows linked cave cards
 
 **Linking:** `Hike.caves` is an array of ObjectIds populated on `GET /api/hikes/:id`. In the hike edit form, a checklist lets the admin toggle which caves are linked.
 
-**Cave photo gallery:** multiple Cloudinary uploads stored in `photos[]`; `mainPhoto` is shown in hero and admin thumbnail.
+**Cave photo gallery:** multiple Cloudinary uploads stored in `photos[]`; `mainPhoto` is shown in hero and admin thumbnail. In the detail page, all photos render as a grid of thumbnails that open in a lightbox overlay.
 
 ---
 
@@ -317,29 +317,132 @@ New collection alongside hikes and restaurants.
 
 ---
 
-## 19. i18n
+## 19. i18n (Dual-Language: RO + EN)
 
-`src/i18n.js` — single source of truth for all UI strings.
+`src/i18n.js` — single source of truth for all UI strings. Two full translation sets: `ro` and `en`.
 
 ```js
-import t from '../i18n.js';
-t('stat.distance')          // → 'Distance'
+import t, { setLang, getLang } from '../i18n.js';
+t('stat.distance')                    // → 'Distance' (en) or 'Distanță' (ro)
 t('weather.forecastLabel', { n: 7 }) // → '7-day forecast · near trailhead'
 ```
 
-- All keys organized by section in `TRANSLATIONS.en`
-- `setLang()` / `getLang()` for future multi-language support (stored in `localStorage`)
+- `TRANSLATIONS` object has two keys: `'ro'` and `'en'`, each containing all UI keys
+- `t(key, vars)` resolves against current language, falls back to `en`, then returns the key itself
+- `setLang('ro')` — updates module-level `_lang`, saves to `localStorage`, dispatches `window` event `'langchange'`
+- `getLang()` — returns current language string
+- Components that render translated strings must call `useLang()` from `src/hooks/useLang.js` to re-render on language change
+- `useLang()` hook subscribes to `'langchange'` via `addEventListener` in `useEffect`; returns the current lang string
+- Language defaults to `'en'`; persisted across page loads via `localStorage` key `lang`
 - Never hardcode display strings in components — always use `t('key')`
 
 ---
 
-## 20. Favicon
+## 20. Branding (Logo + Favicon)
 
-`public/favicon.svg` — custom SVG of a hiker with backpack and hiking stick, in forest green palette. Referenced in `index.html` as `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Also used inline in `HeroSearch.jsx` as `<img src="/favicon.svg">` next to the app name.
+**Favicon:** `public/favicon.svg` — custom SVG of a hiker with backpack and hiking stick, in forest green palette. Referenced in `index.html` as `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Also used inline in the admin header as `<img src="/favicon.svg">`.
+
+**Logo:** `public/logo.svg` — Trail Mix wordmark/logo. Displayed in the hero section:
+```jsx
+<img src="/logo.svg" alt="Trail Mix" style={{ height: '2.4rem', verticalAlign: 'middle' }} />
+```
+Both files live in `public/` so Vite serves them at root (`/favicon.svg`, `/logo.svg`) without import handling.
 
 ---
 
-## 21. Common Issues & Fixes
+## 21. Cave Map Location Search (AdminCaveForm)
+
+The Leaflet map in `AdminCaveForm.jsx` includes a text search input above the map so admins can navigate to a location by name instead of panning manually.
+
+**Flow:**
+1. Admin types a location name into the search box
+2. On submit: `fetch` to `nominatim.openstreetmap.org/search?q=...&format=json&limit=1`
+3. If found: `setFlyTarget([lat, lng])` — a `FlyTo` component reads this and calls `map.flyTo(target, 14)`
+4. Admin then clicks the map to drop the marker at the exact entrance point
+
+**`FlyTo` component pattern** — needed because `map.flyTo()` must be called from inside the Leaflet context:
+```jsx
+function FlyTo({ target }) {
+  const map = useMap();
+  useEffect(() => { if (target) map.flyTo(target, 14); }, [target, map]);
+  return null;
+}
+```
+
+The same Nominatim + `map.flyTo` pattern is reusable for the hike starting point map.
+
+---
+
+## 22. AI-Powered Natural Language Search
+
+Users can describe a hike in plain language (Romanian or English) and get filtered results.
+
+**Install:**
+```bash
+npm install @anthropic-ai/sdk
+```
+
+**Backend** (`server/routes/aiSearch.js`):
+- `POST /api/ai-search` — public endpoint (no auth required)
+- Validates input: `query` required, max 500 chars
+- Calls `client.messages.create()` with model `claude-haiku-4-5-20251001`, `max_tokens: 512`
+- System prompt instructs Claude to return ONLY a JSON object with filter fields — no markdown wrappers
+- Strips any accidental ` ```json ``` ` wrappers before `JSON.parse()`
+- Returns `{ filters, explanation }` — explanation is in the same language as the query
+
+**Filter fields Claude returns:**
+```js
+{ maxHikeHours, minHikeHours, maxDistanceKm, minDistanceKm, maxElevationUp,
+  difficulty, mountains, zone, tip, status, maxDriveHours, explanation }
+```
+
+**Frontend** (`src/api/aiSearch.js`):
+```js
+export async function askAI(query, availableMountains, availableZones) {
+  const res = await fetch('/api/ai-search', { method: 'POST', ... });
+  return res.json(); // { filters, explanation }
+}
+```
+
+**`AiSearch` component** (inside `HeroSearch.jsx`):
+- Separate search bar from the regular text search, below it in the hero
+- On submit: calls `askAI()`, passes result up via `onAiSearch(filters, explanation)` prop
+- When active: shows an explanation pill with a clear (×) button
+- `maxDriveHours` filter is applied client-side against OSRM distances — shows a note if location not set
+
+**`App.jsx` filtering:** AI filters are applied on top of regular filters. `maxDriveHours` is ignored when `drivingDistances` map is empty.
+
+**Requires:** `ANTHROPIC_API_KEY` in `.env`
+
+---
+
+## 23. Romanian i18n + RO/EN Language Switcher
+
+Added full Romanian translation set alongside English, plus a live language switcher in the hero.
+
+**`LangSwitcher` component** (inside `HeroSearch.jsx`):
+```jsx
+function LangSwitcher() {
+  const lang = useLang();
+  return (
+    <div className="lang-switcher">
+      <button className={`lang-btn${lang === 'ro' ? ' active' : ''}`} onClick={() => setLang('ro')}>RO</button>
+      <span className="lang-sep">|</span>
+      <button className={`lang-btn${lang === 'en' ? ' active' : ''}`} onClick={() => setLang('en')}>EN</button>
+    </div>
+  );
+}
+```
+
+Rendered top-right of the hero, in a flex row with the logo (`hero-top-row` class).
+
+**Reactivity pattern:** `setLang()` dispatches `new Event('langchange')` on `window`. Components subscribe via `useLang()` hook which calls `useState(getLang)` and adds/removes the event listener in `useEffect`. Any component that renders `t()` strings must call `useLang()` at the top — otherwise it won't re-render when language changes.
+
+**All admin strings are also translated** — so switching language affects both public and admin UI.
+
+---
+
+## 24. Common Issues & Fixes
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
@@ -352,3 +455,7 @@ t('weather.forecastLabel', { n: 7 }) // → '7-day forecast · near trailhead'
 | Number input validation error | `step` attribute restricts values | Use `step="any"` to allow any decimal |
 | Date input shows MM/DD/YYYY | `type="date"` uses browser locale | Use `type="text"` + `toDisplay()`/`fromDisplay()` helpers instead |
 | "Failed to create restaurant" on add | Empty `name` fails Mongoose `required` | Create with placeholder `"New restaurant"`, not `""` |
+| AI search returns 500 | `ANTHROPIC_API_KEY` missing or invalid | Check `.env`, restart server (nodemon doesn't watch `.env`) |
+| AI search `maxDriveHours` ignored | User location not set, no OSRM data | Show note in `AiSearch` component prompting user to set location |
+| Language doesn't switch in a component | Component doesn't call `useLang()` | Add `useLang()` call at top of component to subscribe to `langchange` event |
+| Cave map doesn't fly to searched location | `FlyTo` not inside `MapContainer` | `FlyTo` must be rendered as a child of `<MapContainer>`, not outside |
