@@ -1,4 +1,5 @@
 import t from '../i18n.js';
+import useLang from '../hooks/useLang.js';
 
 const GRADIENTS = [
   'linear-gradient(145deg, #0d2318 0%, #2d6a4f 100%)',
@@ -18,6 +19,7 @@ function cardGradient(name) {
 }
 
 export default function HikeCard({ hike, distance }) {
+  useLang();
   const bg = hike.imageUrl ? undefined : cardGradient(hike.name);
 
   return (

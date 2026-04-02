@@ -940,12 +940,47 @@ td input.edit-input[type="number"] { max-width: 90px; }
   padding-bottom: 56px;
 }
 
+.hero-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 580px;
+  margin-bottom: 2px;
+}
+
 .hero-eyebrow {
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #c4b5fd;
+  margin: 0;
+}
+
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+.lang-btn:hover { color: rgba(255,255,255,0.8); }
+.lang-btn.active { color: #fff; }
+
+.lang-sep {
+  color: rgba(255,255,255,0.25);
+  font-size: 0.7rem;
 }
 
 .hero-title {

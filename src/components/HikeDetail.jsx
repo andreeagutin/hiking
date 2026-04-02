@@ -3,6 +3,7 @@ import { marked } from 'marked';
 import { fetchHike } from '../api/hikes.js';
 import WeatherForecast from './WeatherForecast.jsx';
 import t from '../i18n.js';
+import useLang from '../hooks/useLang.js';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -39,6 +40,7 @@ function StatItem({ icon, value, label }) {
 }
 
 export default function HikeDetail({ id }) {
+  useLang();
   const [hike, setHike]   = useState(null);
   const [error, setError] = useState('');
 

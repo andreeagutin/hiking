@@ -1,6 +1,18 @@
 import { useState } from 'react';
-import t from '../i18n.js';
+import t, { setLang } from '../i18n.js';
+import useLang from '../hooks/useLang.js';
 import { askAI } from '../api/aiSearch.js';
+
+function LangSwitcher() {
+  const lang = useLang();
+  return (
+    <div className="lang-switcher">
+      <button className={`lang-btn${lang === 'ro' ? ' active' : ''}`} onClick={() => setLang('ro')}>RO</button>
+      <span className="lang-sep">|</span>
+      <button className={`lang-btn${lang === 'en' ? ' active' : ''}`} onClick={() => setLang('en')}>EN</button>
+    </div>
+  );
+}
 
 async function geocodeCity(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
@@ -11,6 +23,7 @@ async function geocodeCity(query) {
 }
 
 function LocationWidget({ userLocation, onLocationChange }) {
+  useLang();
   const [cityInput, setCityInput] = useState('');
   const [mode, setMode]           = useState('idle'); // idle | input | loading | error
   const [errMsg, setErrMsg]       = useState('');
@@ -83,6 +96,7 @@ function LocationWidget({ userLocation, onLocationChange }) {
 }
 
 function AiSearch({ hikes, userLocation, aiExplanation, onAiSearch, onAiClear }) {
+  useLang();
   const [query, setQuery]   = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState('');
@@ -136,6 +150,7 @@ function AiSearch({ hikes, userLocation, aiExplanation, onAiSearch, onAiClear })
 }
 
 export default function HeroSearch({ hikes, userLocation, onLocationChange, aiExplanation, onAiSearch, onAiClear }) {
+  useLang();
   const done    = hikes.filter((h) => h.status === 'Done').length;
   const kmHiked = hikes
     .filter((h) => h.status === 'Done')
@@ -145,7 +160,10 @@ export default function HeroSearch({ hikes, userLocation, onLocationChange, aiEx
   return (
     <div className="hero">
       <div className="hero-inner">
-        <p className="hero-eyebrow"><img src="/logo.svg" alt={t('hero.appName')} style={{height:'2.4rem', verticalAlign:'middle'}} /></p>
+        <div className="hero-top-row">
+          <p className="hero-eyebrow"><img src="/logo.svg" alt={t('hero.appName')} style={{height:'2.4rem', verticalAlign:'middle'}} /></p>
+          <LangSwitcher />
+        </div>
         <h1 className="hero-title">{t('hero.title')}</h1>
 
         <AiSearch hikes={hikes} userLocation={userLocation} aiExplanation={aiExplanation} onAiSearch={onAiSearch} onAiClear={onAiClear} />

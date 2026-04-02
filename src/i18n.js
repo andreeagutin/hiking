@@ -5,6 +5,179 @@
  */
 
 const TRANSLATIONS = {
+  ro: {
+    // ── Common ──────────────────────────────────────────────────────────────
+    'common.loading':            'Se încarcă…',
+    'common.back':               '← Înapoi',
+    'common.backToTrails':       '← Toate traseele',
+    'common.backToError':        '← Înapoi la trasee',
+    'common.view':               'Vezi →',
+    'common.saving':             'Se salvează…',
+    'common.uploading':          'Se încarcă…',
+    'common.save':               'Salvează',
+    'common.cancel':             'Anulează',
+    'common.delete':             'Șterge',
+    'common.edit':               'Editează',
+    'common.signOut':            'Deconectare',
+    'common.signIn':             'Conectare',
+    'common.signingIn':          'Se conectează…',
+
+    // ── Trip types ───────────────────────────────────────────────────────────
+    'tripType.Dus-intors':       'Dus-întors',
+    'tripType.Dus':              'Dus',
+
+    // ── Difficulty ──────────────────────────────────────────────────────────
+    'difficulty.easy':           'Ușor',
+    'difficulty.medium':         'Mediu',
+
+    // ── Status ──────────────────────────────────────────────────────────────
+    'status.Done':               'Făcut',
+    'status.In progress':        'În progres',
+    'status.Not started':        'Neînceput',
+
+    // ── Hike stats ──────────────────────────────────────────────────────────
+    'stat.distance':             'Distanță',
+    'stat.duration':             'Durată',
+    'stat.elevationGain':        'Diferență de nivel (urcare)',
+    'stat.elevationLoss':        'Diferență de nivel (coborâre)',
+    'stat.tripType':             'Tip traseu',
+    'stat.completedOn':          'Finalizat pe',
+
+    // ── Cave stats ───────────────────────────────────────────────────────────
+    'cave.stat.development':     'Dezvoltare',
+    'cave.stat.verticalExtent':  'Denivelarea',
+    'cave.stat.altitude':        'Altitudine',
+    'cave.stat.rockType':        'Tip rocă',
+    'cave.stat.coordinates':     'Coordonate',
+
+    // ── HikeDetail sections ──────────────────────────────────────────────────
+    'hike.aboutTrail':           'Despre acest traseu',
+    'hike.history':              'Istoric',
+    'hike.nearbyRestaurants':    'Restaurante în zonă',
+    'hike.nearbyCaves':          'Peșteri în zonă',
+    'history.hike':              'Drumeție',
+    'history.recon':             'Recunoaștere',
+    'history.dist':              'dist.',
+    'history.time':              'timp',
+
+    // ── Cave detail ──────────────────────────────────────────────────────────
+    'cave.foundOnTrails':        'Apare pe aceste trasee',
+
+    // ── Hero / Search ────────────────────────────────────────────────────────
+    'hero.appName':              'Trail Mix',
+    'hero.title':                'Unde vrei să mergi la drumeție?',
+    'hero.searchPlaceholder':    'Caută după nume, munți, zonă…',
+    'hero.trails':               'trasee',
+    'hero.completed':            'finalizate',
+    'hero.kmHiked':              'km parcurși',
+    'hero.viewStats':            'Vezi statistici →',
+    'hero.aiPlaceholder':        'Descrie drumeția visată… (ex: 2h, max 1h cu mașina)',
+    'hero.aiButton':             'Caută cu AI',
+    'hero.aiLoading':            'Analizez…',
+    'hero.aiClear':              'Șterge filtrul AI',
+    'hero.aiDriveNote':          '(Setează locația pentru filtrul de timp cu mașina)',
+
+    // ── Filters ──────────────────────────────────────────────────────────────
+    'filter.allStatuses':        'Toate statusurile',
+    'filter.allDifficulties':    'Toate dificultățile',
+    'filter.allMountains':       'Toți munții',
+    'filter.allZones':           'Toate zonele',
+    'filter.allTripTypes':       'Toate tipurile',
+
+    // ── Location widget ──────────────────────────────────────────────────────
+    'location.showDistances':    '📍 Arată distanțele față de mine',
+    'location.enterCity':        'Introdu orașul',
+    'location.locating':         'Se localizează…',
+    'location.cityPlaceholder':  'Introdu orașul tău…',
+    'location.go':               'OK',
+    'location.notFound':         'Locație negăsită',
+    'location.yourLocation':     'Locația ta',
+
+    // ── Hike card ────────────────────────────────────────────────────────────
+    'card.away':                 'distanță',
+
+    // ── Carousel ─────────────────────────────────────────────────────────────
+    'carousel.completedTrails':  'Trasee finalizate',
+    'carousel.noPhoto':          'Fără poză încă',
+
+    // ── Weather ──────────────────────────────────────────────────────────────
+    'weather.today':             'Azi',
+    'weather.forecastLabel':     'Prognoză {{n}} zile · lângă punct de start',
+    'weather.clear':             'Senin',
+    'weather.partlyCloudy':      'Parțial noros',
+    'weather.overcast':          'Acoperit',
+    'weather.foggy':             'Ceață',
+    'weather.drizzle':           'Burniță',
+    'weather.rain':              'Ploaie',
+    'weather.snow':              'Ninsoare',
+    'weather.showers':           'Averse',
+    'weather.snowShowers':       'Averse de ninsoare',
+    'weather.thunderstorm':      'Furtună',
+
+    // ── Stats page ───────────────────────────────────────────────────────────
+    'stats.title':               'Statistici',
+    'stats.back':                '← Înapoi la trasee',
+    'stats.totalKm':             'km parcurși',
+    'stats.totalUp':             'diferență de nivel',
+    'stats.totalHours':          'ore pe traseu',
+    'stats.completedTrails':     'trasee făcute',
+    'stats.statusBreakdown':     'Distribuție status',
+    'stats.difficultyBreakdown': 'Distribuție dificultate',
+    'stats.hikingByMonth':       'Drumeții pe luni',
+    'stats.distanceByMountains': 'Distanță pe munți',
+
+    // ── Admin — common ───────────────────────────────────────────────────────
+    'admin.unsavedChanges':      'Ai modificări nesalvate. Ești sigur că vrei să pleci?',
+    'admin.visibleOnSite':       'Vizibil pe site',
+    'admin.signOut':             'Deconectare',
+
+    // ── Admin — hikes ────────────────────────────────────────────────────────
+    'admin.hike.new':            'Traseu nou',
+    'admin.hike.edit':           'Editează traseu',
+    'admin.hike.save':           'Salvează traseu',
+    'admin.hike.delete':         'Șterge traseu',
+    'admin.hike.add':            '+ Adaugă traseu',
+    'admin.hike.startingPoint':  'Punct de start',
+    'admin.hike.clickToSet':     'Apasă pe hartă pentru a seta punctul de start al traseului.',
+    'admin.hike.trailMap':       'Hartă traseu (Mapy.cz)',
+    'admin.hike.pasteIframe':    'Lipește codul iframe din Mapy.cz',
+    'admin.hike.restaurants':    'Restaurante',
+    'admin.hike.caves':          'Peșteri',
+    'admin.hike.history':        'Istoric',
+    'admin.hike.noRestaurants':  'Niciun restaurant încă.',
+    'admin.hike.noCaves':        'Nicio peșteră încă.',
+    'admin.hike.replacePhoto':   'Schimbă poza',
+    'admin.hike.choosePhoto':    'Alege poza',
+
+    // ── Admin — caves ────────────────────────────────────────────────────────
+    'admin.cave.new':            'Peșteră nouă',
+    'admin.cave.edit':           'Editează peșteră',
+    'admin.cave.save':           'Salvează peșteră',
+    'admin.cave.add':            '+ Adaugă peșteră',
+    'admin.cave.details':        'Detalii',
+    'admin.cave.photos':         'Poze',
+    'admin.cave.location':       'Locație',
+    'admin.cave.clickToSet':     'Apasă pe hartă pentru a seta intrarea în peșteră.',
+    'admin.cave.hikesLinked':    'Trasee care includ această peșteră',
+    'admin.cave.noHikesLinked':  'Niciun traseu legat de această peșteră.',
+    'admin.cave.addPhoto':       '+ Adaugă poză',
+    'admin.cave.clickToMain':    'apasă o poză pentru a o seta ca principală',
+
+    // ── Admin — restaurants ──────────────────────────────────────────────────
+    'admin.restaurant.new':      'Restaurant nou',
+    'admin.restaurant.edit':     'Editează restaurant',
+    'admin.restaurant.save':     'Salvează restaurant',
+    'admin.restaurant.add':      '+ Adaugă restaurant',
+
+    // ── Admin — login ────────────────────────────────────────────────────────
+    'login.title':               'Panou Admin',
+    'login.subtitle':            'Trail Mix',
+    'login.username':            'Utilizator',
+    'login.password':            'Parolă',
+    'login.submit':              'Conectare',
+    'login.submitting':          'Se conectează…',
+  },
+
   en: {
     // ── Common ──────────────────────────────────────────────────────────────
     'common.loading':            'Loading…',
@@ -187,6 +360,7 @@ try { _lang = localStorage.getItem('lang') || 'en'; } catch {}
 export function setLang(lang) {
   _lang = lang;
   try { localStorage.setItem('lang', lang); } catch {}
+  window.dispatchEvent(new Event('langchange'));
 }
 
 export function getLang() { return _lang; }
@@ -197,7 +371,7 @@ export function getLang() { return _lang; }
  */
 export function t(key, vars = {}) {
   const dict = TRANSLATIONS[_lang] || TRANSLATIONS.en;
-  let str = dict[key] ?? key;
+  let str = dict[key] ?? TRANSLATIONS.en[key] ?? key;
   for (const [k, v] of Object.entries(vars)) {
     str = str.replace(`{{${k}}}`, v);
   }

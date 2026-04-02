@@ -3,6 +3,7 @@ import { fetchCave } from '../api/caves.js';
 import { fetchHikes } from '../api/hikes.js';
 import WeatherForecast from './WeatherForecast.jsx';
 import t from '../i18n.js';
+import useLang from '../hooks/useLang.js';
 
 function StatCard({ icon, value, label }) {
   if (value == null || value === '') return null;
@@ -47,6 +48,7 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }) {
 }
 
 export default function CaveDetail({ id }) {
+  useLang();
   const [cave, setCave]         = useState(null);
   const [hikes, setHikes]       = useState([]);
   const [error, setError]       = useState('');

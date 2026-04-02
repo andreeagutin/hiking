@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import t from '../i18n.js';
+import useLang from '../hooks/useLang.js';
 
 const WMO_ICON = (code) => {
   if (code === 0)   return '☀️';
@@ -35,6 +36,7 @@ const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MIN_DAY_WIDTH = 52;
 
 export default function WeatherForecast({ lat, lng }) {
+  useLang();
   const [days, setDays]         = useState(null);
   const [location, setLocation] = useState(null);
   const [error, setError]       = useState(false);
