@@ -169,12 +169,35 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
   status:      'Done' | 'In progress' | 'Not started'  // default: 'Not started'
   completed:   String | null   // stored as YYYY-MM-DD, displayed as DD-MM-YYYY in admin / DD-Mon-YYYY in public
   zone:        String | null
-  imageUrl:    String | null
+  imageUrl:    String | null   // legacy single photo (kept for backward compat; use mainPhoto/photos instead)
+  photos:      [String]        // array of Cloudinary URLs (multi-photo support)
+  mainPhoto:   String | null   // displayed as hero; falls back to photos[0] if not set
   description: String | null   // markdown trail description
   startLat:    Number | null   // trailhead coordinates (set via Leaflet map in admin)
   startLng:    Number | null
   mapUrl:      String | null   // Mapy.cz iframe URL (embedded on detail page)
   active:      Boolean         // default: true
+  // Family & Safety fields
+  familyFriendly:     Boolean          // default: false
+  minAgeRecommended:  Number | null    // years
+  strollerAccessible: Boolean
+  toddlerFriendly:    Boolean
+  kidEngagementScore: Number | null    // 1–5
+  highlights:         [String]         // e.g. ["waterfall", "marmots"]
+  hasRestAreas:       Boolean
+  restAreaCount:      Number | null
+  hasBathrooms:       Boolean
+  bathroomType:       'flush' | 'pit' | 'none' | null
+  hasPicknicArea:     Boolean
+  nearbyPlayground:   Boolean
+  bearRisk:           'low' | 'medium' | 'high' | null
+  sheepdogWarning:    Boolean
+  safeWaterSource:    Boolean
+  mobileSignal:       'good' | 'partial' | 'none' | null
+  trailMarkColor:     'red' | 'yellow' | 'blue' | null  // legacy
+  trailMarkShape:     'stripe' | 'cross' | 'triangle' | 'dot' | null  // legacy
+  trailMarkers:       [String]         // ordered list of marker IDs e.g. ['yellow_circle', 'red_stripe']
+  salvamontPoint:     String | null
   history:     Array<{ time, is_hike, distance, up, down, updatedAt }>
   restaurants: Array<ObjectId ref 'Restaurant'>  // populated on GET /:id
   caves:       Array<ObjectId ref 'Cave'>        // populated on GET /:id
@@ -211,10 +234,10 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 ```
 
 ## Carousel
-- Only shows hikes that have `imageUrl` set
+- Only shows hikes that have a photo (`mainPhoto || photos[0] || imageUrl`)
 - Gradient placeholder shown when no image
 - Auto-advances every 5 seconds
-- To add a photo: upload via Admin Panel (Cloudinary) or set `imageUrl` directly in Atlas
+- To add a photo: upload via Admin Panel (multi-photo gallery) — first uploaded photo becomes `mainPhoto` automatically
 
 ## Weather Forecast
 - `WeatherForecast.jsx` — rendered on `HikeDetail` when `hike.startLat` and `hike.startLng` are set
@@ -245,21 +268,32 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 - Requires `ANTHROPIC_API_KEY` in `.env`; query is validated (required, max 500 chars) before calling Claude
 
 ## Admin Panel Features
-- **Table** with image thumbnails (88×56px) as first column
+- **Table** with image thumbnails (88×56px) as first column — uses `mainPhoto || photos[0] || imageUrl`
 - **Edit form** (`AdminHikeForm`) opens at `/admin/hike/:id/edit`
 - **Prev/Next navigation** in edit form header — arrows to move between hikes in order
 - **Unsaved changes guard** — confirm dialog if navigating away with dirty form
-- **Image upload** via Cloudinary (`/api/upload`)
+- **Multi-photo gallery** — same UX as caves: upload multiple photos, click to set as main, ✕ to remove; `imageUrl` kept in sync with `mainPhoto` for backward compat
 - **Markdown description editor** — rich toolbar (bold, italic, headings, lists, links, etc.)
+- **Mountains & Zone** — `<input list>` + `<datalist>` comboboxes; suggestions derived from existing hike values, free-text entry allowed
 - **Trail starting point** — interactive Leaflet map; click to set `startLat`/`startLng`
 - **Mapy.cz embed** — paste iframe code; rendered on public detail page
 - **History** section per hike — add/edit/delete entries with date, is_hike, distance, time, up, down
-- **Restaurants** section in hike edit form — checklist to link/unlink restaurants; stored as ObjectId array
-- **Caves** section in hike edit form — checklist to link/unlink caves; stored as ObjectId array
+- **Restaurants** section — `TagMultiSelect` component: pill-style tags with × per item, dropdown list, clear-all button
+- **Caves** section in hike edit form — checkbox list to link/unlink caves; stored as ObjectId array
+- **Family & Safety** section — collapsible `<details>` with all family/safety fields (checkboxes, selects, number inputs)
+- **Trail markers** — `MarkerPicker` component: 5×3 grid of SVG marker images (15 markers: red/yellow/blue × stripe/circle/cross/ring/triangle), click to select, number badge shows order, reorder with ↑↓ buttons, remove with ×; markers stored as ordered `[String]` in `trailMarkers`
 - **Tab navigation** (Hikes / Restaurants / Caves) via `AdminNavTabs` component shared across admin pages
 - **Date inputs** are `type="text"` displaying `DD-MM-YYYY`; stored internally as `YYYY-MM-DD`. Conversion helpers `toDisplay()` / `fromDisplay()` in `AdminHikeForm.jsx`. Legacy `dd/mm/yyyy` strings converted on load via `toInputDate()`
 - New restaurant/cave created with placeholder name to satisfy `required` validation
 - **Cave map location search** — text input above the Leaflet map in `AdminCaveForm`; queries Nominatim and calls `map.flyTo()` to animate to the result
+
+## Hike Detail (`/hike/:id`)
+- Hero image: `mainPhoto || photos[0] || imageUrl`; falls back to purple gradient if none
+- **Photo gallery** — grid of all photos (shown when `photos.length > 1`); click to open lightbox (Escape to close)
+- **Stats grid** — first card shows trail markers (SVG images, centered, full-size); then Distance, Duration, Elevation gain/loss, Trip type, Completed date
+- **Family & Safety card** — shown when any family/safety field is set; sections: Family Suitability (chips), Highlights (tags), Amenities (chips), Safety (chips with color coding: green/amber/red for risk levels)
+- **Trail markers in Safety card header** — marker SVG images displayed top-right of the Family & Safety card
+- Weather forecast, trail map (Mapy.cz), description, history, restaurants, caves sections (unchanged)
 
 ## Cave Detail (`/cave/:id`)
 - Hero image: `mainPhoto` or first of `photos`; falls back to dark blue gradient if none
@@ -281,6 +315,13 @@ All UI strings go through `src/i18n.js`. Two languages supported: **Romanian (`r
 - `LangSwitcher` component lives inside `HeroSearch.jsx` (top-right of hero); buttons labeled **RO** and **EN**.
 - Admin strings are also translated so the admin UI reflects the selected language.
 
+## Trail Markers
+- 15 SVG files in `hiking_markers/` and `public/hiking_markers/` (served statically at `/hiking_markers/*.svg`)
+- Naming: `{color}_{shape}.svg` — colors: `red`, `yellow`, `blue`; shapes: `stripe`, `circle`, `cross`, `ring`, `triangle`
+- Referenced in `AdminHikeForm` (`MarkerPicker`) and `HikeDetail` by filename e.g. `yellow_circle`
+- `trailMarkers` field stores an ordered array of marker IDs; order is preserved in display
+- Legacy `trailMarkColor` + `trailMarkShape` fields kept for backward compat but `trailMarkers` takes precedence
+
 ## Known Gotchas
 - Port 3001 conflict: run `cmd //c "taskkill /F /IM node.exe"` then `npm run dev`
 - `.env` changes require full server restart (nodemon only watches `server/`)
@@ -288,6 +329,8 @@ All UI strings go through `src/i18n.js`. Two languages supported: **Romanian (`r
 - MongoDB Atlas: IP must be whitelisted in Network Access, database name is case-sensitive
 - `ANTHROPIC_API_KEY` missing → `/api/ai-search` returns HTTP 500; the `AiSearch` component shows the error inline
 - AI search `maxDriveHours` filter is silently ignored if user hasn't set their location (no OSRM distances available)
+- `imageUrl` is kept in sync with `mainPhoto` on every photo upload/remove/set-main in `AdminHikeForm` — don't set them independently
+- `TagMultiSelect` and `MarkerPicker` are defined as module-level functions at the top of `AdminHikeForm.jsx` (before `EMPTY`) — not in separate files
 
 ## Design System
 All CSS variables are in `src/index.css` under `:root`. Color palette:

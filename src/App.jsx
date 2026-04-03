@@ -46,6 +46,37 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+function matchesAiFilters(hike, aiFilters, drivingDurationMap, userLocation) {
+  if (!aiFilters) return true;
+
+  const maxElevation = aiFilters.maxElevation ?? aiFilters.maxElevationUp;
+
+  if (aiFilters.maxHikeHours != null && hike.time > aiFilters.maxHikeHours) return false;
+  if (aiFilters.minHikeHours != null && hike.time < aiFilters.minHikeHours) return false;
+  if (aiFilters.maxDistanceKm != null && hike.distance > aiFilters.maxDistanceKm) return false;
+  if (aiFilters.minDistanceKm != null && hike.distance < aiFilters.minDistanceKm) return false;
+  if (maxElevation != null && (hike.up == null || hike.up > maxElevation)) return false;
+  if (aiFilters.difficulty && hike.difficulty !== aiFilters.difficulty) return false;
+  if (aiFilters.mountains && hike.mountains !== aiFilters.mountains) return false;
+  if (aiFilters.zone && hike.zone !== aiFilters.zone) return false;
+  if (aiFilters.tip && hike.tip !== aiFilters.tip) return false;
+  if (aiFilters.status && hike.status !== aiFilters.status) return false;
+  if (aiFilters.familyFriendly === true && !hike.familyFriendly) return false;
+  if (aiFilters.strollerAccessible === true && !hike.strollerAccessible) return false;
+  if (aiFilters.toddlerFriendly === true && !hike.toddlerFriendly) return false;
+  if (aiFilters.minAgeRecommended != null && (hike.minAgeRecommended == null || hike.minAgeRecommended < aiFilters.minAgeRecommended)) return false;
+  if (aiFilters.maxAgeRecommended != null && (hike.minAgeRecommended == null || hike.minAgeRecommended > aiFilters.maxAgeRecommended)) return false;
+  if (aiFilters.kidEngagementMin != null && (hike.kidEngagementScore == null || hike.kidEngagementScore < aiFilters.kidEngagementMin)) return false;
+  if (aiFilters.bearRisk && hike.bearRisk !== aiFilters.bearRisk) return false;
+
+  if (aiFilters.maxDriveHours != null && userLocation) {
+    const secs = drivingDurationMap[hike._id];
+    if (secs != null && secs > aiFilters.maxDriveHours * 3600) return false;
+  }
+
+  return true;
+}
+
 async function fetchDrivingDistances(userLoc, hikes) {
   const targets = hikes.filter((h) => h.startLat != null && h.startLng != null);
   if (!targets.length) return {};
@@ -104,24 +135,7 @@ function PublicApp() {
     else sessionStorage.removeItem('userLocation');
   }
 
-  const filtered = hikes.filter((h) => {
-    if (!aiFilters) return true;
-    if (aiFilters.maxHikeHours   != null && h.time     > aiFilters.maxHikeHours)   return false;
-    if (aiFilters.minHikeHours   != null && h.time     < aiFilters.minHikeHours)   return false;
-    if (aiFilters.maxDistanceKm  != null && h.distance > aiFilters.maxDistanceKm)  return false;
-    if (aiFilters.minDistanceKm  != null && h.distance < aiFilters.minDistanceKm)  return false;
-    if (aiFilters.maxElevationUp != null && h.up       > aiFilters.maxElevationUp) return false;
-    if (aiFilters.difficulty && h.difficulty !== aiFilters.difficulty) return false;
-    if (aiFilters.mountains  && h.mountains  !== aiFilters.mountains)  return false;
-    if (aiFilters.zone       && h.zone       !== aiFilters.zone)       return false;
-    if (aiFilters.tip        && h.tip        !== aiFilters.tip)        return false;
-    if (aiFilters.status     && h.status     !== aiFilters.status)     return false;
-    if (aiFilters.maxDriveHours != null && userLocation) {
-      const secs = drivingDurationMap[h._id];
-      if (secs != null && secs > aiFilters.maxDriveHours * 3600) return false;
-    }
-    return true;
-  });
+  const filtered = hikes.filter((h) => matchesAiFilters(h, aiFilters, drivingDurationMap, userLocation));
 
   return (
     <>

@@ -12,6 +12,7 @@ import uploadRouter from './routes/upload.js';
 import restaurantsRouter from './routes/restaurants.js';
 import cavesRouter from './routes/caves.js';
 import aiSearchRouter from './routes/aiSearch.js';
+import usersRouter from './routes/users.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -31,7 +32,9 @@ const loginLimiter = rateLimit({
 });
 
 app.use('/api/auth/login', loginLimiter);
+app.use('/api/users/login', loginLimiter);
 app.use('/api/auth', authRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/hikes', hikesRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/restaurants', restaurantsRouter);

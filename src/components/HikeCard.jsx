@@ -18,10 +18,30 @@ function cardGradient(name) {
   return GRADIENTS[Math.abs(h) % GRADIENTS.length];
 }
 
+const DIFF_BAR = { easy: { pct: 33, color: '#22c55e' }, medium: { pct: 66, color: '#f59e0b' }, hard: { pct: 100, color: '#ef4444' } };
+const BEAR_COLOR = { low: '#22c55e', medium: '#f59e0b', high: '#ef4444' };
+
+function StatBar({ icon, label, pct, color }) {
+  return (
+    <div className="hc-overlay-row">
+      <span className="hc-overlay-icon">{icon}</span>
+      <span className="hc-overlay-label">{label}</span>
+      <div className="hc-overlay-track">
+        <div className="hc-overlay-fill" style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
+
 export default function HikeCard({ hike, distance }) {
   useLang();
   const hikeImg = hike.mainPhoto || hike.photos?.[0] || hike.imageUrl;
   const bg = hikeImg ? undefined : cardGradient(hike.name);
+
+  const diffBar = hike.difficulty ? DIFF_BAR[hike.difficulty] : null;
+  const distPct = hike.distance ? Math.min(hike.distance / 30 * 100, 100) : null;
+  const timePct = hike.time ? Math.min(hike.time / 10 * 100, 100) : null;
+  const upPct   = hike.up   ? Math.min(hike.up / 2000 * 100, 100) : null;
 
   return (
     <article
@@ -40,6 +60,18 @@ export default function HikeCard({ hike, distance }) {
           {hike.status && (
             <span className={`badge status-${hike.status.replace(' ', '-')}`}>{hike.status}</span>
           )}
+        </div>
+
+        {/* Hover overlay */}
+        <div className="hc-overlay">
+          {diffBar  && <StatBar icon="💪" label={t(`difficulty.${hike.difficulty}`)} pct={diffBar.pct} color={diffBar.color} />}
+          {distPct  != null && <StatBar icon="📏" label={`${hike.distance} km`} pct={distPct} color="#818cf8" />}
+          {timePct  != null && <StatBar icon="⏱" label={`${hike.time} h`} pct={timePct} color="#38bdf8" />}
+          {upPct    != null && <StatBar icon="↑" label={`${hike.up} m`} pct={upPct} color="#fb923c" />}
+          <div className="hc-overlay-chips">
+            {hike.familyFriendly && <span className="hc-chip hc-chip-green">👨‍👩‍👧 {t('hike.familyFriendly')}</span>}
+            {hike.bearRisk && <span className="hc-chip" style={{ background: BEAR_COLOR[hike.bearRisk] + '33', color: BEAR_COLOR[hike.bearRisk], border: `1px solid ${BEAR_COLOR[hike.bearRisk]}55` }}>🐻 {hike.bearRisk}</span>}
+          </div>
         </div>
       </div>
 

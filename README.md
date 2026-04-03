@@ -48,6 +48,8 @@ MongoDB Atlas
 | Styling | Plain CSS (design tokens, no framework) |
 | Charts | Recharts |
 | Maps | Leaflet (admin), Mapy.cz iframe (public) |
+| Weather | Open-Meteo API (free) |
+| Distances | OSRM (driving distance, free) |
 | AI Search | Claude Haiku via Anthropic SDK |
 | Deployment | Netlify (frontend), Render (backend) |
 
@@ -75,8 +77,10 @@ hiking/
 │       ├── HikeCarousel.jsx
 │       └── admin/      # AdminPanel, AdminHikeForm, AdminRestaurants, AdminRestaurantForm, AdminCaves, AdminCaveForm
 ├── public/
-│   ├── favicon.svg     # SVG hiker icon
-│   └── logo.svg        # Trail Mix wordmark logo
+│   ├── favicon.svg          # SVG hiker icon
+│   ├── logo.svg             # Trail Mix wordmark logo
+│   └── hiking_markers/      # 15 SVG trail markers (red/yellow/blue × 5 shapes)
+├── hiking_markers/          # source SVGs (same as public/hiking_markers)
 ├── data/               # seed.js, migrate-active.js
 ├── .env
 └── package.json
@@ -131,9 +135,13 @@ Copy `.env.example` to `.env` and fill in your credentials.
 - **RO/EN language switcher** in hero — language persisted in `localStorage`
 - Card grid with hike thumbnails
 - Auto-sliding carousel (hikes with photos)
-- Detail page per hike (`/hike/:id`) with stats, markdown description, weather forecast, Mapy.cz trail map, history log, linked restaurants and caves
-- Cave detail page (`/cave/:id`) with photo gallery grid, **lightbox**, coordinates (with Google Maps link), **weather forecast**, and linked hikes
-- Stats page (`/stats`) with charts — total km, elevation, hours, status/difficulty breakdown, hiking by month, distance by mountains
+- Detail page per hike (`/hike/:id`):
+  - Multi-photo gallery with **lightbox** (Escape to close)
+  - Stats grid — **trail marker card** (SVG images) first, then distance, duration, elevation, trip type, date
+  - **Family & Safety card** — family suitability chips, highlights tags, amenities, safety indicators (color-coded: green/amber/red)
+  - Markdown description, weather forecast, Mapy.cz trail map, history log, linked restaurants and caves
+- Cave detail page (`/cave/:id`) with photo gallery grid, **lightbox**, coordinates (Google Maps link), **weather forecast**, linked hikes
+- Stats page (`/stats`) — total km, elevation, hours, status/difficulty breakdown, hiking by month, distance by mountains
 - Driving distance from user location via OSRM (geolocation or city search)
 
 ### Admin (`/admin`)
@@ -141,13 +149,17 @@ Copy `.env.example` to `.env` and fill in your credentials.
 - CRUD table for hikes, restaurants, and caves (tab navigation)
 - Edit form per hike with prev/next navigation arrows
 - Unsaved changes guard (confirm dialog before leaving)
-- Cloudinary image upload
+- **Multi-photo gallery** — upload multiple Cloudinary photos, click to set main, ✕ to remove
+- **Mountains & Zone** — combobox with suggestions from existing hikes, free-text entry allowed
+- **Trail markers** — visual grid of 15 SVGs, click to select in order, reorder with ↑↓
+- **Restaurants** — tag-style multi-select with pills + dropdown
+- **Family & Safety** — collapsible section with all family/safety fields
 - Markdown description editor with full toolbar
 - Trail starting point via interactive Leaflet map
 - Mapy.cz iframe embed field
 - History entries per hike (add/edit/delete)
-- Linked restaurants and caves via checklist
-- Cave management: photos, rock type, development, vertical extent, altitude, entrance map with **location search** (Nominatim)
+- Linked caves via checkbox list
+- Cave management: multi-photo upload, rock type, development, vertical extent, altitude, entrance map with **location search** (Nominatim)
 
 ---
 

@@ -213,7 +213,7 @@ export default function HikeDetail({ id }) {
                     <span className="detail-chip">🔢 {t('hike.minAge')}: {hike.minAgeRecommended}+</span>
                   )}
                   {hike.kidEngagementScore != null && (
-                    <span className="detail-chip">⭐ {t('hike.kidScore')}: {hike.kidEngagementScore}/5</span>
+                    <span className="detail-chip">{'⭐'.repeat(hike.kidEngagementScore)}{'☆'.repeat(5 - hike.kidEngagementScore)} {t('hike.kidScore')}</span>
                   )}
                 </div>
               </div>

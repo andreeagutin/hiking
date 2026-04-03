@@ -13,7 +13,7 @@ router.post('/login', (req, res) => {
   }
 
   try {
-    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '8h' });
+    const token = jwt.sign({ username, type: 'admin' }, process.env.JWT_SECRET, { expiresIn: '8h' });
     res.json({ token });
   } catch (err) {
     console.error('JWT sign error:', err.message);
