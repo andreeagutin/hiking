@@ -14,7 +14,7 @@ export default function HikeCarousel({ hikes }) {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
 
-  const featured = hikes.filter((h) => h.imageUrl).slice(0, 8);
+  const featured = hikes.filter((h) => h.mainPhoto || h.photos?.[0] || h.imageUrl).slice(0, 8);
 
   const goTo = useCallback((idx) => {
     if (animating) return;
@@ -63,8 +63,8 @@ export default function HikeCarousel({ hikes }) {
           style={{ background: gradient, cursor: 'pointer' }}
           onClick={() => { window.location.href = `/hike/${hike._id}`; }}
         >
-          {hike.imageUrl ? (
-            <img className="carousel-img" src={hike.imageUrl} alt={hike.name} />
+          {(hike.mainPhoto || hike.photos?.[0] || hike.imageUrl) ? (
+            <img className="carousel-img" src={hike.mainPhoto || hike.photos?.[0] || hike.imageUrl} alt={hike.name} />
           ) : (
             <div className="carousel-placeholder">
               <span className="carousel-placeholder-icon">🏔️</span>

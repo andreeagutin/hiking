@@ -20,7 +20,8 @@ function cardGradient(name) {
 
 export default function HikeCard({ hike, distance }) {
   useLang();
-  const bg = hike.imageUrl ? undefined : cardGradient(hike.name);
+  const hikeImg = hike.mainPhoto || hike.photos?.[0] || hike.imageUrl;
+  const bg = hikeImg ? undefined : cardGradient(hike.name);
 
   return (
     <article
@@ -31,8 +32,8 @@ export default function HikeCard({ hike, distance }) {
       onKeyDown={(e) => e.key === 'Enter' && (window.location.href = `/hike/${hike._id}`)}
     >
       <div className="hike-card-media" style={bg ? { background: bg } : {}}>
-        {hike.imageUrl
-          ? <img src={hike.imageUrl} alt={hike.name} className="hike-card-img" loading="lazy" />
+        {hikeImg
+          ? <img src={hikeImg} alt={hike.name} className="hike-card-img" loading="lazy" />
           : <div className="hike-card-no-img"><span>🏔️</span></div>
         }
         <div className="hike-card-media-top">

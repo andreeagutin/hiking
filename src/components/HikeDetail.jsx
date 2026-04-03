@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { marked } from 'marked';
 import { fetchHike } from '../api/hikes.js';
 import WeatherForecast from './WeatherForecast.jsx';
@@ -39,10 +39,59 @@ function StatItem({ icon, value, label }) {
   );
 }
 
+const RISK_COLOR = { low: 'green', medium: 'amber', high: 'red' };
+const SIGNAL_COLOR = { good: 'green', partial: 'amber', none: 'red' };
+const MARK_HEX = { red: '#dc2626', yellow: '#ca8a04', blue: '#2563eb' };
+
+function TrailMarker({ color, shape }) {
+  const c = MARK_HEX[color] || '#374151';
+  const base = (
+    <>
+      <rect width="40" height="28" rx="4" fill="#fff" stroke="#d1d5db" strokeWidth="1.2"/>
+    </>
+  );
+  if (shape === 'stripe') return (
+    <svg width="40" height="28" viewBox="0 0 40 28" style={{ flexShrink: 0 }}>
+      {base}<rect x="0" y="10" width="40" height="8" fill={c} rx="1"/>
+    </svg>
+  );
+  if (shape === 'cross') return (
+    <svg width="40" height="28" viewBox="0 0 40 28" style={{ flexShrink: 0 }}>
+      {base}
+      <rect x="17" y="3" width="6" height="22" fill={c} rx="1"/>
+      <rect x="3" y="11" width="34" height="6" fill={c} rx="1"/>
+    </svg>
+  );
+  if (shape === 'triangle') return (
+    <svg width="40" height="28" viewBox="0 0 40 28" style={{ flexShrink: 0 }}>
+      {base}<polygon points="20,3 37,25 3,25" fill={c}/>
+    </svg>
+  );
+  if (shape === 'dot') return (
+    <svg width="40" height="28" viewBox="0 0 40 28" style={{ flexShrink: 0 }}>
+      {base}<circle cx="20" cy="14" r="8" fill={c}/>
+    </svg>
+  );
+  return (
+    <svg width="40" height="28" viewBox="0 0 40 28" style={{ flexShrink: 0 }}>
+      <rect width="40" height="28" rx="4" fill={c}/>
+    </svg>
+  );
+}
+
 export default function HikeDetail({ id }) {
   useLang();
-  const [hike, setHike]   = useState(null);
-  const [error, setError] = useState('');
+  const [hike, setHike]         = useState(null);
+  const [error, setError]       = useState('');
+  const [lightbox, setLightbox] = useState(null);
+
+  const closeLightbox = useCallback(() => setLightbox(null), []);
+  useEffect(() => {
+    if (!lightbox) return;
+    function onKey(e) { if (e.key === 'Escape') closeLightbox(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox, closeLightbox]);
 
   useEffect(() => {
     fetchHike(id).then(setHike).catch((e) => setError(e.message));
@@ -59,13 +108,14 @@ export default function HikeDetail({ id }) {
 
   if (!hike) return <div className="detail-loading">{t('common.loading')}</div>;
 
-  const heroBg = hike.imageUrl ? undefined : 'linear-gradient(145deg, #1e1b4b 0%, #2e1065 50%, #3b0764 100%)';
+  const hikeImg = hike.mainPhoto || hike.photos?.[0] || hike.imageUrl;
+  const heroBg = hikeImg ? undefined : 'linear-gradient(145deg, #1e1b4b 0%, #2e1065 50%, #3b0764 100%)';
 
   return (
     <div className="detail-page">
       {/* Hero */}
       <div className="detail-hero" style={heroBg ? { background: heroBg } : {}}>
-        {hike.imageUrl && <img src={hike.imageUrl} alt={hike.name} className="detail-hero-img" />}
+        {hikeImg && <img src={hikeImg} alt={hike.name} className="detail-hero-img" />}
         <div className="detail-hero-overlay">
           <button className="detail-back-btn" onClick={() => window.location.href = '/'}>
             {t('common.backToTrails')}
@@ -88,9 +138,39 @@ export default function HikeDetail({ id }) {
         </div>
       </div>
 
+      {/* Lightbox */}
+      {lightbox && (
+        <div className="cave-lightbox" onClick={closeLightbox}>
+          <button className="cave-lightbox-close" onClick={closeLightbox}>✕</button>
+          <img src={lightbox} alt="" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+
       {/* Content */}
       <div className="detail-content">
+
+        {/* Photo gallery */}
+        {hike.photos && hike.photos.length > 1 && (
+          <div className="detail-photo-gallery">
+            <div className="detail-section-label">{t('hike.photos')}</div>
+            <div className="detail-photo-grid">
+              {hike.photos.map((url, i) => (
+                <div key={url} className="detail-photo-thumb" onClick={() => setLightbox(url)}>
+                  <img src={url} alt={`${hike.name} ${i + 1}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="detail-stats-grid">
+          {hike.trailMarkers && hike.trailMarkers.length > 0 && (
+            <div className="detail-stat detail-stat--markers">
+              {hike.trailMarkers.map((id) => (
+                <img key={id} src={`/hiking_markers/${id}.svg`} alt={id} title={id.replace('_', ' ')} className="detail-stat-marker-img" />
+              ))}
+            </div>
+          )}
           <StatItem icon="📏" value={hike.distance ? `${hike.distance} km` : null} label={t('stat.distance')} />
           <StatItem icon="⏱"  value={hike.time     ? `${hike.time} h`     : null} label={t('stat.duration')} />
           <StatItem icon="↑"  value={hike.up        ? `${hike.up} m`       : null} label={t('stat.elevationGain')} />
@@ -98,6 +178,109 @@ export default function HikeDetail({ id }) {
           <StatItem icon="🔄" value={hike.tip ? t(`tripType.${hike.tip}`) : null} label={t('stat.tripType')} />
           <StatItem icon="✓"  value={formatDate(hike.completed)} label={t('stat.completedOn')} />
         </div>
+
+        {/* Family & Safety */}
+        {(hike.familyFriendly || hike.strollerAccessible || hike.toddlerFriendly ||
+          hike.minAgeRecommended != null || hike.kidEngagementScore != null ||
+          (hike.highlights && hike.highlights.length > 0) ||
+          hike.hasRestAreas || hike.hasBathrooms || hike.hasPicknicArea ||
+          hike.nearbyPlayground || hike.safeWaterSource ||
+          hike.bearRisk || hike.sheepdogWarning || hike.mobileSignal ||
+          hike.trailMarkColor || (hike.trailMarkers && hike.trailMarkers.length > 0) ||
+          hike.salvamontPoint) && (
+          <div className="detail-family-card">
+            <div className="detail-family-header">
+              <div className="detail-family-title">{t('hike.familySafety')}</div>
+              {hike.trailMarkers && hike.trailMarkers.length > 0 && (
+                <div className="detail-family-markers">
+                  {hike.trailMarkers.map((id) => (
+                    <img key={id} src={`/hiking_markers/${id}.svg`} alt={id} title={id.replace('_', ' ')} className="detail-marker-img" />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Suitability chips */}
+            {(hike.familyFriendly || hike.strollerAccessible || hike.toddlerFriendly ||
+              hike.minAgeRecommended != null || hike.kidEngagementScore != null) && (
+              <div className="detail-family-section">
+                <div className="detail-family-sub">{t('hike.familySuitability')}</div>
+                <div className="detail-family-chips">
+                  {hike.familyFriendly    && <span className="detail-chip detail-chip--yes">👨‍👩‍👧 {t('hike.familyFriendly')}</span>}
+                  {hike.toddlerFriendly   && <span className="detail-chip detail-chip--yes">🧒 {t('hike.toddlerFriendly')}</span>}
+                  {hike.strollerAccessible && <span className="detail-chip detail-chip--yes">🛒 {t('hike.strollerAccessible')}</span>}
+                  {hike.minAgeRecommended != null && (
+                    <span className="detail-chip">🔢 {t('hike.minAge')}: {hike.minAgeRecommended}+</span>
+                  )}
+                  {hike.kidEngagementScore != null && (
+                    <span className="detail-chip">⭐ {t('hike.kidScore')}: {hike.kidEngagementScore}/5</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Highlights */}
+            {hike.highlights && hike.highlights.length > 0 && (
+              <div className="detail-family-section">
+                <div className="detail-family-sub">{t('hike.highlights')}</div>
+                <div className="detail-family-chips">
+                  {hike.highlights.map((h) => (
+                    <span key={h} className="detail-chip detail-chip--highlight">{h}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Amenities */}
+            {(hike.hasRestAreas || hike.hasBathrooms || hike.hasPicknicArea ||
+              hike.nearbyPlayground || hike.safeWaterSource) && (
+              <div className="detail-family-section">
+                <div className="detail-family-sub">{t('hike.amenities')}</div>
+                <div className="detail-family-chips">
+                  {hike.hasRestAreas && (
+                    <span className="detail-chip detail-chip--yes">
+                      🏕 {t('hike.restAreas')}{hike.restAreaCount != null ? ` (${hike.restAreaCount})` : ''}
+                      {hike.bathroomType && hike.hasBathrooms ? '' : ''}
+                    </span>
+                  )}
+                  {hike.hasBathrooms && (
+                    <span className="detail-chip detail-chip--yes">
+                      🚻 {t('hike.bathrooms')}{hike.bathroomType ? ` · ${hike.bathroomType}` : ''}
+                    </span>
+                  )}
+                  {hike.hasPicknicArea  && <span className="detail-chip detail-chip--yes">🧺 {t('hike.picnicArea')}</span>}
+                  {hike.nearbyPlayground && <span className="detail-chip detail-chip--yes">🛝 {t('hike.playground')}</span>}
+                  {hike.safeWaterSource  && <span className="detail-chip detail-chip--yes">💧 {t('hike.safeWater')}</span>}
+                </div>
+              </div>
+            )}
+
+            {/* Safety */}
+            {(hike.bearRisk || hike.sheepdogWarning || hike.mobileSignal || hike.salvamontPoint) && (
+              <div className="detail-family-section">
+                <div className="detail-family-sub">{t('hike.safety')}</div>
+                <div className="detail-family-chips">
+                  {hike.bearRisk && (
+                    <span className={`detail-chip detail-chip--${RISK_COLOR[hike.bearRisk] || 'neutral'}`}>
+                      🐻 {t('hike.bearRisk')}: {hike.bearRisk}
+                    </span>
+                  )}
+                  {hike.sheepdogWarning && (
+                    <span className="detail-chip detail-chip--amber">🐕 {t('hike.sheepdogWarning')}</span>
+                  )}
+                  {hike.mobileSignal && (
+                    <span className={`detail-chip detail-chip--${SIGNAL_COLOR[hike.mobileSignal] || 'neutral'}`}>
+                      📶 {t('hike.mobileSignal')}: {hike.mobileSignal}
+                    </span>
+                  )}
+                  {hike.salvamontPoint && (
+                    <span className="detail-chip">🆘 {t('hike.salvamontPoint')}: {hike.salvamontPoint}</span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {hike.startLat != null && hike.startLng != null && (
           <WeatherForecast lat={hike.startLat} lng={hike.startLng} />

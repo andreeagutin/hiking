@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { marked } from 'marked';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -41,12 +41,181 @@ function StartMap({ lat, lng, onChange }) {
   );
 }
 
+const ALL_MARKERS = [
+  'red_stripe', 'red_circle', 'red_cross', 'red_ring', 'red_triangle',
+  'yellow_stripe', 'yellow_circle', 'yellow_cross', 'yellow_ring', 'yellow_triangle',
+  'blue_stripe', 'blue_circle', 'blue_cross', 'blue_ring', 'blue_triangle',
+];
+
+function MarkerPicker({ value, onChange }) {
+  function toggle(id) {
+    if (value.includes(id)) onChange(value.filter((v) => v !== id));
+    else onChange([...value, id]);
+  }
+  function moveUp(i) {
+    if (i === 0) return;
+    const next = [...value];
+    [next[i - 1], next[i]] = [next[i], next[i - 1]];
+    onChange(next);
+  }
+  function moveDown(i) {
+    if (i === value.length - 1) return;
+    const next = [...value];
+    [next[i], next[i + 1]] = [next[i + 1], next[i]];
+    onChange(next);
+  }
+  return (
+    <div className="marker-picker">
+      <div className="marker-picker-grid">
+        {ALL_MARKERS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            className={`marker-picker-btn${value.includes(id) ? ' selected' : ''}`}
+            onClick={() => toggle(id)}
+            title={id.replace('_', ' ')}
+          >
+            <img src={`/hiking_markers/${id}.svg`} alt={id} />
+            {value.includes(id) && (
+              <span className="marker-picker-num">{value.indexOf(id) + 1}</span>
+            )}
+          </button>
+        ))}
+      </div>
+      {value.length > 0 && (
+        <div className="marker-picker-selected">
+          {value.map((id, i) => (
+            <div key={id} className="marker-picker-row">
+              <span className="marker-picker-order">{i + 1}</span>
+              <img src={`/hiking_markers/${id}.svg`} alt={id} className="marker-picker-row-img" />
+              <span className="marker-picker-label">{id.replace('_', ' ')}</span>
+              <div className="marker-picker-actions">
+                <button type="button" onClick={() => moveUp(i)} disabled={i === 0}>↑</button>
+                <button type="button" onClick={() => moveDown(i)} disabled={i === value.length - 1}>↓</button>
+                <button type="button" className="marker-picker-remove" onClick={() => toggle(id)}>×</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TagMultiSelect({ options, value, onChange, getLabel, getId, placeholder = 'Select…' }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  function toggle(id) {
+    if (value.includes(id)) onChange(value.filter((v) => v !== id));
+    else onChange([...value, id]);
+  }
+
+  return (
+    <div className="tag-ms" ref={ref}>
+      <div className="tag-ms-control" onClick={() => setOpen((o) => !o)}>
+        <div className="tag-ms-tags">
+          {value.length === 0 && <span className="tag-ms-placeholder">{placeholder}</span>}
+          {value.map((id) => {
+            const opt = options.find((o) => getId(o) === id);
+            if (!opt) return null;
+            return (
+              <span key={id} className="tag-ms-tag">
+                {getLabel(opt)}
+                <button type="button" className="tag-ms-remove" onClick={(e) => { e.stopPropagation(); toggle(id); }}>×</button>
+              </span>
+            );
+          })}
+        </div>
+        {value.length > 0 && (
+          <button type="button" className="tag-ms-clear" onClick={(e) => { e.stopPropagation(); onChange([]); }}>×</button>
+        )}
+      </div>
+      {open && (
+        <div className="tag-ms-dropdown">
+          {options.map((opt) => {
+            const id = getId(opt);
+            return (
+              <div key={id} className={`tag-ms-option${value.includes(id) ? ' selected' : ''}`}
+                onMouseDown={(e) => { e.preventDefault(); toggle(id); }}>
+                {getLabel(opt)}
+              </div>
+            );
+          })}
+          {options.length === 0 && <div className="tag-ms-empty">No options</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const EMPTY = {
   name: '', time: null, distance: null, tip: null,
   up: null, down: null, difficulty: null, mountains: null,
-  status: 'Not started', completed: null, zone: null, imageUrl: null, description: null,
-  startLat: null, startLng: null, mapUrl: null, caves: [],
+  status: 'Not started', completed: null, zone: null, imageUrl: null,
+  photos: [], mainPhoto: null, description: null,
+  startLat: null, startLng: null, mapUrl: null, restaurants: [], caves: [],
+  familyFriendly: false, minAgeRecommended: null, strollerAccessible: false, toddlerFriendly: false,
+  kidEngagementScore: null, highlights: [],
+  hasRestAreas: false, restAreaCount: null, hasBathrooms: false, bathroomType: null,
+  hasPicknicArea: false, nearbyPlayground: false,
+  bearRisk: null, sheepdogWarning: false, safeWaterSource: false, mobileSignal: null,
+  trailMarkColor: null, trailMarkShape: null, trailMarkers: [], salvamontPoint: null,
 };
+
+const NUMERIC_FIELDS = ['time', 'distance', 'up', 'down', 'minAgeRecommended', 'restAreaCount', 'kidEngagementScore'];
+const FAMILY_SAFETY_BOOL_FIELDS = [
+  'familyFriendly',
+  'strollerAccessible',
+  'toddlerFriendly',
+  'hasRestAreas',
+  'hasBathrooms',
+  'hasPicknicArea',
+  'nearbyPlayground',
+  'sheepdogWarning',
+  'safeWaterSource',
+];
+
+function normalizeHikeForm(data = {}) {
+  const photos = Array.isArray(data.photos) && data.photos.length > 0
+    ? data.photos
+    : (data.imageUrl ? [data.imageUrl] : []);
+  const mainPhoto = data.mainPhoto || photos[0] || null;
+  return {
+    ...EMPTY,
+    ...data,
+    photos,
+    mainPhoto,
+    restaurants: Array.isArray(data.restaurants) ? data.restaurants : [],
+    caves: Array.isArray(data.caves) ? data.caves : [],
+    highlights: Array.isArray(data.highlights) ? data.highlights.filter(Boolean) : [],
+    trailMarkers: Array.isArray(data.trailMarkers) ? data.trailMarkers.filter(Boolean) : [],
+    history: Array.isArray(data.history) ? data.history : [],
+  };
+}
+
+function hasFamilySafetyData(form) {
+  return FAMILY_SAFETY_BOOL_FIELDS.some((key) => !!form[key])
+    || form.minAgeRecommended != null
+    || form.kidEngagementScore != null
+    || (form.highlights || []).length > 0
+    || form.restAreaCount != null
+    || form.bathroomType != null
+    || form.bearRisk != null
+    || form.mobileSignal != null
+    || form.trailMarkColor != null
+    || form.trailMarkShape != null
+    || (form.trailMarkers || []).length > 0
+    || !!form.salvamontPoint;
+}
 
 // YYYY-MM-DD → DD-MM-YYYY (display)
 function toDisplay(val) {
@@ -260,7 +429,7 @@ export default function AdminHikeForm({ id }) {
     if (!isNew) {
       fetchHike(id)
         .then((h) => {
-          const normalized = { ...h, completed: toInputDate(h.completed) };
+          const normalized = normalizeHikeForm({ ...h, completed: toInputDate(h.completed) });
           setForm(normalized);
           setOriginal(normalized);
           setLoading(false);
@@ -278,31 +447,54 @@ export default function AdminHikeForm({ id }) {
     window.location.href = `/admin/hike/${hike._id}/edit`;
   }
 
-  async function handleImagePick(e) {
+  async function handlePhotoUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     setError('');
     try {
       const { url } = await uploadImage(file);
-      setForm((f) => ({ ...f, imageUrl: url }));
+      setForm((f) => ({
+        ...f,
+        photos: [...(f.photos || []), url],
+        mainPhoto: f.mainPhoto || url,
+        imageUrl: f.imageUrl || url,
+      }));
     } catch (err) {
       setError(err.message);
     } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
 
+  function handleSetMain(url) {
+    setForm((f) => ({ ...f, mainPhoto: url, imageUrl: url }));
+  }
+
+  function handleRemovePhoto(url) {
+    setForm((f) => {
+      const photos = (f.photos || []).filter((p) => p !== url);
+      const mainPhoto = f.mainPhoto === url ? (photos[0] || null) : f.mainPhoto;
+      return { ...f, photos, mainPhoto, imageUrl: mainPhoto };
+    });
+  }
+
   function set(key) {
-    const NUM = ['time', 'distance', 'up', 'down'];
     return (e) => {
       const raw = e.target.value;
       setForm((f) => ({
         ...f,
-        [key]: NUM.includes(key)
+        [key]: NUMERIC_FIELDS.includes(key)
           ? (raw === '' ? null : parseFloat(raw))
           : (raw === '' ? null : raw),
       }));
+    };
+  }
+
+  function setCheckbox(key) {
+    return (e) => {
+      setForm((f) => ({ ...f, [key]: e.target.checked }));
     };
   }
 
@@ -427,46 +619,49 @@ export default function AdminHikeForm({ id }) {
 
         <form className="admin-form-card" onSubmit={handleSave}>
 
-          {/* Image preview */}
-          {form.imageUrl && (
-            <div className="form-image-preview">
-              <img src={form.imageUrl} alt="Preview" />
-            </div>
-          )}
-
-          <div className="form-section-title">Photo</div>
-          <div className="form-grid">
-            <Field label="Upload image" full>
-              <div className="form-upload-row">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={handleImagePick}
-                />
-                <button
-                  type="button"
-                  className="btn btn-upload"
-                  onClick={() => fileInputRef.current.click()}
-                  disabled={uploading}
-                >
-                  {uploading ? 'Uploading…' : form.imageUrl ? 'Replace photo' : 'Choose photo'}
-                </button>
-                {form.imageUrl && (
-                  <button
-                    type="button"
-                    className="btn btn-upload-remove"
-                    onClick={() => setForm((f) => ({ ...f, imageUrl: null }))}
+          <div className="form-section-title">Photos</div>
+          <div className="cave-photos-section">
+            {(form.photos || []).length > 0 && (
+              <div className="cave-photo-grid">
+                {(form.photos || []).map((url) => (
+                  <div
+                    key={url}
+                    className={`cave-photo-thumb${form.mainPhoto === url ? ' cave-photo-main' : ''}`}
+                    onClick={() => handleSetMain(url)}
+                    title="Click to set as main photo"
                   >
-                    Remove
-                  </button>
-                )}
-                {form.imageUrl && (
-                  <span className="upload-filename">{form.imageUrl.split('/').pop()}</span>
-                )}
+                    <img src={url} alt="" />
+                    {form.mainPhoto === url && <div className="cave-photo-main-badge">✓ Main</div>}
+                    <button
+                      type="button"
+                      className="cave-photo-remove"
+                      onClick={(e) => { e.stopPropagation(); handleRemovePhoto(url); }}
+                      title="Remove photo"
+                    >✕</button>
+                  </div>
+                ))}
               </div>
-            </Field>
+            )}
+            <div className="form-upload-row" style={{ marginTop: (form.photos || []).length > 0 ? 12 : 0 }}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handlePhotoUpload}
+              />
+              <button
+                type="button"
+                className="btn btn-upload"
+                onClick={() => fileInputRef.current.click()}
+                disabled={uploading}
+              >
+                {uploading ? 'Uploading…' : '+ Add photo'}
+              </button>
+              {(form.photos || []).length > 0 && (
+                <span className="upload-filename">{(form.photos || []).length} photo{(form.photos || []).length !== 1 ? 's' : ''} · click a photo to set as main</span>
+              )}
+            </div>
           </div>
 
           <div className="form-section-title">Description</div>
@@ -481,10 +676,16 @@ export default function AdminHikeForm({ id }) {
               <input type="text" value={form.name ?? ''} onChange={set('name')} placeholder="Trail name" required />
             </Field>
             <Field label="Mountains">
-              <input type="text" value={form.mountains ?? ''} onChange={set('mountains')} placeholder="e.g. Bucegi" />
+              <input type="text" list="mountains-list" value={form.mountains ?? ''} onChange={set('mountains')} placeholder="e.g. Bucegi" />
+              <datalist id="mountains-list">
+                {[...new Set(allHikes.map(h => h.mountains).filter(Boolean))].sort().map(m => <option key={m} value={m} />)}
+              </datalist>
             </Field>
             <Field label="Zone">
-              <input type="text" value={form.zone ?? ''} onChange={set('zone')} placeholder="e.g. Prahova" />
+              <input type="text" list="zones-list" value={form.zone ?? ''} onChange={set('zone')} placeholder="e.g. Prahova" />
+              <datalist id="zones-list">
+                {[...new Set(allHikes.map(h => h.zone).filter(Boolean))].sort().map(z => <option key={z} value={z} />)}
+              </datalist>
             </Field>
           </div>
 
@@ -538,6 +739,124 @@ export default function AdminHikeForm({ id }) {
             </Field>
           </div>
 
+          <details className="form-collapsible" open={hasFamilySafetyData(form)}>
+            <summary className="form-collapsible-summary">Family &amp; Safety</summary>
+            <div className="form-collapsible-body">
+              <div className="form-grid">
+                <Field label="Family suitability" full>
+                  <div className="form-checkbox-grid">
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.familyFriendly} onChange={setCheckbox('familyFriendly')} />
+                      <span>Family-friendly</span>
+                    </label>
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.strollerAccessible} onChange={setCheckbox('strollerAccessible')} />
+                      <span>Stroller accessible</span>
+                    </label>
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.toddlerFriendly} onChange={setCheckbox('toddlerFriendly')} />
+                      <span>Toddler-friendly</span>
+                    </label>
+                  </div>
+                </Field>
+
+                <Field label="Minimum age recommended">
+                  <input type="number" min="0" value={form.minAgeRecommended ?? ''} onChange={set('minAgeRecommended')} placeholder="e.g. 5" />
+                </Field>
+                <Field label="Kid engagement score (1-5)">
+                  <input type="number" min="1" max="5" step="1" value={form.kidEngagementScore ?? ''} onChange={set('kidEngagementScore')} placeholder="1-5" />
+                </Field>
+
+                <Field label="Amenities" full>
+                  <div className="form-checkbox-grid">
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.hasRestAreas} onChange={setCheckbox('hasRestAreas')} />
+                      <span>Rest areas on trail</span>
+                    </label>
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.hasBathrooms} onChange={setCheckbox('hasBathrooms')} />
+                      <span>Bathrooms nearby</span>
+                    </label>
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.hasPicknicArea} onChange={setCheckbox('hasPicknicArea')} />
+                      <span>Picnic area</span>
+                    </label>
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.nearbyPlayground} onChange={setCheckbox('nearbyPlayground')} />
+                      <span>Playground near trailhead</span>
+                    </label>
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.safeWaterSource} onChange={setCheckbox('safeWaterSource')} />
+                      <span>Safe water source</span>
+                    </label>
+                  </div>
+                </Field>
+
+                <Field label="Rest area count">
+                  <input type="number" min="0" value={form.restAreaCount ?? ''} onChange={set('restAreaCount')} placeholder="Approximate count" />
+                </Field>
+                <Field label="Bathroom type">
+                  <select value={form.bathroomType ?? ''} onChange={set('bathroomType')}>
+                    <option value="">—</option>
+                    <option value="flush">flush</option>
+                    <option value="pit">pit</option>
+                    <option value="none">none</option>
+                  </select>
+                </Field>
+
+                <Field label="Safety flags" full>
+                  <div className="form-checkbox-grid">
+                    <label className="form-checkbox-item">
+                      <input type="checkbox" checked={!!form.sheepdogWarning} onChange={setCheckbox('sheepdogWarning')} />
+                      <span>Seasonal sheepdog warning</span>
+                    </label>
+                  </div>
+                </Field>
+
+                <Field label="Bear risk">
+                  <select value={form.bearRisk ?? ''} onChange={set('bearRisk')}>
+                    <option value="">—</option>
+                    <option value="low">low</option>
+                    <option value="medium">medium</option>
+                    <option value="high">high</option>
+                  </select>
+                </Field>
+                <Field label="Mobile signal">
+                  <select value={form.mobileSignal ?? ''} onChange={set('mobileSignal')}>
+                    <option value="">—</option>
+                    <option value="good">good</option>
+                    <option value="partial">partial</option>
+                    <option value="none">none</option>
+                  </select>
+                </Field>
+                <Field label="Trail markers" full>
+                  <MarkerPicker
+                    value={form.trailMarkers || []}
+                    onChange={(v) => setForm((f) => ({ ...f, trailMarkers: v }))}
+                  />
+                </Field>
+                <Field label="Salvamont point" full>
+                  <input type="text" value={form.salvamontPoint ?? ''} onChange={set('salvamontPoint')} placeholder="Nearest Salvamont post or phone" />
+                </Field>
+                <Field label="Highlights" full>
+                  <input
+                    type="text"
+                    value={(form.highlights || []).join(', ')}
+                    onChange={(e) => {
+                      const highlights = e.target.value
+                        .split(',')
+                        .map((item) => item.trim())
+                        .filter(Boolean);
+                      setForm((f) => ({ ...f, highlights }));
+                    }}
+                    placeholder="waterfall, stream crossing, rock scramble, marmots"
+                  />
+                  <div className="form-input-hint">Comma-separated tags shown to families.</div>
+                </Field>
+              </div>
+            </div>
+          </details>
+
           <div className="form-section-title">Starting point</div>
           <div className="start-map-wrap">
             <p className="start-map-hint">Click on the map to set the trail starting point.</p>
@@ -573,36 +892,18 @@ export default function AdminHikeForm({ id }) {
           {!isNew && (
             <>
               <div className="form-section-title">Restaurants</div>
-              <div className="restaurant-link-list">
-                {allRestaurants.length === 0 && (
-                  <p className="restaurant-link-empty">No restaurants yet. <a href="/admin/restaurants">Add one →</a></p>
-                )}
-                {allRestaurants.map((r) => {
-                  const linked = (form.restaurants || []).some((x) => (x._id || x) === r._id);
-                  return (
-                    <label key={r._id} className={`restaurant-link-item${linked ? ' linked' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={linked}
-                        onChange={() => {
-                          setForm((f) => {
-                            const ids = (f.restaurants || []).map((x) => x._id || x);
-                            return {
-                              ...f,
-                              restaurants: linked
-                                ? ids.filter((id) => id !== r._id)
-                                : [...ids, r._id],
-                            };
-                          });
-                        }}
-                      />
-                      <span className="restaurant-link-name">{r.name}</span>
-                      {r.type && <span className="restaurant-link-type">{r.type}</span>}
-                      {r.zone && <span className="restaurant-link-zone">{r.zone}</span>}
-                    </label>
-                  );
-                })}
-              </div>
+              {allRestaurants.length === 0 ? (
+                <p className="restaurant-link-empty">No restaurants yet. <a href="/admin/restaurants">Add one →</a></p>
+              ) : (
+                <TagMultiSelect
+                  options={allRestaurants}
+                  value={(form.restaurants || []).map((x) => x._id || x)}
+                  onChange={(ids) => setForm((f) => ({ ...f, restaurants: ids }))}
+                  getId={(r) => r._id}
+                  getLabel={(r) => `${r.name}${r.type ? ` · ${r.type}` : ''}${r.zone ? ` · ${r.zone}` : ''}`}
+                  placeholder="Select restaurants…"
+                />
+              )}
 
               <div className="form-section-title">Caves</div>
               <div className="restaurant-link-list">

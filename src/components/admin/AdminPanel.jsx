@@ -15,8 +15,8 @@ function ViewRow({ hike, onDelete, onToggleActive }) {
   return (
     <tr className={`admin-row${hike.active === false ? ' admin-row--inactive' : ''}`} onClick={() => { window.location.href = `/admin/hike/${hike._id}/edit`; }}>
       <td className="admin-cell-img">
-        {hike.imageUrl
-          ? <img src={hike.imageUrl} alt="" className="admin-thumb" />
+        {(hike.mainPhoto || hike.photos?.[0] || hike.imageUrl)
+          ? <img src={hike.mainPhoto || hike.photos?.[0] || hike.imageUrl} alt="" className="admin-thumb" />
           : <div className="admin-thumb-placeholder" />}
       </td>
       <td className="admin-cell-name">{hike.name || <em className="admin-no-name">Unnamed</em>}</td>

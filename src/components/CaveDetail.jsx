@@ -150,7 +150,7 @@ export default function CaveDetail({ id }) {
             <div className="cave-hikes-list">
               {hikes.map((h) => (
                 <a key={h._id} href={`/hike/${h._id}`} className="cave-hike-public-card">
-                  {h.imageUrl && <img src={h.imageUrl} alt={h.name} className="cave-hike-thumb" />}
+                  {(h.mainPhoto || h.photos?.[0] || h.imageUrl) && <img src={h.mainPhoto || h.photos?.[0] || h.imageUrl} alt={h.name} className="cave-hike-thumb" />}
                   <div className="cave-hike-info">
                     <div className="cave-hike-name">{h.name}</div>
                     <div className="cave-hike-meta">
