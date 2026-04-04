@@ -1,6 +1,6 @@
 import { getToken } from './auth.js';
 
-const BASE = '/api/caves';
+const BASE = '/api/poi';
 
 function authHeaders() {
   const token = getToken();
@@ -9,32 +9,32 @@ function authHeaders() {
     : { 'Content-Type': 'application/json' };
 }
 
-export async function fetchCaves() {
+export async function fetchPois() {
   const res = await fetch(BASE);
-  if (!res.ok) throw new Error('Failed to load caves');
+  if (!res.ok) throw new Error('Failed to load points of interest');
   return res.json();
 }
 
-export async function fetchCave(id) {
+export async function fetchPoi(id) {
   const res = await fetch(`${BASE}/${id}`);
-  if (!res.ok) throw new Error('Cave not found');
+  if (!res.ok) throw new Error('Point of interest not found');
   return res.json();
 }
 
-export async function createCave(data) {
+export async function createPoi(data) {
   const res = await fetch(BASE, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
-  if (!res.ok) throw new Error('Failed to create cave');
+  if (!res.ok) throw new Error('Failed to create point of interest');
   return res.json();
 }
 
-export async function updateCave(id, data) {
+export async function updatePoi(id, data) {
   const res = await fetch(`${BASE}/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
-  if (!res.ok) throw new Error('Failed to update cave');
+  if (!res.ok) throw new Error('Failed to update point of interest');
   return res.json();
 }
 
-export async function deleteCave(id) {
+export async function deletePoi(id) {
   const res = await fetch(`${BASE}/${id}`, { method: 'DELETE', headers: authHeaders() });
-  if (!res.ok) throw new Error('Failed to delete cave');
+  if (!res.ok) throw new Error('Failed to delete point of interest');
   return res.json();
 }

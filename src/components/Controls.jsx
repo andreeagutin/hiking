@@ -14,12 +14,6 @@ export default function Controls({ filters, onChange, hikes }) {
           value={filters.q}
           onChange={set('q')}
         />
-        <select value={filters.status} onChange={set('status')}>
-          <option value="">All statuses</option>
-          <option>Done</option>
-          <option>In progress</option>
-          <option>Not started</option>
-        </select>
         <select value={filters.difficulty} onChange={set('difficulty')}>
           <option value="">All difficulties</option>
           <option>easy</option>

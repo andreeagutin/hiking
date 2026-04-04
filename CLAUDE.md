@@ -166,7 +166,6 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
   down:        Number | null   // elevation loss (m)
   difficulty:  'easy' | 'medium' | null
   mountains:   String | null
-  status:      'Done' | 'In progress' | 'Not started'  // default: 'Not started'
   completed:   String | null   // stored as YYYY-MM-DD, displayed as DD-MM-YYYY in admin / DD-Mon-YYYY in public
   zone:        String | null
   imageUrl:    String | null   // legacy single photo (kept for backward compat; use mainPhoto/photos instead)
@@ -248,7 +247,8 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 ## Stats Page (`/stats`)
 - Aggregates hike data client-side (fetched once on mount)
 - Totals: km hiked, elevation gain, hours on trail, completed trails
-- Charts via Recharts: status breakdown (pie), difficulty breakdown (pie), hiking by month (bar), distance by mountains (bar)
+- Charts via Recharts: difficulty breakdown (pie), hiking by month (bar), distance by mountains (bar)
+- "Completed" = hikes that have a `completed` date set
 - Link from hero section ("View stats →")
 
 ## User Location & Driving Distances
@@ -262,7 +262,7 @@ Vite handles SPA fallback automatically in dev. In production, Express serves `d
 - User types a free-form query in Romanian or English (e.g. "drumeție ușoară max 2h" or "easy hike, max 10 km")
 - `POST /api/ai-search` — handled by `server/routes/aiSearch.js` using Claude Haiku (`claude-haiku-4-5-20251001`)
 - System prompt instructs the model to return structured JSON filters; no markdown wrappers allowed
-- Supported filter fields: `maxHikeHours`, `minHikeHours`, `maxDistanceKm`, `minDistanceKm`, `maxElevationUp`, `difficulty`, `mountains`, `zone`, `tip`, `status`, `maxDriveHours`
+- Supported filter fields: `maxHikeHours`, `minHikeHours`, `maxDistanceKm`, `minDistanceKm`, `maxElevationUp`, `difficulty`, `mountains`, `zone`, `tip`, `maxDriveHours`
 - `maxDriveHours` is applied client-side against OSRM distances (requires user location to be set)
 - Response includes an `explanation` string in the same language as the query — displayed as a pill in the hero
 - Requires `ANTHROPIC_API_KEY` in `.env`; query is validated (required, max 500 chars) before calling Claude
@@ -308,7 +308,7 @@ All UI strings go through `src/i18n.js`. Two languages supported: **Romanian (`r
 
 - Use `t('key')` in components. Never hardcode display strings.
 - Use `t('key', { var: value })` for interpolation (e.g. `t('weather.forecastLabel', { n: 7 })`).
-- Keys are organized by section: `common`, `tripType`, `difficulty`, `status`, `stat`, `cave.stat`, `hike`, `history`, `cave`, `hero`, `filter`, `location`, `card`, `carousel`, `weather`, `stats`, `admin.*`, `login`.
+- Keys are organized by section: `common`, `tripType`, `difficulty`, `stat`, `cave.stat`, `hike`, `history`, `cave`, `hero`, `filter`, `location`, `card`, `carousel`, `weather`, `stats`, `admin.*`, `login`.
 - Language is persisted in `localStorage` under key `lang`; defaults to `'en'`.
 - Change language with `setLang('ro')` / `setLang('en')` from `src/i18n.js`.
 - Components that need to re-render on language change must call `useLang()` from `src/hooks/useLang.js` — it subscribes to the `window` `'langchange'` event dispatched by `setLang()`.

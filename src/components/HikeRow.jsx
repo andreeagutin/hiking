@@ -18,7 +18,6 @@ export function ViewRow({ hike }) {
       <td>{n(hike.down)}</td>
       <td><Badge value={hike.difficulty} prefix="diff" /></td>
       <td>{n(hike.mountains)}</td>
-      <td><Badge value={hike.status} prefix="status" /></td>
       <td>{n(hike.completed)}</td>
       <td>{n(hike.zone)}</td>
     </tr>

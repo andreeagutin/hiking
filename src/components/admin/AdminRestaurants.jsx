@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { fetchRestaurants, createRestaurant, deleteRestaurant } from '../../api/restaurants.js';
+import { fetchRestaurants, createRestaurant, updateRestaurant, deleteRestaurant } from '../../api/restaurants.js';
 import { clearToken } from '../../api/auth.js';
+import ConfirmModal from './ConfirmModal.jsx';
 
 const EMPTY = { name: '', type: null, mountains: null, zone: null, address: null, link: null, notes: null };
 
@@ -8,8 +9,7 @@ function AdminNavTabs({ active }) {
   return (
     <div className="admin-nav-tabs">
       <button className={`admin-nav-tab${active === 'hikes' ? ' active' : ''}`} onClick={() => { window.location.href = '/admin'; }}>Hikes</button>
-      <button className={`admin-nav-tab${active === 'restaurants' ? ' active' : ''}`} onClick={() => { window.location.href = '/admin/restaurants'; }}>Restaurants</button>
-      <button className={`admin-nav-tab${active === 'caves' ? ' active' : ''}`} onClick={() => { window.location.href = '/admin/caves'; }}>Caves</button>
+      <button className={`admin-nav-tab${active === 'poi' ? ' active' : ''}`} onClick={() => { window.location.href = '/admin/poi'; }}>Puncte de interes</button>
     </div>
   );
 }
@@ -17,10 +17,11 @@ function AdminNavTabs({ active }) {
 export { AdminNavTabs };
 
 export default function AdminRestaurants() {
-  const [restaurants, setRestaurants] = useState([]);
-  const [search, setSearch] = useState('');
-  const [error, setError]   = useState('');
-  const [toast, setToast]   = useState('');
+  const [restaurants, setRestaurants]   = useState([]);
+  const [search, setSearch]             = useState('');
+  const [error, setError]               = useState('');
+  const [toast, setToast]               = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null); // { id, name }
 
   useEffect(() => {
     fetchRestaurants().then(setRestaurants).catch((e) => setError(e.message));
@@ -35,8 +36,16 @@ export default function AdminRestaurants() {
     } catch (e) { setError(e.message); }
   }
 
-  async function handleDelete(id, name) {
-    if (!confirm(`Delete "${name}"?`)) return;
+  async function handleToggleActive(id, currentActive) {
+    try {
+      await updateRestaurant(id, { active: !currentActive });
+      setRestaurants((prev) => prev.map((r) => r._id === id ? { ...r, active: !currentActive } : r));
+    } catch (e) { setError(e.message); }
+  }
+
+  async function handleDelete() {
+    const { id } = confirmDelete;
+    setConfirmDelete(null);
     try {
       await deleteRestaurant(id);
       setRestaurants((prev) => prev.filter((r) => r._id !== id));
@@ -84,23 +93,33 @@ export default function AdminRestaurants() {
                 <th>Mountains</th>
                 <th>Zone</th>
                 <th>Address</th>
+                <th title="Visible on site">Active</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={6} className="no-results">No restaurants found.</td></tr>
+                <tr><td colSpan={7} className="no-results">No restaurants found.</td></tr>
               ) : (
                 filtered.map((r) => (
-                  <tr key={r._id} className="admin-row" onClick={() => { window.location.href = `/admin/restaurant/${r._id}/edit`; }}>
+                  <tr key={r._id} className={`admin-row${r.active === false ? ' admin-row--inactive' : ''}`} onClick={() => { window.location.href = `/admin/restaurant/${r._id}/edit`; }}>
                     <td className="admin-cell-name">{r.name}</td>
                     <td>{r.type || '—'}</td>
                     <td>{r.mountains || '—'}</td>
                     <td>{r.zone || '—'}</td>
                     <td>{r.address || '—'}</td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="admin-active-toggle"
+                        checked={r.active !== false}
+                        onChange={() => handleToggleActive(r._id, r.active !== false)}
+                        title="Visible on site"
+                      />
+                    </td>
                     <td className="actions" onClick={(e) => e.stopPropagation()}>
                       <button className="btn-edit" onClick={() => { window.location.href = `/admin/restaurant/${r._id}/edit`; }}>Edit</button>
-                      <button className="btn-delete" onClick={() => handleDelete(r._id, r.name)}>✕</button>
+                      <button className="btn-delete" onClick={() => setConfirmDelete({ id: r._id, name: r.name })}>✕</button>
                     </td>
                   </tr>
                 ))
@@ -111,6 +130,13 @@ export default function AdminRestaurants() {
       </div>
 
       {toast && <div className="toast show">{toast}</div>}
+      {confirmDelete && (
+        <ConfirmModal
+          message={`Ștergi "${confirmDelete.name}"?`}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }

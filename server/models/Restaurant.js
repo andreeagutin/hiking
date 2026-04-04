@@ -9,6 +9,7 @@ const restaurantSchema = new mongoose.Schema(
     address:   { type: String, default: null },
     link:      { type: String, default: null },
     notes:     { type: String, default: null },
+    active:    { type: Boolean, default: true },
   },
   { timestamps: true }
 );

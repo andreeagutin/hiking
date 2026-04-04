@@ -151,9 +151,9 @@ function AiSearch({ hikes, userLocation, aiExplanation, onAiSearch, onAiClear })
 
 export default function HeroSearch({ hikes, userLocation, onLocationChange, aiExplanation, onAiSearch, onAiClear }) {
   useLang();
-  const done    = hikes.filter((h) => h.status === 'Done').length;
+  const done    = hikes.filter((h) => h.completed).length;
   const kmHiked = hikes
-    .filter((h) => h.status === 'Done')
+    .filter((h) => h.completed)
     .reduce((s, h) => s + (h.distance || 0), 0)
     .toFixed(0);
 

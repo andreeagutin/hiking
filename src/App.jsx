@@ -8,28 +8,28 @@ import AdminPanel from './components/admin/AdminPanel.jsx';
 import AdminHikeForm from './components/admin/AdminHikeForm.jsx';
 import AdminRestaurants from './components/admin/AdminRestaurants.jsx';
 import AdminRestaurantForm from './components/admin/AdminRestaurantForm.jsx';
-import AdminCaves from './components/admin/AdminCaves.jsx';
-import AdminCaveForm from './components/admin/AdminCaveForm.jsx';
-import CaveDetail from './components/CaveDetail.jsx';
+import AdminPoi from './components/admin/AdminPoi.jsx';
+import AdminPoiForm from './components/admin/AdminPoiForm.jsx';
+import PoiDetail from './components/PoiDetail.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
 
 
-const pathname = window.location.pathname;
+const pathname = window.location.pathname.replace(/\/$/, '') || '/';
 const hikeDetailMatch       = pathname.match(/^\/hike\/([^/]+)$/);
 const adminEditMatch        = pathname.match(/^\/admin\/hike\/([^/]+)\/edit$/);
 const adminRestaurantEdit   = pathname.match(/^\/admin\/restaurant\/([^/]+)\/edit$/);
-const adminCaveEdit         = pathname.match(/^\/admin\/cave\/([^/]+)\/edit$/);
+const adminPoiEdit          = pathname.match(/^\/admin\/poi\/([^/]+)\/edit$/);
 const isAdminNewRoute       = pathname === '/admin/hike/new';
 const isAdminRestaurantsRoute = pathname === '/admin/restaurants';
 const isAdminNewRestaurant  = pathname === '/admin/restaurant/new';
-const isAdminCavesRoute     = pathname === '/admin/caves';
-const isAdminNewCave        = pathname === '/admin/cave/new';
+const isAdminPoiRoute       = pathname === '/admin/poi';
+const isAdminNewPoi         = pathname === '/admin/poi/new';
 const isStatsRoute          = pathname === '/stats';
-const caveDetailMatch       = pathname.match(/^\/cave\/([^/]+)$/);
+const poiDetailMatch        = pathname.match(/^\/poi\/([^/]+)$/);
 const isAdminRoute          = pathname === '/admin' || !!adminEditMatch || isAdminNewRoute
   || isAdminRestaurantsRoute || !!adminRestaurantEdit || isAdminNewRestaurant
-  || isAdminCavesRoute || !!adminCaveEdit || isAdminNewCave;
+  || isAdminPoiRoute || !!adminPoiEdit || isAdminNewPoi;
 
 function AdminAuthGate({ children }) {
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
@@ -60,7 +60,6 @@ function matchesAiFilters(hike, aiFilters, drivingDurationMap, userLocation) {
   if (aiFilters.mountains && hike.mountains !== aiFilters.mountains) return false;
   if (aiFilters.zone && hike.zone !== aiFilters.zone) return false;
   if (aiFilters.tip && hike.tip !== aiFilters.tip) return false;
-  if (aiFilters.status && hike.status !== aiFilters.status) return false;
   if (aiFilters.familyFriendly === true && !hike.familyFriendly) return false;
   if (aiFilters.strollerAccessible === true && !hike.strollerAccessible) return false;
   if (aiFilters.toddlerFriendly === true && !hike.toddlerFriendly) return false;
@@ -177,16 +176,16 @@ function PublicApp() {
 
 export default function App() {
   if (hikeDetailMatch)        return <HikeDetail id={hikeDetailMatch[1]} />;
-  if (caveDetailMatch)        return <CaveDetail id={caveDetailMatch[1]} />;
+  if (poiDetailMatch)         return <PoiDetail id={poiDetailMatch[1]} />;
   if (isStatsRoute)           return <StatsPage />;
   if (isAdminNewRoute)        return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
   if (adminEditMatch)         return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
   if (isAdminNewRestaurant)   return <AdminAuthGate><AdminRestaurantForm /></AdminAuthGate>;
   if (adminRestaurantEdit)    return <AdminAuthGate><AdminRestaurantForm id={adminRestaurantEdit[1]} /></AdminAuthGate>;
   if (isAdminRestaurantsRoute) return <AdminAuthGate><AdminRestaurants /></AdminAuthGate>;
-  if (isAdminNewCave)         return <AdminAuthGate><AdminCaveForm /></AdminAuthGate>;
-  if (adminCaveEdit)          return <AdminAuthGate><AdminCaveForm id={adminCaveEdit[1]} /></AdminAuthGate>;
-  if (isAdminCavesRoute)      return <AdminAuthGate><AdminCaves /></AdminAuthGate>;
+  if (isAdminNewPoi)          return <AdminAuthGate><AdminPoiForm /></AdminAuthGate>;
+  if (adminPoiEdit)           return <AdminAuthGate><AdminPoiForm id={adminPoiEdit[1]} /></AdminAuthGate>;
+  if (isAdminPoiRoute)        return <AdminAuthGate><AdminPoi /></AdminAuthGate>;
   if (isAdminRoute)           return <AdminAuthGate><AdminPanel /></AdminAuthGate>;
   return <PublicApp />;
 }

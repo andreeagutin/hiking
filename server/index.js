@@ -10,7 +10,8 @@ import hikesRouter from './routes/hikes.js';
 import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
 import restaurantsRouter from './routes/restaurants.js';
-import cavesRouter from './routes/caves.js';
+import poiRouter from './routes/poi.js';
+import mountainsRouter from './routes/mountains.js';
 import aiSearchRouter from './routes/aiSearch.js';
 import usersRouter from './routes/users.js';
 
@@ -38,7 +39,8 @@ app.use('/api/users', usersRouter);
 app.use('/api/hikes', hikesRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/restaurants', restaurantsRouter);
-app.use('/api/caves', cavesRouter);
+app.use('/api/poi', poiRouter);
+app.use('/api/mountains', mountainsRouter);
 app.use('/api/ai-search', aiSearchRouter);
 
 if (isProd && !process.env.RENDER) {

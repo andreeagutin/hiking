@@ -46,10 +46,10 @@ export default function HikeCard({ hike, distance }) {
   return (
     <article
       className="hike-card"
-      onClick={() => { window.location.href = `/hike/${hike._id}`; }}
+      onClick={() => { window.location.href = `/hike/${hike.slug || hike._id}`; }}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && (window.location.href = `/hike/${hike._id}`)}
+      onKeyDown={(e) => e.key === 'Enter' && (window.location.href = `/hike/${hike.slug || hike._id}`)}
     >
       <div className="hike-card-media" style={bg ? { background: bg } : {}}>
         {hikeImg
@@ -57,9 +57,6 @@ export default function HikeCard({ hike, distance }) {
           : <div className="hike-card-no-img"><span>🏔️</span></div>
         }
         <div className="hike-card-media-top">
-          {hike.status && (
-            <span className={`badge status-${hike.status.replace(' ', '-')}`}>{hike.status}</span>
-          )}
         </div>
 
         {/* Hover overlay */}
@@ -79,6 +76,13 @@ export default function HikeCard({ hike, distance }) {
         <div className="hike-card-location">
           {hike.mountains && <span className="hike-card-tag">{hike.mountains}</span>}
           {hike.zone      && <span className="hike-card-tag hike-card-tag-zone">{hike.zone}</span>}
+          {hike.trailMarkers && hike.trailMarkers.length > 0 && (
+            <div className="hike-card-markers">
+              {hike.trailMarkers.map((id) => (
+                <img key={id} src={`/hiking_markers/${id}.svg`} alt={id} className="hike-card-marker-img" />
+              ))}
+            </div>
+          )}
         </div>
 
         <h3 className="hike-card-title">{hike.name}</h3>

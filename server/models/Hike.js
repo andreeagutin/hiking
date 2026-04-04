@@ -12,6 +12,7 @@ const historySchema = new mongoose.Schema({
 const hikeSchema = new mongoose.Schema(
   {
     name:       { type: String, required: true },
+    slug:       { type: String, unique: true, sparse: true },
     time:       { type: Number, default: null },
     distance:   { type: Number, default: null },
     tip:        { type: String, enum: ['Dus-intors', 'Dus', null], default: null },
@@ -19,7 +20,6 @@ const hikeSchema = new mongoose.Schema(
     down:       { type: Number, default: null },
     difficulty: { type: String, enum: ['easy', 'medium', null], default: null },
     mountains:  { type: String, default: null },
-    status:     { type: String, enum: ['Done', 'In progress', 'Not started'], default: 'Not started' },
     completed:  { type: String, default: null },
     zone:       { type: String, default: null },
     imageUrl:    { type: String, default: null },
@@ -51,8 +51,7 @@ const hikeSchema = new mongoose.Schema(
     salvamontPoint:     { type: String, default: null },
     active:      { type: Boolean, default: true },
     history:     { type: [historySchema], default: [] },
-    restaurants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' }],
-    caves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Cave' }],
+    pois: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Poi' }],
   },
   { timestamps: true }
 );

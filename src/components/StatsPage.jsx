@@ -13,7 +13,6 @@ const GRAY     = '#9ca3af';
 const TEAL     = '#0d9488';
 const ROSE     = '#e11d48';
 
-const STATUS_COLORS = { Done: GREEN, 'In progress': AMBER, 'Not started': GRAY };
 const DIFF_COLORS   = { easy: GREEN, medium: AMBER, unknown: GRAY };
 const BAR_COLORS    = [PURPLE, INDIGO, TEAL, ROSE, AMBER, GREEN];
 
@@ -81,19 +80,13 @@ export default function StatsPage() {
     </div>
   );
 
-  const done = hikes.filter((h) => h.status === 'Done');
+  const done = hikes.filter((h) => h.completed);
 
   // Summary stats
   const totalKm       = done.reduce((s, h) => s + (h.distance || 0), 0);
   const totalUp       = done.reduce((s, h) => s + (h.up || 0), 0);
   const totalHours    = done.reduce((s, h) => s + (h.time || 0), 0);
   const totalDown     = done.reduce((s, h) => s + (h.down || 0), 0);
-
-  // Status pie
-  const statusCounts = ['Done', 'In progress', 'Not started'].map((s) => ({
-    name: s,
-    value: hikes.filter((h) => h.status === s).length,
-  })).filter((d) => d.value > 0);
 
   // Difficulty pie
   const diffCounts = ['easy', 'medium'].map((d) => ({
@@ -177,22 +170,6 @@ export default function StatsPage() {
 
             {/* Charts */}
             <div className="charts-grid">
-
-              {/* Status breakdown */}
-              <ChartCard title="Trail status">
-                <ResponsiveContainer width="100%" height={260}>
-                  <PieChart>
-                    <Pie data={statusCounts} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                      innerRadius={60} outerRadius={100} labelLine={false} label={<CustomPieLabel />}>
-                      {statusCounts.map((d) => (
-                        <Cell key={d.name} fill={STATUS_COLORS[d.name]} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" iconSize={10} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartCard>
 
               {/* Difficulty breakdown */}
               <ChartCard title="Difficulty breakdown">

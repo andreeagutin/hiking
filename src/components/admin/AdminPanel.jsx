@@ -30,11 +30,6 @@ function ViewRow({ hike, onDelete, onToggleActive }) {
           ? <span className={`badge diff-${hike.difficulty}`}>{hike.difficulty}</span>
           : '—'}
       </td>
-      <td>
-        {hike.status
-          ? <span className={`badge status-${hike.status.replace(' ', '-')}`}>{hike.status}</span>
-          : '—'}
-      </td>
       <td onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
@@ -74,7 +69,7 @@ export default function AdminPanel() {
 
   async function handleAdd() {
     try {
-      const hike = await createHike({ name: 'New hike', status: 'Not started' });
+      const hike = await createHike({ name: 'New hike' });
       window.location.href = `/admin/hike/${hike._id}/edit`;
     } catch (e) {
       setError(e.message);

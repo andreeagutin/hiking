@@ -12,7 +12,6 @@ Available hike fields:
 - up: number (meters, elevation gain)
 - difficulty: "easy" | "medium" | null
 - tip: "Dus-intors" (round trip) | "Dus" (one way) | null
-- status: "Done" | "In progress" | "Not started" | null
 - mountains: string (mountain range name, must exactly match one of the provided available values or null)
 - zone: string (zone name, must exactly match one of the provided available values or null)
 - maxDriveHours: number (maximum driving time from user's location, in hours)
@@ -36,7 +35,6 @@ Return ONLY a valid JSON object with these fields (use null for unspecified):
   "mountains": string | null,
   "zone": string | null,
   "tip": "Dus-intors" | "Dus" | null,
-  "status": "Done" | "In progress" | "Not started" | null,
   "maxDriveHours": number | null,
   "familyFriendly": boolean | null,
   "strollerAccessible": boolean | null,
@@ -124,7 +122,6 @@ router.post('/', async (req, res) => {
       mountains: matchAvailable(filters.mountains, availableMountains),
       zone: matchAvailable(filters.zone, availableZones),
       tip: pickOrNull(filters.tip, ['Dus-intors', 'Dus']),
-      status: pickOrNull(filters.status, ['Done', 'In progress', 'Not started']),
       maxDriveHours: toNumberOrNull(filters.maxDriveHours),
       familyFriendly: toTrueOrNull(filters.familyFriendly),
       strollerAccessible: toTrueOrNull(filters.strollerAccessible),

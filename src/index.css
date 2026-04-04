@@ -1253,6 +1253,16 @@ td input.edit-input[type="number"] { max-width: 90px; }
   background: var(--neutral-100);
   border-color: var(--neutral-200);
 }
+.hike-card-markers {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  margin-left: 2px;
+}
+.hike-card-marker-img {
+  width: auto;
+  height: 22px;
+}
 
 .hike-card-title {
   font-family: 'Playfair Display', Georgia, serif;
@@ -1374,6 +1384,12 @@ td input.edit-input[type="number"] { max-width: 90px; }
   border-radius: 999px;
 }
 
+.detail-hero-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
 .detail-hero-title {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 2.4rem;
@@ -1382,6 +1398,17 @@ td input.edit-input[type="number"] { max-width: 90px; }
   letter-spacing: -0.02em;
   line-height: 1.15;
   text-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+.detail-hero-markers {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.detail-hero-marker-img {
+  width: auto;
+  height: 4rem;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,.5));
 }
 
 .detail-hero-badges { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -2091,6 +2118,25 @@ td input.edit-input[type="number"] { max-width: 90px; }
   margin: 0 auto;
 }
 
+.admin-name-input {
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: var(--neutral-900) !important;
+  border: 1.5px solid var(--neutral-200) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--neutral-50) !important;
+  padding: 11px 14px !important;
+  margin-bottom: 8px;
+  box-shadow: none !important;
+}
+.admin-name-input:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.15) !important;
+  background: var(--surface) !important;
+  outline: none !important;
+}
+
 .admin-form-card {
   background: var(--surface);
   border-radius: var(--radius-xl);
@@ -2296,6 +2342,37 @@ td input.edit-input[type="number"] { max-width: 90px; }
 }
 .admin-cell-name { font-weight: 600; color: var(--neutral-900); }
 .admin-no-name { font-weight: 400; color: var(--neutral-400); font-style: italic; }
+
+/* ── Confirm modal ───────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-box {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 32px 36px 28px;
+  box-shadow: var(--shadow-lg);
+  min-width: 320px;
+  max-width: 440px;
+  width: 100%;
+}
+.modal-message {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--neutral-900);
+  margin: 0 0 24px;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
 
 /* ── Toast notification ──────────────────────────────────────────── */
 .toast {

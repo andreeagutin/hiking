@@ -9,7 +9,11 @@
     "server": "nodemon --watch server server/index.js",
     "build": "vite build",
     "preview": "vite preview",
-    "seed": "node data/seed.js"
+    "seed": "node data/seed.js",
+    "migrate:poi": "node data/migrate-caves-to-poi.js",
+    "migrate:restaurants": "node data/migrate-restaurants-to-poi.js",
+    "migrate:slugs": "node data/migrate-slugs.js",
+    "migrate:poi-slugs": "node data/migrate-poi-slugs.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",

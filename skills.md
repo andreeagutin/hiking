@@ -51,7 +51,7 @@ Special chars in password must be percent-encoded (`#` → `%23`) in the URI onl
 
 `server/models/Hike.js` — Mongoose schema with `timestamps: true`.
 
-Fields: `name`, `time`, `distance`, `tip`, `up`, `down`, `difficulty`, `mountains`, `status`, `completed`, `zone`, `imageUrl`, `description`, `history`, `restaurants`.
+Fields: `name`, `time`, `distance`, `tip`, `up`, `down`, `difficulty`, `mountains`, `completed`, `zone`, `imageUrl`, `description`, `history`.
 
 - All fields except `name` are optional (default `null`)
 - `description` — free-text String, shown on the public detail page
@@ -101,7 +101,7 @@ Protected routes use the `requireAuth` middleware (`server/middleware/auth.js`) 
 
 **`App.jsx`** — checks `window.location.pathname`. Routes: `/`, `/hike/:id`, `/admin`, `/admin/hike/:id/edit`, `/admin/hike/new`.
 
-**`HeroSearch.jsx`** — hero section with dark purple gradient background, search input, 5 filter dropdowns (status, difficulty, mountains, zone, trip type), and live stats (trails count, completed, km hiked).
+**`HeroSearch.jsx`** — hero section with dark purple gradient background, search input, filter dropdowns (difficulty, mountains, zone, trip type), and live stats (trails count, completed, km hiked). "Completed" = hikes with a `completed` date set.
 
 **`HikingTable.jsx`** — card grid, read-only. Each card links to `/hike/:id`.
 
@@ -186,7 +186,7 @@ All in `src/index.css`. No external CSS library.
 - `.form-textarea` — description textarea with purple focus ring
 - `.detail-description` — paragraph with `pre-wrap` for line breaks
 - `.admin-thumb` / `.admin-thumb-placeholder` — 88×56 thumbnail in table
-- `.badge` — pill badges for status and difficulty
+- `.badge` — pill badges for difficulty
 - `.toast` — fixed bottom-right notification
 
 ---
@@ -200,7 +200,7 @@ npm install recharts
 
 `src/components/StatsPage.jsx` — fetches all hikes on mount, aggregates client-side:
 - **Summary cards**: total km, elevation gain (m), hours on trail, completed trail count
-- **Charts**: status breakdown (PieChart), difficulty breakdown (PieChart), hiking by month (BarChart), distance by mountains (BarChart)
+- **Charts**: difficulty breakdown (PieChart), hiking by month (BarChart), distance by mountains (BarChart)
 - Hikes with no `completed` date are excluded from the monthly chart
 
 Linked from `HeroSearch.jsx` via "View stats →" button.
@@ -393,7 +393,7 @@ npm install @anthropic-ai/sdk
 **Filter fields Claude returns:**
 ```js
 { maxHikeHours, minHikeHours, maxDistanceKm, minDistanceKm, maxElevationUp,
-  difficulty, mountains, zone, tip, status, maxDriveHours, explanation }
+  difficulty, mountains, zone, tip, maxDriveHours, explanation }
 ```
 
 **Frontend** (`src/api/aiSearch.js`):
@@ -439,6 +439,61 @@ Rendered top-right of the hero, in a flex row with the logo (`hero-top-row` clas
 **Reactivity pattern:** `setLang()` dispatches `new Event('langchange')` on `window`. Components subscribe via `useLang()` hook which calls `useState(getLang)` and adds/removes the event listener in `useEffect`. Any component that renders `t()` strings must call `useLang()` at the top — otherwise it won't re-render when language changes.
 
 **All admin strings are also translated** — so switching language affects both public and admin UI.
+
+---
+
+## 25. Multi-Photo Hikes + Trail Markers + Family & Safety UI (HIK-17)
+
+### Multi-photo hikes
+
+Hike model extended with `photos: [String]` and `mainPhoto: String | null` — same pattern as caves.
+`imageUrl` kept for backward compat; `normalizeHikeForm()` seeds `photos` from `imageUrl` on load if `photos` is empty.
+`imageUrl` is kept in sync with `mainPhoto` on every upload/remove/set-main operation.
+
+All public components updated to use `mainPhoto || photos?.[0] || imageUrl`:
+- `HikeCard.jsx`, `HikeCarousel.jsx`, `HikeDetail.jsx`, `AdminPanel.jsx`, `CaveDetail.jsx` (for linked hike thumbs)
+
+Photo gallery in `HikeDetail` — shown when `photos.length > 1`, same lightbox as caves.
+
+### MarkerPicker component
+
+Defined as a module-level function at the top of `AdminHikeForm.jsx` (before `EMPTY`).
+
+- 15 SVG files in `public/hiking_markers/` served statically. Naming: `{color}_{shape}.svg`
+- Grid of `<button>` elements with `<img>` inside; `.selected` class adds purple border + order number badge
+- Selected list below grid shows order, image, label, ↑↓ buttons (swap adjacent), × remove
+- Value: `form.trailMarkers` — ordered `[String]` of marker IDs e.g. `['yellow_circle', 'red_stripe']`
+
+In `HikeDetail.jsx`:
+- First stat card (before Distance) shows marker SVGs centered, full-size, no label
+- Marker SVGs also shown top-right of the Family & Safety card header
+
+### TagMultiSelect component
+
+Defined as a module-level function at the top of `AdminHikeForm.jsx`.
+
+Props: `options`, `value` (array of IDs), `onChange`, `getId`, `getLabel`, `placeholder`.
+
+- Control div shows selected pills (each with ×) + global clear-all × button
+- Dropdown opens on click, closes on outside mousedown (via `ref` + `document.addEventListener`)
+- `.selected` option has purple background; hover state uses `onMouseDown` with `e.preventDefault()` to prevent blur-before-select
+- Used for Restaurants in hike edit form
+
+### Mountains/Zone datalist combos
+
+Text inputs with `list="mountains-list"` / `list="zones-list"` + `<datalist>` built from `allHikes` in state.
+No API needed — `allHikes` already fetched on mount for prev/next navigation.
+
+### Family & Safety public card
+
+In `HikeDetail.jsx`, rendered when any family/safety field is set. Four subsections, each conditional:
+1. **Family suitability** — green chips for boolean flags, neutral chips for scores/ages
+2. **Highlights** — purple chips from `highlights[]` array
+3. **Amenities** — green chips; bathrooms chip includes `bathroomType` inline
+4. **Safety** — color-coded chips (`--green` / `--amber` / `--red`) for bearRisk and mobileSignal
+
+Trail markers in the card header use `detail-family-markers` flex row of `<img>` elements.
+The markers stat card uses `detail-stat--markers` modifier class — removes label, centers images.
 
 ---
 

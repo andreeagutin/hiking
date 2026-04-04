@@ -79,6 +79,29 @@ function TrailMarker({ color, shape }) {
   );
 }
 
+function useSunset(lat, lng) {
+  const [info, setInfo] = useState(null);
+  useEffect(() => {
+    if (lat == null || lng == null) return;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=sunset&timezone=auto&forecast_days=1`)
+      .then(r => r.json())
+      .then(data => {
+        const sunsetStr = data?.daily?.sunset?.[0];
+        if (!sunsetStr) return;
+        const sunsetTime = new Date(sunsetStr);
+        const now = new Date();
+        const diffMs = sunsetTime - now;
+        if (diffMs <= 0) { setInfo({ passed: true, time: sunsetStr.slice(11, 16) }); return; }
+        const totalMin = Math.round(diffMs / 60000);
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        setInfo({ h, m, time: sunsetStr.slice(11, 16), passed: false });
+      })
+      .catch(() => {});
+  }, [lat, lng]);
+  return info;
+}
+
 export default function HikeDetail({ id }) {
   useLang();
   const [hike, setHike]         = useState(null);
@@ -106,8 +129,9 @@ export default function HikeDetail({ id }) {
     );
   }
 
-  if (!hike) return <div className="detail-loading">{t('common.loading')}</div>;
+  const sunset = useSunset(hike?.startLat, hike?.startLng);
 
+  if (!hike) return <div className="detail-loading">{t('common.loading')}</div>;
   const hikeImg = hike.mainPhoto || hike.photos?.[0] || hike.imageUrl;
   const heroBg = hikeImg ? undefined : 'linear-gradient(145deg, #1e1b4b 0%, #2e1065 50%, #3b0764 100%)';
 
@@ -125,11 +149,17 @@ export default function HikeDetail({ id }) {
               {hike.mountains && <span className="detail-crumb">{hike.mountains}</span>}
               {hike.zone      && <span className="detail-crumb">{hike.zone}</span>}
             </div>
-            <h1 className="detail-hero-title">{hike.name}</h1>
-            <div className="detail-hero-badges">
-              {hike.status && (
-                <span className={`badge status-${hike.status.replace(' ', '-')}`}>{t(`status.${hike.status}`)}</span>
+            <div className="detail-hero-title-row">
+              <h1 className="detail-hero-title">{hike.name}</h1>
+              {hike.trailMarkers && hike.trailMarkers.length > 0 && (
+                <div className="detail-hero-markers">
+                  {hike.trailMarkers.map((id) => (
+                    <img key={id} src={`/hiking_markers/${id}.svg`} alt={id} title={id.replace('_', ' ')} className="detail-hero-marker-img" />
+                  ))}
+                </div>
               )}
+            </div>
+            <div className="detail-hero-badges">
               {hike.difficulty && (
                 <span className={`badge diff-${hike.difficulty}`}>{t(`difficulty.${hike.difficulty}`)}</span>
               )}
@@ -164,19 +194,19 @@ export default function HikeDetail({ id }) {
         )}
 
         <div className="detail-stats-grid">
-          {hike.trailMarkers && hike.trailMarkers.length > 0 && (
-            <div className="detail-stat detail-stat--markers">
-              {hike.trailMarkers.map((id) => (
-                <img key={id} src={`/hiking_markers/${id}.svg`} alt={id} title={id.replace('_', ' ')} className="detail-stat-marker-img" />
-              ))}
-            </div>
-          )}
           <StatItem icon="📏" value={hike.distance ? `${hike.distance} km` : null} label={t('stat.distance')} />
           <StatItem icon="⏱"  value={hike.time     ? `${hike.time} h`     : null} label={t('stat.duration')} />
           <StatItem icon="↑"  value={hike.up        ? `${hike.up} m`       : null} label={t('stat.elevationGain')} />
           <StatItem icon="↓"  value={hike.down      ? `${hike.down} m`     : null} label={t('stat.elevationLoss')} />
           <StatItem icon="🔄" value={hike.tip ? t(`tripType.${hike.tip}`) : null} label={t('stat.tripType')} />
           <StatItem icon="✓"  value={formatDate(hike.completed)} label={t('stat.completedOn')} />
+          {sunset && (
+            <StatItem
+              icon="🌅"
+              value={sunset.passed ? sunset.time : `${sunset.h}h ${sunset.m}min`}
+              label={sunset.passed ? t('stat.sunsetPassed') : t('stat.untilSunset')}
+            />
+          )}
         </div>
 
         {/* Family & Safety */}
@@ -327,37 +357,12 @@ export default function HikeDetail({ id }) {
           </div>
         )}
 
-        {hike.restaurants && hike.restaurants.length > 0 && (
-          <div className="detail-restaurants-section">
-            <div className="detail-restaurants-title">{t('hike.nearbyRestaurants')}</div>
-            <div className="detail-restaurants-list">
-              {hike.restaurants.map((r) => (
-                <div key={r._id} className="detail-restaurant-card">
-                  <div className="detail-restaurant-top">
-                    <span className="detail-restaurant-name">{r.name}</span>
-                    {r.type && <span className="detail-restaurant-type">{r.type}</span>}
-                  </div>
-                  {(r.zone || r.mountains) && (
-                    <div className="detail-restaurant-meta">
-                      {r.mountains && <span>{r.mountains}</span>}
-                      {r.zone && <span>{r.zone}</span>}
-                    </div>
-                  )}
-                  {r.address && <div className="detail-restaurant-address">{r.address}</div>}
-                  {r.notes && <div className="detail-restaurant-notes">{r.notes}</div>}
-                  {r.link && isSafeUrl(r.link) && <a href={r.link} target="_blank" rel="noopener noreferrer" className="detail-restaurant-link">{t('common.view')}</a>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {hike.caves && hike.caves.length > 0 && (
+        {hike.pois && hike.pois.length > 0 && (
           <div className="detail-caves-section">
             <div className="detail-caves-title">{t('hike.nearbyCaves')}</div>
             <div className="detail-caves-list">
-              {hike.caves.map((c) => (
-                <a key={c._id} href={`/cave/${c._id}`} className="detail-cave-card">
+              {hike.pois.map((c) => (
+                <a key={c._id} href={`/poi/${c.slug || c._id}`} className="detail-cave-card">
                   {c.mainPhoto && (
                     <div className="detail-cave-thumb">
                       <img src={c.mainPhoto} alt={c.name} />
@@ -366,15 +371,19 @@ export default function HikeDetail({ id }) {
                   <div className="detail-cave-body">
                     <div className="detail-cave-top">
                       <span className="detail-cave-name">{c.name}</span>
-                      <span className="detail-cave-icon">🦇</span>
+                      {c.poiType && <span className="detail-cave-icon" style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.7 }}>{c.poiType}</span>}
                     </div>
-                    {c.mountains && <div className="detail-cave-mountains">{c.mountains}</div>}
+                    {(c.mountains || c.zone) && (
+                      <div className="detail-cave-mountains">{[c.mountains, c.zone].filter(Boolean).join(' · ')}</div>
+                    )}
                     <div className="detail-cave-stats">
+                      {c.address && <span>{c.address}</span>}
                       {c.development != null && <span>↔ {c.development} m</span>}
                       {c.verticalExtent != null && <span>↕ {c.verticalExtent} m</span>}
                       {c.altitude != null && <span>⛰ {c.altitude} m</span>}
                       {c.rockType && <span>{c.rockType}</span>}
                     </div>
+                    {c.notes && <div className="detail-cave-mountains" style={{ fontStyle: 'italic' }}>{c.notes}</div>}
                   </div>
                 </a>
               ))}

@@ -4,8 +4,8 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { fetchHikes, fetchHike, createHike, updateHike, deleteHike, addHistory, updateHistory, deleteHistory } from '../../api/hikes.js';
-import { fetchRestaurants } from '../../api/restaurants.js';
-import { fetchCaves } from '../../api/caves.js';
+import { fetchPois } from '../../api/poi.js';
+import { fetchMountains } from '../../api/mountains.js';
 import { clearToken } from '../../api/auth.js';
 import { uploadImage } from '../../api/upload.js';
 
@@ -31,13 +31,44 @@ function FlyTo({ lat, lng }) {
 function StartMap({ lat, lng, onChange }) {
   const center = lat && lng ? [lat, lng] : [45.5, 25.0];
   const zoom   = lat && lng ? 13 : 7;
+  const [query, setQuery]       = useState('');
+  const [flyTarget, setFlyTarget] = useState(null);
+  const [searching, setSearching] = useState(false);
+
+  async function handleSearch() {
+    if (!query.trim()) return;
+    setSearching(true);
+    try {
+      const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+      const data = await res.json();
+      if (data.length > 0) setFlyTarget([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+    } finally {
+      setSearching(false);
+    }
+  }
+
   return (
-    <MapContainer center={center} zoom={zoom} style={{ height: 320, borderRadius: 12, zIndex: 0 }}>
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
-      <MapClickHandler onChange={onChange} />
-      <FlyTo lat={lat} lng={lng} />
-      {lat && lng && <Marker position={[lat, lng]} />}
-    </MapContainer>
+    <div>
+      <div className="map-search-form">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
+          placeholder="Cauta localitate, munte..."
+          className="map-search-input"
+        />
+        <button type="button" className="map-search-btn" disabled={searching} onClick={handleSearch}>
+          {searching ? '...' : 'Cauta'}
+        </button>
+      </div>
+      <MapContainer center={center} zoom={zoom} style={{ height: 320, borderRadius: 12, zIndex: 0 }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+        <MapClickHandler onChange={onChange} />
+        <FlyTo lat={flyTarget?.[0] ?? lat} lng={flyTarget?.[1] ?? lng} />
+        {lat && lng && <Marker position={[lat, lng]} />}
+      </MapContainer>
+    </div>
   );
 }
 
@@ -160,9 +191,9 @@ function TagMultiSelect({ options, value, onChange, getLabel, getId, placeholder
 const EMPTY = {
   name: '', time: null, distance: null, tip: null,
   up: null, down: null, difficulty: null, mountains: null,
-  status: 'Not started', completed: null, zone: null, imageUrl: null,
+  completed: null, zone: null, imageUrl: null,
   photos: [], mainPhoto: null, description: null,
-  startLat: null, startLng: null, mapUrl: null, restaurants: [], caves: [],
+  startLat: null, startLng: null, mapUrl: null, pois: [],
   familyFriendly: false, minAgeRecommended: null, strollerAccessible: false, toddlerFriendly: false,
   kidEngagementScore: null, highlights: [],
   hasRestAreas: false, restAreaCount: null, hasBathrooms: false, bathroomType: null,
@@ -194,8 +225,7 @@ function normalizeHikeForm(data = {}) {
     ...data,
     photos,
     mainPhoto,
-    restaurants: Array.isArray(data.restaurants) ? data.restaurants : [],
-    caves: Array.isArray(data.caves) ? data.caves : [],
+    pois: Array.isArray(data.pois) ? data.pois : [],
     highlights: Array.isArray(data.highlights) ? data.highlights.filter(Boolean) : [],
     trailMarkers: Array.isArray(data.trailMarkers) ? data.trailMarkers.filter(Boolean) : [],
     history: Array.isArray(data.history) ? data.history : [],
@@ -401,8 +431,8 @@ export default function AdminHikeForm({ id }) {
   const [error, setError]         = useState('');
   const [historyEdit, setHistoryEdit] = useState(null);
   const [historyForm, setHistoryForm] = useState({});
-  const [allRestaurants, setAllRestaurants] = useState([]);
-  const [allCaves, setAllCaves] = useState([]);
+  const [allPois, setAllPois] = useState([]);
+  const [allMountains, setAllMountains] = useState([]);
   const fileInputRef = useRef(null);
 
   const EMPTY_HISTORY = { time: '', is_hike: true, distance: '', up: '', down: '', updatedAt: new Date().toISOString().slice(0, 10) };
@@ -411,8 +441,8 @@ export default function AdminHikeForm({ id }) {
 
   useEffect(() => {
     fetchHikes().then(setAllHikes).catch(() => {});
-    fetchRestaurants().then(setAllRestaurants).catch(() => {});
-    fetchCaves().then(setAllCaves).catch(() => {});
+    fetchPois().then(setAllPois).catch(() => {});
+    fetchMountains().then(setAllMountains).catch(() => {});
   }, []);
 
   function toInputDate(val) {
@@ -619,6 +649,16 @@ export default function AdminHikeForm({ id }) {
 
         <form className="admin-form-card" onSubmit={handleSave}>
 
+          <Field label="Name *" full>
+            <input type="text" value={form.name ?? ''} onChange={set('name')} placeholder="Trail name" required className="admin-name-input" />
+          </Field>
+
+          <div className="form-section-title">Trail markers</div>
+          <MarkerPicker
+            value={form.trailMarkers || []}
+            onChange={(v) => setForm((f) => ({ ...f, trailMarkers: v }))}
+          />
+
           <div className="form-section-title">Photos</div>
           <div className="cave-photos-section">
             {(form.photos || []).length > 0 && (
@@ -672,13 +712,13 @@ export default function AdminHikeForm({ id }) {
 
           <div className="form-section-title">Basic info</div>
           <div className="form-grid">
-            <Field label="Name *" full>
-              <input type="text" value={form.name ?? ''} onChange={set('name')} placeholder="Trail name" required />
-            </Field>
             <Field label="Mountains">
-              <input type="text" list="mountains-list" value={form.mountains ?? ''} onChange={set('mountains')} placeholder="e.g. Bucegi" />
+              <input type="text" list="mountains-list" value={form.mountains ?? ''} onChange={set('mountains')} placeholder="e.g. Munții Bucegi" />
               <datalist id="mountains-list">
-                {[...new Set(allHikes.map(h => h.mountains).filter(Boolean))].sort().map(m => <option key={m} value={m} />)}
+                {[...new Set([
+                  ...allMountains,
+                  ...allHikes.map(h => h.mountains).filter(Boolean),
+                ])].sort().map(m => <option key={m} value={m} />)}
               </datalist>
             </Field>
             <Field label="Zone">
@@ -722,19 +762,11 @@ export default function AdminHikeForm({ id }) {
                 <option>Dus</option>
               </select>
             </Field>
-            <Field label="Status">
-              <select value={form.status ?? 'Not started'} onChange={set('status')}>
-                <option>Not started</option>
-                <option>In progress</option>
-                <option>Done</option>
-              </select>
-            </Field>
             <Field label="Completed">
               <input
-                type="text"
-                placeholder="DD-MM-YYYY"
-                value={toDisplay(form.completed ?? '')}
-                onChange={(e) => setForm((f) => ({ ...f, completed: fromDisplay(e.target.value) }))}
+                type="date"
+                value={form.completed ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, completed: e.target.value }))}
               />
             </Field>
           </div>
@@ -829,12 +861,6 @@ export default function AdminHikeForm({ id }) {
                     <option value="none">none</option>
                   </select>
                 </Field>
-                <Field label="Trail markers" full>
-                  <MarkerPicker
-                    value={form.trailMarkers || []}
-                    onChange={(v) => setForm((f) => ({ ...f, trailMarkers: v }))}
-                  />
-                </Field>
                 <Field label="Salvamont point" full>
                   <input type="text" value={form.salvamontPoint ?? ''} onChange={set('salvamontPoint')} placeholder="Nearest Salvamont post or phone" />
                 </Field>
@@ -891,51 +917,19 @@ export default function AdminHikeForm({ id }) {
 
           {!isNew && (
             <>
-              <div className="form-section-title">Restaurants</div>
-              {allRestaurants.length === 0 ? (
-                <p className="restaurant-link-empty">No restaurants yet. <a href="/admin/restaurants">Add one →</a></p>
+              <div className="form-section-title">Puncte de interes</div>
+              {allPois.length === 0 ? (
+                <p className="restaurant-link-empty">Niciun punct de interes încă. <a href="/admin/poi">Adaugă →</a></p>
               ) : (
                 <TagMultiSelect
-                  options={allRestaurants}
-                  value={(form.restaurants || []).map((x) => x._id || x)}
-                  onChange={(ids) => setForm((f) => ({ ...f, restaurants: ids }))}
-                  getId={(r) => r._id}
-                  getLabel={(r) => `${r.name}${r.type ? ` · ${r.type}` : ''}${r.zone ? ` · ${r.zone}` : ''}`}
-                  placeholder="Select restaurants…"
+                  options={allPois}
+                  value={(form.pois || []).map((x) => x._id || x)}
+                  onChange={(ids) => setForm((f) => ({ ...f, pois: ids }))}
+                  getId={(p) => p._id}
+                  getLabel={(p) => `${p.name}${p.poiType ? ` · ${p.poiType}` : ''}${p.mountains ? ` · ${p.mountains}` : ''}`}
+                  placeholder="Selectează puncte de interes…"
                 />
               )}
-
-              <div className="form-section-title">Caves</div>
-              <div className="restaurant-link-list">
-                {allCaves.length === 0 && (
-                  <p className="restaurant-link-empty">No caves yet. <a href="/admin/caves">Add one →</a></p>
-                )}
-                {allCaves.map((c) => {
-                  const linked = (form.caves || []).some((x) => (x._id || x) === c._id);
-                  return (
-                    <label key={c._id} className={`restaurant-link-item${linked ? ' linked' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={linked}
-                        onChange={() => {
-                          setForm((f) => {
-                            const ids = (f.caves || []).map((x) => x._id || x);
-                            return {
-                              ...f,
-                              caves: linked
-                                ? ids.filter((cid) => cid !== c._id)
-                                : [...ids, c._id],
-                            };
-                          });
-                        }}
-                      />
-                      <span className="restaurant-link-name">{c.name}</span>
-                      {c.mountains && <span className="restaurant-link-type">{c.mountains}</span>}
-                      {c.denivelare != null && <span className="restaurant-link-zone">↕{c.denivelare}m</span>}
-                    </label>
-                  );
-                })}
-              </div>
 
               <div className="form-section-title">History</div>
               <div className="history-admin-wrap">
@@ -974,7 +968,7 @@ export default function AdminHikeForm({ id }) {
                 {historyEdit && (
                   <div className="history-form">
                     <div className="history-form-grid">
-                      <label>Date<input type="text" placeholder="DD-MM-YYYY" value={toDisplay(historyForm.updatedAt || '')} onChange={(e) => setHistoryForm((f) => ({ ...f, updatedAt: fromDisplay(e.target.value) }))} /></label>
+                      <label>Date<input type="date" value={historyForm.updatedAt || ''} onChange={(e) => setHistoryForm((f) => ({ ...f, updatedAt: e.target.value }))} /></label>
                       <label>Hike?<select value={historyForm.is_hike ? 'true' : 'false'} onChange={(e) => setHistoryForm((f) => ({ ...f, is_hike: e.target.value === 'true' }))}><option value="true">Yes</option><option value="false">No</option></select></label>
                       <label>Distance (km)<input type="number" step="any" min="0" value={historyForm.distance ?? ''} onChange={(e) => setHistoryForm((f) => ({ ...f, distance: e.target.value }))} /></label>
                       <label>Time (h)<input type="number" step="any" min="0" value={historyForm.time ?? ''} onChange={(e) => setHistoryForm((f) => ({ ...f, time: e.target.value }))} /></label>

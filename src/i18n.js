@@ -30,11 +30,6 @@ const TRANSLATIONS = {
     'difficulty.easy':           'Ușor',
     'difficulty.medium':         'Mediu',
 
-    // ── Status ──────────────────────────────────────────────────────────────
-    'status.Done':               'Făcut',
-    'status.In progress':        'În progres',
-    'status.Not started':        'Neînceput',
-
     // ── Hike stats ──────────────────────────────────────────────────────────
     'stat.distance':             'Distanță',
     'stat.duration':             'Durată',
@@ -42,19 +37,21 @@ const TRANSLATIONS = {
     'stat.elevationLoss':        'Diferență de nivel (coborâre)',
     'stat.tripType':             'Tip traseu',
     'stat.completedOn':          'Finalizat pe',
+    'stat.untilSunset':          'Până la apus',
+    'stat.sunsetPassed':         'Apus trecut',
 
-    // ── Cave stats ───────────────────────────────────────────────────────────
-    'cave.stat.development':     'Dezvoltare',
-    'cave.stat.verticalExtent':  'Denivelarea',
-    'cave.stat.altitude':        'Altitudine',
-    'cave.stat.rockType':        'Tip rocă',
-    'cave.stat.coordinates':     'Coordonate',
+    // ── POI stats ────────────────────────────────────────────────────────────
+    'poi.stat.development':     'Dezvoltare',
+    'poi.stat.verticalExtent':  'Denivelarea',
+    'poi.stat.altitude':        'Altitudine',
+    'poi.stat.rockType':        'Tip rocă',
+    'poi.stat.coordinates':     'Coordonate',
 
     // ── HikeDetail sections ──────────────────────────────────────────────────
     'hike.aboutTrail':           'Despre acest traseu',
     'hike.history':              'Istoric',
     'hike.nearbyRestaurants':    'Restaurante în zonă',
-    'hike.nearbyCaves':          'Peșteri în zonă',
+    'hike.nearbyCaves':          'Puncte de interes',
     'hike.photos':               'Galerie foto',
     'hike.familySafety':         'Familie & Siguranță',
     'hike.familySuitability':    'Potrivire familii',
@@ -85,7 +82,8 @@ const TRANSLATIONS = {
     'history.time':              'timp',
 
     // ── Cave detail ──────────────────────────────────────────────────────────
-    'cave.foundOnTrails':        'Apare pe aceste trasee',
+    'poi.foundOnTrails':         'Apare pe aceste trasee',
+    'poi.label':                 'Punct de interes',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
     'hero.appName':              'Trail Mix',
@@ -102,7 +100,6 @@ const TRANSLATIONS = {
     'hero.aiDriveNote':          '(Setează locația pentru filtrul de timp cu mașina)',
 
     // ── Filters ──────────────────────────────────────────────────────────────
-    'filter.allStatuses':        'Toate statusurile',
     'filter.allDifficulties':    'Toate dificultățile',
     'filter.allMountains':       'Toți munții',
     'filter.allZones':           'Toate zonele',
@@ -148,7 +145,6 @@ const TRANSLATIONS = {
     'stats.totalUp':             'diferență de nivel',
     'stats.totalHours':          'ore pe traseu',
     'stats.completedTrails':     'trasee făcute',
-    'stats.statusBreakdown':     'Distribuție status',
     'stats.difficultyBreakdown': 'Distribuție dificultate',
     'stats.hikingByMonth':       'Drumeții pe luni',
     'stats.distanceByMountains': 'Distanță pe munți',
@@ -169,7 +165,7 @@ const TRANSLATIONS = {
     'admin.hike.trailMap':       'Hartă traseu (Mapy.cz)',
     'admin.hike.pasteIframe':    'Lipește codul iframe din Mapy.cz',
     'admin.hike.restaurants':    'Restaurante',
-    'admin.hike.caves':          'Peșteri',
+    'admin.hike.caves':          'Puncte de interes',
     'admin.hike.history':        'Istoric',
     'admin.hike.noRestaurants':  'Niciun restaurant încă.',
     'admin.hike.noCaves':        'Nicio peșteră încă.',
@@ -230,11 +226,6 @@ const TRANSLATIONS = {
     'difficulty.easy':           'Easy',
     'difficulty.medium':         'Medium',
 
-    // ── Status ──────────────────────────────────────────────────────────────
-    'status.Done':               'Done',
-    'status.In progress':        'In progress',
-    'status.Not started':        'Not started',
-
     // ── Hike stats ──────────────────────────────────────────────────────────
     'stat.distance':             'Distance',
     'stat.duration':             'Duration',
@@ -242,19 +233,21 @@ const TRANSLATIONS = {
     'stat.elevationLoss':        'Elevation loss',
     'stat.tripType':             'Trip type',
     'stat.completedOn':          'Completed on',
+    'stat.untilSunset':          'Until sunset',
+    'stat.sunsetPassed':         'Sunset passed',
 
-    // ── Cave stats (previously Romanian labels) ──────────────────────────────
-    'cave.stat.development':     'Development',
-    'cave.stat.verticalExtent':  'Vertical extent',
-    'cave.stat.altitude':        'Altitude',
-    'cave.stat.rockType':        'Rock type',
-    'cave.stat.coordinates':     'Coordinates',
+    // ── POI stats ────────────────────────────────────────────────────────────
+    'poi.stat.development':     'Development',
+    'poi.stat.verticalExtent':  'Vertical extent',
+    'poi.stat.altitude':        'Altitude',
+    'poi.stat.rockType':        'Rock type',
+    'poi.stat.coordinates':     'Coordinates',
 
     // ── HikeDetail sections ──────────────────────────────────────────────────
     'hike.aboutTrail':           'About this trail',
     'hike.history':              'History',
     'hike.nearbyRestaurants':    'Nearby restaurants',
-    'hike.nearbyCaves':          'Nearby caves',
+    'hike.nearbyCaves':          'Points of interest',
     'hike.photos':               'Photo gallery',
     'hike.familySafety':         'Family & Safety',
     'hike.familySuitability':    'Family suitability',
@@ -285,7 +278,8 @@ const TRANSLATIONS = {
     'history.time':              'time',
 
     // ── Cave detail ──────────────────────────────────────────────────────────
-    'cave.foundOnTrails':        'Found on these trails',
+    'poi.foundOnTrails':         'Found on these trails',
+    'poi.label':                 'Point of interest',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
     'hero.appName':              'Trail Mix',
@@ -302,7 +296,6 @@ const TRANSLATIONS = {
     'hero.aiDriveNote':          '(Set your location to apply drive-time filter)',
 
     // ── Filters ──────────────────────────────────────────────────────────────
-    'filter.allStatuses':        'All statuses',
     'filter.allDifficulties':    'All difficulties',
     'filter.allMountains':       'All mountains',
     'filter.allZones':           'All zones',
@@ -348,7 +341,6 @@ const TRANSLATIONS = {
     'stats.totalUp':             'elevation gain',
     'stats.totalHours':          'hours on trail',
     'stats.completedTrails':     'trails done',
-    'stats.statusBreakdown':     'Status breakdown',
     'stats.difficultyBreakdown': 'Difficulty breakdown',
     'stats.hikingByMonth':       'Hiking by month',
     'stats.distanceByMountains': 'Distance by mountains',
@@ -369,7 +361,7 @@ const TRANSLATIONS = {
     'admin.hike.trailMap':       'Trail map (Mapy.cz)',
     'admin.hike.pasteIframe':    'Paste iframe code from Mapy.cz',
     'admin.hike.restaurants':    'Restaurants',
-    'admin.hike.caves':          'Caves',
+    'admin.hike.caves':          'Points of interest',
     'admin.hike.history':        'History',
     'admin.hike.noRestaurants':  'No restaurants yet.',
     'admin.hike.noCaves':        'No caves yet.',

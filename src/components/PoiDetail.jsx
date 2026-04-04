@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchCave } from '../api/caves.js';
+import { fetchPoi } from '../api/poi.js';
 import { fetchHikes } from '../api/hikes.js';
 import WeatherForecast from './WeatherForecast.jsx';
 import t from '../i18n.js';
@@ -47,26 +47,26 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }) {
   );
 }
 
-export default function CaveDetail({ id }) {
+export default function PoiDetail({ id }) {
   useLang();
-  const [cave, setCave]         = useState(null);
-  const [hikes, setHikes]       = useState([]);
-  const [error, setError]       = useState('');
+  const [poi, setPoi]               = useState(null);
+  const [hikes, setHikes]           = useState([]);
+  const [error, setError]           = useState('');
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
   useEffect(() => {
-    fetchCave(id)
-      .then((c) => setCave(c))
+    fetchPoi(id)
+      .then((p) => setPoi(p))
       .catch((e) => setError(e.message));
 
     fetchHikes()
       .then((all) => setHikes(all.filter((h) =>
-        (h.caves || []).some((x) => (x._id || x) === id)
+        (h.pois || []).some((x) => (x._id || x) === id)
       )))
       .catch(() => {});
   }, [id]);
 
-  const photos = cave?.photos?.length ? cave.photos : (cave?.mainPhoto ? [cave.mainPhoto] : []);
+  const photos = poi?.photos?.length ? poi.photos : (poi?.mainPhoto ? [poi.mainPhoto] : []);
 
   const openLightbox = useCallback((i) => setLightboxIdx(i), []);
   const closeLightbox = useCallback(() => setLightboxIdx(null), []);
@@ -80,26 +80,27 @@ export default function CaveDetail({ id }) {
     </div>
   );
 
-  if (!cave) return <div className="detail-loading">{t('common.loading')}</div>;
+  if (!poi) return <div className="detail-loading">{t('common.loading')}</div>;
 
-  const heroImg = cave.mainPhoto || cave.photos?.[0];
+  const heroImg = poi.mainPhoto || poi.photos?.[0];
   const heroBg = heroImg ? undefined : 'linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
 
   return (
     <div className="detail-page">
       {/* Hero */}
       <div className="detail-hero" style={heroBg ? { background: heroBg } : {}}>
-        {heroImg && <img src={heroImg} alt={cave.name} className="detail-hero-img" />}
+        {heroImg && <img src={heroImg} alt={poi.name} className="detail-hero-img" />}
         <div className="detail-hero-overlay">
           <button className="detail-back-btn" onClick={() => history.back()}>{t('common.back')}</button>
           <div className="detail-hero-content">
             <div className="detail-hero-crumbs">
-              {cave.mountains && <span className="detail-crumb">{cave.mountains}</span>}
+              {poi.mountains && <span className="detail-crumb">{poi.mountains}</span>}
             </div>
-            <h1 className="detail-hero-title">{cave.name}</h1>
-            {cave.rockType && (
+            <h1 className="detail-hero-title">{poi.name}</h1>
+            {(poi.poiType || poi.rockType) && (
               <div className="detail-hero-badges">
-                <span className="badge diff-easy">{cave.rockType}</span>
+                {poi.poiType && <span className="badge status-Done">{poi.poiType}</span>}
+                {poi.rockType && <span className="badge diff-easy">{poi.rockType}</span>}
               </div>
             )}
           </div>
@@ -111,15 +112,15 @@ export default function CaveDetail({ id }) {
 
         {/* Stats */}
         <div className="detail-stats-grid">
-          <StatCard icon="↔" value={cave.development != null ? `${cave.development} m` : null} label={t('cave.stat.development')} />
-          <StatCard icon="↕" value={cave.verticalExtent != null ? `${cave.verticalExtent} m` : null} label={t('cave.stat.verticalExtent')} />
-          <StatCard icon="⛰" value={cave.altitude != null ? `${cave.altitude} m` : null} label={t('cave.stat.altitude')} />
-          <StatCard icon="🪨" value={cave.rockType || null} label={t('cave.stat.rockType')} />
-          <StatCard icon="📍" value={cave.lat != null && cave.lng != null ? `${cave.lat.toFixed(4)}, ${cave.lng.toFixed(4)}` : null} label={t('cave.stat.coordinates')} />
+          <StatCard icon="↔" value={poi.development != null ? `${poi.development} m` : null} label={t('poi.stat.development')} />
+          <StatCard icon="↕" value={poi.verticalExtent != null ? `${poi.verticalExtent} m` : null} label={t('poi.stat.verticalExtent')} />
+          <StatCard icon="⛰" value={poi.altitude != null ? `${poi.altitude} m` : null} label={t('poi.stat.altitude')} />
+          <StatCard icon="🪨" value={poi.rockType || null} label={t('poi.stat.rockType')} />
+          <StatCard icon="📍" value={poi.lat != null && poi.lng != null ? `${poi.lat.toFixed(4)}, ${poi.lng.toFixed(4)}` : null} label={t('poi.stat.coordinates')} />
         </div>
 
-        {cave.lat != null && cave.lng != null && (
-          <WeatherForecast lat={cave.lat} lng={cave.lng} />
+        {poi.lat != null && poi.lng != null && (
+          <WeatherForecast lat={poi.lat} lng={poi.lng} />
         )}
 
         {/* Photo gallery */}
@@ -133,7 +134,7 @@ export default function CaveDetail({ id }) {
                   className="cave-gallery-item"
                   onClick={() => openLightbox(i)}
                 >
-                  <img src={url} alt={`${cave.name} ${i + 1}`} />
+                  <img src={url} alt={`${poi.name} ${i + 1}`} />
                   <div className="cave-gallery-item-overlay">
                     <span>🔍</span>
                   </div>
@@ -146,10 +147,10 @@ export default function CaveDetail({ id }) {
         {/* Hikes */}
         {hikes.length > 0 && (
           <div className="detail-restaurants-section">
-            <div className="detail-restaurants-title">{t('cave.foundOnTrails')}</div>
+            <div className="detail-restaurants-title">{t('poi.foundOnTrails')}</div>
             <div className="cave-hikes-list">
               {hikes.map((h) => (
-                <a key={h._id} href={`/hike/${h._id}`} className="cave-hike-public-card">
+                <a key={h._id} href={`/hike/${h.slug || h._id}`} className="cave-hike-public-card">
                   {(h.mainPhoto || h.photos?.[0] || h.imageUrl) && <img src={h.mainPhoto || h.photos?.[0] || h.imageUrl} alt={h.name} className="cave-hike-thumb" />}
                   <div className="cave-hike-info">
                     <div className="cave-hike-name">{h.name}</div>

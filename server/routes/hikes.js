@@ -1,8 +1,17 @@
 import { Router } from 'express';
 import Hike from '../models/Hike.js';
 import { requireAuth } from '../middleware/auth.js';
+import { uniqueSlug } from '../utils/slugify.js';
 
 const router = Router();
+
+const isObjectId = (s) => /^[a-f\d]{24}$/i.test(s);
+
+function findHike(param) {
+  return isObjectId(param)
+    ? Hike.findById(param)
+    : Hike.findOne({ slug: param });
+}
 
 // GET all hikes
 router.get('/', async (req, res) => {
@@ -16,10 +25,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET single hike
+// GET single hike — accepts ObjectId or slug
 router.get('/:id', async (req, res) => {
   try {
-    const hike = await Hike.findById(req.params.id).populate('restaurants').populate('caves');
+    const hike = await findHike(req.params.id).populate('pois');
     if (!hike) return res.status(404).json({ error: 'Not found' });
     res.json(hike);
   } catch (err) {
@@ -31,17 +40,28 @@ router.get('/:id', async (req, res) => {
 // POST create hike
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const hike = await Hike.create(req.body);
+    const body = { ...req.body };
+    if (body.name && !body.slug) {
+      body.slug = await uniqueSlug(body.name, Hike);
+    }
+    const hike = await Hike.create(body);
     res.status(201).json(hike);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// PUT update hike
+// PUT update hike — regenerate slug if name changed
 router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const hike = await Hike.findByIdAndUpdate(req.params.id, req.body, {
+    const body = { ...req.body };
+    if (body.name) {
+      const current = await Hike.findById(req.params.id).lean();
+      if (current && body.name !== current.name) {
+        body.slug = await uniqueSlug(body.name, Hike, req.params.id);
+      }
+    }
+    const hike = await Hike.findByIdAndUpdate(req.params.id, body, {
       new: true,
       runValidators: true,
     });

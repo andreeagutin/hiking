@@ -11,7 +11,6 @@ const COLS = [
   { key: 'down',       label: 'Down (m)' },
   { key: 'difficulty', label: 'Difficulty' },
   { key: 'mountains',  label: 'Mountains' },
-  { key: 'status',     label: 'Status' },
   { key: 'completed',  label: 'Completed' },
   { key: 'zone',       label: 'Zone' },
 ];

@@ -61,7 +61,7 @@ export default function HikeCarousel({ hikes }) {
         <div
           className={`carousel-card ${animating ? 'animating' : ''}`}
           style={{ background: gradient, cursor: 'pointer' }}
-          onClick={() => { window.location.href = `/hike/${hike._id}`; }}
+          onClick={() => { window.location.href = `/hike/${hike.slug || hike._id}`; }}
         >
           {(hike.mainPhoto || hike.photos?.[0] || hike.imageUrl) ? (
             <img className="carousel-img" src={hike.mainPhoto || hike.photos?.[0] || hike.imageUrl} alt={hike.name} />
