@@ -33,10 +33,8 @@ const TRANSLATIONS = {
     // ── Hike stats ──────────────────────────────────────────────────────────
     'stat.distance':             'Distanță',
     'stat.duration':             'Durată',
-    'stat.elevationGain':        'Diferență de nivel (urcare)',
-    'stat.elevationLoss':        'Diferență de nivel (coborâre)',
+    'stat.elevationGain':        'Diferență de nivel',
     'stat.tripType':             'Tip traseu',
-    'stat.completedOn':          'Finalizat pe',
     'stat.untilSunset':          'Până la apus',
     'stat.sunsetPassed':         'Apus trecut',
 
@@ -90,7 +88,6 @@ const TRANSLATIONS = {
     'hero.title':                'Unde vrei să mergi la drumeție?',
     'hero.searchPlaceholder':    'Caută după nume, munți, zonă…',
     'hero.trails':               'trasee',
-    'hero.completed':            'finalizate',
     'hero.kmHiked':              'km parcurși',
     'hero.viewStats':            'Vezi statistici →',
     'hero.aiPlaceholder':        'Descrie drumeția visată… (ex: 2h, max 1h cu mașina)',
@@ -121,7 +118,6 @@ const TRANSLATIONS = {
     'card.away':                 'distanță',
 
     // ── Carousel ─────────────────────────────────────────────────────────────
-    'carousel.completedTrails':  'Trasee finalizate',
     'carousel.noPhoto':          'Fără poză încă',
 
     // ── Weather ──────────────────────────────────────────────────────────────
@@ -144,7 +140,6 @@ const TRANSLATIONS = {
     'stats.totalKm':             'km parcurși',
     'stats.totalUp':             'diferență de nivel',
     'stats.totalHours':          'ore pe traseu',
-    'stats.completedTrails':     'trasee făcute',
     'stats.difficultyBreakdown': 'Distribuție dificultate',
     'stats.hikingByMonth':       'Drumeții pe luni',
     'stats.distanceByMountains': 'Distanță pe munți',
@@ -229,10 +224,8 @@ const TRANSLATIONS = {
     // ── Hike stats ──────────────────────────────────────────────────────────
     'stat.distance':             'Distance',
     'stat.duration':             'Duration',
-    'stat.elevationGain':        'Elevation gain',
-    'stat.elevationLoss':        'Elevation loss',
+    'stat.elevationGain':        'Elevation',
     'stat.tripType':             'Trip type',
-    'stat.completedOn':          'Completed on',
     'stat.untilSunset':          'Until sunset',
     'stat.sunsetPassed':         'Sunset passed',
 
@@ -286,7 +279,6 @@ const TRANSLATIONS = {
     'hero.title':                'Where would you like to hike?',
     'hero.searchPlaceholder':    'Search by name, mountains, zone…',
     'hero.trails':               'trails',
-    'hero.completed':            'completed',
     'hero.kmHiked':              'km hiked',
     'hero.viewStats':            'View stats →',
     'hero.aiPlaceholder':        'Describe your dream hike… (e.g. 2h hike, max 1h drive)',
@@ -317,7 +309,6 @@ const TRANSLATIONS = {
     'card.away':                 'away',
 
     // ── Carousel ─────────────────────────────────────────────────────────────
-    'carousel.completedTrails':  'Completed trails',
     'carousel.noPhoto':          'No photo yet',
 
     // ── Weather ──────────────────────────────────────────────────────────────
@@ -340,7 +331,6 @@ const TRANSLATIONS = {
     'stats.totalKm':             'km hiked',
     'stats.totalUp':             'elevation gain',
     'stats.totalHours':          'hours on trail',
-    'stats.completedTrails':     'trails done',
     'stats.difficultyBreakdown': 'Difficulty breakdown',
     'stats.hikingByMonth':       'Hiking by month',
     'stats.distanceByMountains': 'Distance by mountains',

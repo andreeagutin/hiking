@@ -190,8 +190,8 @@ function TagMultiSelect({ options, value, onChange, getLabel, getId, placeholder
 
 const EMPTY = {
   name: '', time: null, distance: null, tip: null,
-  up: null, down: null, difficulty: null, mountains: null,
-  completed: null, zone: null, imageUrl: null,
+  up: null, difficulty: null, mountains: null,
+  zone: null, imageUrl: null,
   photos: [], mainPhoto: null, description: null,
   startLat: null, startLng: null, mapUrl: null, pois: [],
   familyFriendly: false, minAgeRecommended: null, strollerAccessible: false, toddlerFriendly: false,
@@ -202,7 +202,7 @@ const EMPTY = {
   trailMarkColor: null, trailMarkShape: null, trailMarkers: [], salvamontPoint: null,
 };
 
-const NUMERIC_FIELDS = ['time', 'distance', 'up', 'down', 'minAgeRecommended', 'restAreaCount', 'kidEngagementScore'];
+const NUMERIC_FIELDS = ['time', 'distance', 'up', 'minAgeRecommended', 'restAreaCount', 'kidEngagementScore'];
 const FAMILY_SAFETY_BOOL_FIELDS = [
   'familyFriendly',
   'strollerAccessible',
@@ -247,25 +247,6 @@ function hasFamilySafetyData(form) {
     || !!form.salvamontPoint;
 }
 
-// YYYY-MM-DD → DD-MM-YYYY (display)
-function toDisplay(val) {
-  if (!val) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-    const [y, m, d] = val.split('-');
-    return `${d}-${m}-${y}`;
-  }
-  return val;
-}
-
-// DD-MM-YYYY → YYYY-MM-DD (storage)
-function fromDisplay(val) {
-  if (!val) return '';
-  if (/^\d{2}-\d{2}-\d{4}$/.test(val)) {
-    const [d, m, y] = val.split('-');
-    return `${y}-${m}-${d}`;
-  }
-  return val;
-}
 
 const TOOLBAR_COLORS = [
   { label: 'Default',  hex: null },
@@ -445,21 +426,11 @@ export default function AdminHikeForm({ id }) {
     fetchMountains().then(setAllMountains).catch(() => {});
   }, []);
 
-  function toInputDate(val) {
-    if (!val) return '';
-    // convert dd/mm/yyyy → yyyy-mm-dd
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-      const [d, m, y] = val.split('/');
-      return `${y}-${m}-${d}`;
-    }
-    return val; // already ISO or empty
-  }
-
   useEffect(() => {
     if (!isNew) {
       fetchHike(id)
         .then((h) => {
-          const normalized = normalizeHikeForm({ ...h, completed: toInputDate(h.completed) });
+          const normalized = normalizeHikeForm(h);
           setForm(normalized);
           setOriginal(normalized);
           setLoading(false);
@@ -737,11 +708,8 @@ export default function AdminHikeForm({ id }) {
             <Field label="Time (hours)">
               <input type="number" step="any" min="0" value={form.time ?? ''} onChange={set('time')} placeholder="0.0" />
             </Field>
-            <Field label="Elevation up (m)">
+            <Field label="Elevation (m)">
               <input type="number" min="0" value={form.up ?? ''} onChange={set('up')} placeholder="0" />
-            </Field>
-            <Field label="Elevation down (m)">
-              <input type="number" min="0" value={form.down ?? ''} onChange={set('down')} placeholder="0" />
             </Field>
           </div>
 
@@ -761,13 +729,6 @@ export default function AdminHikeForm({ id }) {
                 <option>Dus-intors</option>
                 <option>Dus</option>
               </select>
-            </Field>
-            <Field label="Completed">
-              <input
-                type="date"
-                value={form.completed ?? ''}
-                onChange={(e) => setForm((f) => ({ ...f, completed: e.target.value }))}
-              />
             </Field>
           </div>
 

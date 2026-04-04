@@ -5,8 +5,6 @@ import WeatherForecast from './WeatherForecast.jsx';
 import t from '../i18n.js';
 import useLang from '../hooks/useLang.js';
 
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
 function isSafeUrl(url) {
   try {
     const u = new URL(url);
@@ -14,19 +12,6 @@ function isSafeUrl(url) {
   } catch { return false; }
 }
 
-function formatDate(val) {
-  if (!val) return null;
-  let date;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-    date = new Date(val + 'T00:00:00');
-  } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-    const [d, m, y] = val.split('/');
-    date = new Date(`${y}-${m}-${d}T00:00:00`);
-  } else {
-    return val;
-  }
-  return `${String(date.getDate()).padStart(2,'0')}-${MONTHS[date.getMonth()]}-${date.getFullYear()}`;
-}
 
 function StatItem({ icon, value, label }) {
   if (!value) return null;
@@ -197,9 +182,7 @@ export default function HikeDetail({ id }) {
           <StatItem icon="📏" value={hike.distance ? `${hike.distance} km` : null} label={t('stat.distance')} />
           <StatItem icon="⏱"  value={hike.time     ? `${hike.time} h`     : null} label={t('stat.duration')} />
           <StatItem icon="↑"  value={hike.up        ? `${hike.up} m`       : null} label={t('stat.elevationGain')} />
-          <StatItem icon="↓"  value={hike.down      ? `${hike.down} m`     : null} label={t('stat.elevationLoss')} />
           <StatItem icon="🔄" value={hike.tip ? t(`tripType.${hike.tip}`) : null} label={t('stat.tripType')} />
-          <StatItem icon="✓"  value={formatDate(hike.completed)} label={t('stat.completedOn')} />
           {sunset && (
             <StatItem
               icon="🌅"

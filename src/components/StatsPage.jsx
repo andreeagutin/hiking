@@ -16,7 +16,6 @@ const ROSE     = '#e11d48';
 const DIFF_COLORS   = { easy: GREEN, medium: AMBER, unknown: GRAY };
 const BAR_COLORS    = [PURPLE, INDIGO, TEAL, ROSE, AMBER, GREEN];
 
-const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function StatCard({ label, value, sub, color = PURPLE }) {
   return (
@@ -80,13 +79,10 @@ export default function StatsPage() {
     </div>
   );
 
-  const done = hikes.filter((h) => h.completed);
-
   // Summary stats
-  const totalKm       = done.reduce((s, h) => s + (h.distance || 0), 0);
-  const totalUp       = done.reduce((s, h) => s + (h.up || 0), 0);
-  const totalHours    = done.reduce((s, h) => s + (h.time || 0), 0);
-  const totalDown     = done.reduce((s, h) => s + (h.down || 0), 0);
+  const totalKm       = hikes.reduce((s, h) => s + (h.distance || 0), 0);
+  const totalUp       = hikes.reduce((s, h) => s + (h.up || 0), 0);
+  const totalHours    = hikes.reduce((s, h) => s + (h.time || 0), 0);
 
   // Difficulty pie
   const diffCounts = ['easy', 'medium'].map((d) => ({
@@ -97,9 +93,9 @@ export default function StatsPage() {
   const unknownDiff = hikes.filter((h) => !h.difficulty).length;
   if (unknownDiff > 0) diffCounts.push({ name: 'Unknown', value: unknownDiff, key: 'unknown' });
 
-  // Km by mountain range (done hikes only)
+  // Km by mountain range
   const byMountain = {};
-  done.forEach((h) => {
+  hikes.forEach((h) => {
     if (!h.mountains) return;
     byMountain[h.mountains] = (byMountain[h.mountains] || 0) + (h.distance || 0);
   });
@@ -107,25 +103,9 @@ export default function StatsPage() {
     .map(([name, km]) => ({ name, km: parseFloat(km.toFixed(1)) }))
     .sort((a, b) => b.km - a.km);
 
-  // Hikes completed per month (last 24 months with data)
-  const monthCounts = {};
-  done.forEach((h) => {
-    if (!h.completed) return;
-    const d = new Date(h.completed + 'T00:00:00');
-    if (isNaN(d)) return;
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    monthCounts[key] = (monthCounts[key] || 0) + 1;
-  });
-  const monthData = Object.entries(monthCounts)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, count]) => {
-      const [y, m] = key.split('-');
-      return { name: `${MONTHS_SHORT[parseInt(m) - 1]} ${y}`, count };
-    });
-
   // Elevation per mountain range
   const elevByMountain = {};
-  done.forEach((h) => {
+  hikes.forEach((h) => {
     if (!h.mountains) return;
     elevByMountain[h.mountains] = (elevByMountain[h.mountains] || 0) + (h.up || 0);
   });
@@ -143,7 +123,7 @@ export default function StatsPage() {
           <button className="detail-back-btn" onClick={() => window.location.href = '/'}>← All trails</button>
           <div>
             <h1 className="stats-title">My hiking stats</h1>
-            <p className="stats-subtitle">{done.length} completed hike{done.length !== 1 ? 's' : ''} · {hikes.length} total trails</p>
+            <p className="stats-subtitle">{hikes.length} total trails</p>
           </div>
         </div>
         <div className="hero-silhouette">
@@ -160,12 +140,11 @@ export default function StatsPage() {
           <>
             {/* Summary cards */}
             <div className="stats-cards-grid">
-              <StatCard label="Trails completed" value={done.length} sub={`of ${hikes.length} total`} color={PURPLE} />
+              <StatCard label="Total trails" value={hikes.length} color={PURPLE} />
               <StatCard label="Distance hiked" value={`${totalKm.toFixed(0)} km`} color={INDIGO} />
               <StatCard label="Elevation gained" value={`${totalUp.toLocaleString()} m`} color={TEAL} />
-              <StatCard label="Elevation lost" value={`${totalDown.toLocaleString()} m`} color={ROSE} />
               <StatCard label="Total time" value={`${totalHours.toFixed(0)} h`} sub={`≈ ${(totalHours / 8).toFixed(0)} days`} color={AMBER} />
-              <StatCard label="Avg distance" value={done.length ? `${(totalKm / done.length).toFixed(1)} km` : '—'} sub="per completed hike" color={GREEN} />
+              <StatCard label="Avg distance" value={hikes.length ? `${(totalKm / hikes.length).toFixed(1)} km` : '—'} sub="per trail" color={GREEN} />
             </div>
 
             {/* Charts */}
@@ -216,21 +195,6 @@ export default function StatsPage() {
                       <Bar dataKey="up" radius={[0, 6, 6, 0]} maxBarSize={32}>
                         {elevData.map((_, i) => <Cell key={i} fill={BAR_COLORS[(i + 2) % BAR_COLORS.length]} />)}
                       </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartCard>
-              )}
-
-              {/* Hikes per month */}
-              {monthData.length > 0 && (
-                <ChartCard title="Hikes completed by month">
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={monthData} margin={{ left: 0, right: 8, top: 8, bottom: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e9e8" />
-                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7675' }} tickLine={false} axisLine={false} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#6b7675' }} tickLine={false} axisLine={false} />
-                      <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f5f3ff' }} />
-                      <Bar dataKey="count" name="Hikes" fill={PURPLE} radius={[6, 6, 0, 0]} maxBarSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>

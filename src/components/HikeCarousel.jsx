@@ -84,7 +84,6 @@ export default function HikeCarousel({ hikes }) {
               {hike.distance && <span>📏 {hike.distance} km</span>}
               {hike.time && <span>⏱ {hike.time} h</span>}
               {hike.up && <span>⬆ {hike.up} m</span>}
-              {hike.completed && <span>✅ {hike.completed}</span>}
             </div>
           </div>
         </div>

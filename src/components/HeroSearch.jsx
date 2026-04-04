@@ -151,11 +151,7 @@ function AiSearch({ hikes, userLocation, aiExplanation, onAiSearch, onAiClear })
 
 export default function HeroSearch({ hikes, userLocation, onLocationChange, aiExplanation, onAiSearch, onAiClear }) {
   useLang();
-  const done    = hikes.filter((h) => h.completed).length;
-  const kmHiked = hikes
-    .filter((h) => h.completed)
-    .reduce((s, h) => s + (h.distance || 0), 0)
-    .toFixed(0);
+  const kmHiked = hikes.reduce((s, h) => s + (h.distance || 0), 0).toFixed(0);
 
   return (
     <div className="hero">
@@ -172,8 +168,6 @@ export default function HeroSearch({ hikes, userLocation, onLocationChange, aiEx
 
         <div className="hero-stats">
           <span><strong>{hikes.length}</strong> {t('hero.trails')}</span>
-          <span className="hero-stat-dot">·</span>
-          <span><strong>{done}</strong> {t('hero.completed')}</span>
           <span className="hero-stat-dot">·</span>
           <span><strong>{kmHiked}</strong> {t('hero.kmHiked')}</span>
           <span className="hero-stat-dot">·</span>
