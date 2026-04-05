@@ -726,6 +726,36 @@ td input.edit-input[type="number"] { max-width: 90px; }
 }
 .admin-search:focus { border-color: var(--forest-500); box-shadow: 0 0 0 3px rgba(64,145,108,.15); }
 
+.admin-filter-select {
+  padding: 9px 12px;
+  border: 1.5px solid var(--neutral-200);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--neutral-700);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.admin-filter-select:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+
+.admin-filter-clear {
+  padding: 8px 14px;
+  border: 1.5px solid var(--neutral-300);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  background: #fff;
+  color: var(--neutral-600);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.admin-filter-clear:hover { background: var(--neutral-100); color: var(--neutral-800); }
+
+.admin-toolbar-count {
+  font-size: 0.8rem;
+  color: var(--neutral-500);
+  padding: 4px 2px 8px;
+}
+
 .admin-image-cell { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin-img-link { color: var(--forest-600); font-size: 0.78rem; font-weight: 600; text-decoration: none; }
 .admin-img-link:hover { text-decoration: underline; }

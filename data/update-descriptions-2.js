@@ -4,11 +4,15 @@
 const BASE = 'http://localhost:3001';
 
 async function getToken() {
+  const username = process.env.ADMIN_USER || 'admin';
+  const password = process.env.ADMIN_PASS;
+  if (!password) throw new Error('ADMIN_PASS environment variable required');
   const res = await fetch(`${BASE}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'admin', password: 'hik2025' }),
+    body: JSON.stringify({ username, password }),
   });
+  if (!res.ok) throw new Error('Login failed');
   const { token } = await res.json();
   return token;
 }

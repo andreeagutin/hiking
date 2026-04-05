@@ -1,9 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { fetchHikes, createHike, deleteHike, updateHike } from '../../api/hikes.js';
 import { clearToken } from '../../api/auth.js';
 import { AdminNavTabs } from './AdminRestaurants.jsx';
 
 const n = (v) => (v != null && v !== '' ? v : '—');
+
+function SortTh({ label, sortKey, current, dir, onSort, style }) {
+  const active = current === sortKey;
+  return (
+    <th
+      className={active ? dir : ''}
+      style={{ cursor: 'pointer', userSelect: 'none', ...style }}
+      onClick={() => onSort(sortKey)}
+    >
+      {label}<span className="sort-icon" />
+    </th>
+  );
+}
 
 function ViewRow({ hike, onDelete, onToggleActive }) {
   function handleDelete(e) {
@@ -53,10 +66,15 @@ function ViewRow({ hike, onDelete, onToggleActive }) {
 }
 
 export default function AdminPanel() {
-  const [hikes, setHikes] = useState([]);
-  const [toast, setToast] = useState('');
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
+  const [hikes, setHikes]       = useState([]);
+  const [toast, setToast]       = useState('');
+  const [error, setError]       = useState('');
+  const [search, setSearch]     = useState('');
+  const [filterMountains, setFilterMountains] = useState('');
+  const [filterDifficulty, setFilterDifficulty] = useState('');
+  const [filterActive, setFilterActive] = useState('');
+  const [sortKey, setSortKey]   = useState('name');
+  const [sortDir, setSortDir]   = useState('asc');
 
   useEffect(() => {
     fetchHikes({ all: true }).then(setHikes).catch((e) => setError(e.message));
@@ -65,6 +83,11 @@ export default function AdminPanel() {
   function showToast(msg) {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
+  }
+
+  function handleSort(key) {
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortKey(key); setSortDir('asc'); }
   }
 
   async function handleAdd() {
@@ -100,9 +123,33 @@ export default function AdminPanel() {
     window.location.reload();
   }
 
-  const filtered = hikes.filter(
-    (h) => !search || Object.values(h).join(' ').toLowerCase().includes(search.toLowerCase())
-  );
+  const mountainOptions = useMemo(() => [...new Set(hikes.map((h) => h.mountains).filter(Boolean))].sort(), [hikes]);
+
+  const SORT_FNS = {
+    name:       (a, b) => (a.name || '').localeCompare(b.name || ''),
+    mountains:  (a, b) => (a.mountains || '').localeCompare(b.mountains || ''),
+    zone:       (a, b) => (a.zone || '').localeCompare(b.zone || ''),
+    distance:   (a, b) => (a.distance ?? -1) - (b.distance ?? -1),
+    time:       (a, b) => (a.time ?? -1) - (b.time ?? -1),
+    up:         (a, b) => (a.up ?? -1) - (b.up ?? -1),
+    difficulty: (a, b) => (a.difficulty || '').localeCompare(b.difficulty || ''),
+  };
+
+  const displayed = useMemo(() => {
+    let result = hikes.filter((h) => {
+      if (search && !Object.values(h).join(' ').toLowerCase().includes(search.toLowerCase())) return false;
+      if (filterMountains && h.mountains !== filterMountains) return false;
+      if (filterDifficulty && h.difficulty !== filterDifficulty) return false;
+      if (filterActive === 'active' && h.active === false) return false;
+      if (filterActive === 'inactive' && h.active !== false) return false;
+      return true;
+    });
+    const fn = SORT_FNS[sortKey];
+    if (fn) result = [...result].sort((a, b) => sortDir === 'asc' ? fn(a, b) : fn(b, a));
+    return result;
+  }, [hikes, search, filterMountains, filterDifficulty, filterActive, sortKey, sortDir]);
+
+  const hasFilters = search || filterMountains || filterDifficulty || filterActive;
 
   return (
     <div className="admin-wrap">
@@ -132,7 +179,32 @@ export default function AdminPanel() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <select className="admin-filter-select" value={filterMountains} onChange={(e) => setFilterMountains(e.target.value)}>
+            <option value="">All mountains</option>
+            {mountainOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <select className="admin-filter-select" value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value)}>
+            <option value="">All difficulties</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+          </select>
+          <select className="admin-filter-select" value={filterActive} onChange={(e) => setFilterActive(e.target.value)}>
+            <option value="">All</option>
+            <option value="active">Active only</option>
+            <option value="inactive">Inactive only</option>
+          </select>
+          {hasFilters && (
+            <button className="admin-filter-clear" onClick={() => { setSearch(''); setFilterMountains(''); setFilterDifficulty(''); setFilterActive(''); }}>
+              Clear
+            </button>
+          )}
           <button className="btn btn-add" onClick={handleAdd}>+ Add hike</button>
+        </div>
+
+        <div className="admin-toolbar-count">
+          {displayed.length !== hikes.length
+            ? `${displayed.length} of ${hikes.length} hikes`
+            : `${hikes.length} hikes`}
         </div>
 
         <div className="table-wrap">
@@ -140,23 +212,22 @@ export default function AdminPanel() {
             <thead>
               <tr>
                 <th style={{ width: '100px' }}></th>
-                <th>Name</th>
-                <th>Mountains</th>
-                <th>Zone</th>
-                <th>Distance</th>
-                <th>Time</th>
-                <th>Elevation ↑</th>
-                <th>Difficulty</th>
-                <th>Status</th>
+                <SortTh label="Name"       sortKey="name"       current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Mountains"  sortKey="mountains"  current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Zone"       sortKey="zone"       current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Distance"   sortKey="distance"   current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Time"       sortKey="time"       current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Elevation ↑" sortKey="up"        current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Difficulty" sortKey="difficulty" current={sortKey} dir={sortDir} onSort={handleSort} />
                 <th title="Visible on site">Active</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {displayed.length === 0 ? (
                 <tr><td colSpan={11} className="no-results">No hikes found.</td></tr>
               ) : (
-                filtered.map((hike) => (
+                displayed.map((hike) => (
                   <ViewRow key={hike._id} hike={hike} onDelete={handleDelete} onToggleActive={handleToggleActive} />
                 ))
               )}
@@ -164,7 +235,6 @@ export default function AdminPanel() {
           </table>
         </div>
       </div>
-
 
       {toast && <div className="toast show">{toast}</div>}
     </div>

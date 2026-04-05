@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { fetchPois, createPoi, updatePoi, deletePoi } from '../../api/poi.js';
 import { clearToken } from '../../api/auth.js';
 import { AdminNavTabs } from './AdminRestaurants.jsx';
@@ -6,18 +6,40 @@ import ConfirmModal from './ConfirmModal.jsx';
 
 const EMPTY = { name: '', poiType: null, photos: [], mainPhoto: null, mountains: null, development: null, verticalExtent: null, altitude: null, rockType: null };
 
+function SortTh({ label, sortKey, current, dir, onSort, style }) {
+  const active = current === sortKey;
+  return (
+    <th
+      className={active ? dir : ''}
+      style={{ cursor: 'pointer', userSelect: 'none', ...style }}
+      onClick={() => onSort(sortKey)}
+    >
+      {label}<span className="sort-icon" />
+    </th>
+  );
+}
+
 export default function AdminPoi() {
   const [pois, setPois]         = useState([]);
   const [search, setSearch]     = useState('');
   const [error, setError]       = useState('');
   const [toast, setToast]       = useState('');
-  const [confirmDelete, setConfirmDelete] = useState(null); // { id, name }
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [filterMountains, setFilterMountains] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [sortKey, setSortKey]   = useState('name');
+  const [sortDir, setSortDir]   = useState('asc');
 
   useEffect(() => {
     fetchPois().then(setPois).catch((e) => setError(e.message));
   }, []);
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2500); }
+
+  function handleSort(key) {
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortKey(key); setSortDir('asc'); }
+  }
 
   async function handleAdd() {
     try {
@@ -45,9 +67,31 @@ export default function AdminPoi() {
 
   function handleLogout() { clearToken(); window.location.href = '/admin'; }
 
-  const filtered = pois.filter(
-    (p) => !search || [p.name, p.mountains, p.rockType, p.poiType].join(' ').toLowerCase().includes(search.toLowerCase())
-  );
+  const mountainOptions = useMemo(() => [...new Set(pois.map((p) => p.mountains).filter(Boolean))].sort(), [pois]);
+  const typeOptions     = useMemo(() => [...new Set(pois.map((p) => p.poiType).filter(Boolean))].sort(), [pois]);
+
+  const SORT_FNS = {
+    name:           (a, b) => (a.name || '').localeCompare(b.name || ''),
+    poiType:        (a, b) => (a.poiType || '').localeCompare(b.poiType || ''),
+    mountains:      (a, b) => (a.mountains || '').localeCompare(b.mountains || ''),
+    development:    (a, b) => (a.development ?? -1) - (b.development ?? -1),
+    verticalExtent: (a, b) => (a.verticalExtent ?? -1) - (b.verticalExtent ?? -1),
+    altitude:       (a, b) => (a.altitude ?? -1) - (b.altitude ?? -1),
+  };
+
+  const displayed = useMemo(() => {
+    let result = pois.filter((p) => {
+      if (search && ![p.name, p.mountains, p.rockType, p.poiType].join(' ').toLowerCase().includes(search.toLowerCase())) return false;
+      if (filterMountains && p.mountains !== filterMountains) return false;
+      if (filterType && p.poiType !== filterType) return false;
+      return true;
+    });
+    const fn = SORT_FNS[sortKey];
+    if (fn) result = [...result].sort((a, b) => sortDir === 'asc' ? fn(a, b) : fn(b, a));
+    return result;
+  }, [pois, search, filterMountains, filterType, sortKey, sortDir]);
+
+  const hasFilters = search || filterMountains || filterType;
 
   return (
     <div className="admin-wrap">
@@ -71,7 +115,26 @@ export default function AdminPoi() {
 
         <div className="admin-toolbar">
           <input className="admin-search" type="search" placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="admin-filter-select" value={filterMountains} onChange={(e) => setFilterMountains(e.target.value)}>
+            <option value="">Toți munții</option>
+            {mountainOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <select className="admin-filter-select" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+            <option value="">Toate tipurile</option>
+            {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          {hasFilters && (
+            <button className="admin-filter-clear" onClick={() => { setSearch(''); setFilterMountains(''); setFilterType(''); }}>
+              Clear
+            </button>
+          )}
           <button className="btn btn-add" onClick={handleAdd}>+ Adaugă punct</button>
+        </div>
+
+        <div className="admin-toolbar-count">
+          {displayed.length !== pois.length
+            ? `${displayed.length} din ${pois.length} puncte`
+            : `${pois.length} puncte`}
         </div>
 
         <div className="table-wrap">
@@ -79,22 +142,22 @@ export default function AdminPoi() {
             <thead>
               <tr>
                 <th style={{ width: '100px' }}></th>
-                <th>Nume</th>
-                <th>Tip</th>
-                <th>Munți</th>
-                <th>Dezvoltare</th>
-                <th>Denivelarea</th>
-                <th>Altitudine</th>
+                <SortTh label="Nume"        sortKey="name"           current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Tip"         sortKey="poiType"        current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Munți"       sortKey="mountains"      current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Dezvoltare"  sortKey="development"    current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Denivelarea" sortKey="verticalExtent" current={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortTh label="Altitudine"  sortKey="altitude"       current={sortKey} dir={sortDir} onSort={handleSort} />
                 <th>Tip rocă</th>
                 <th title="Vizibil pe site">Activ</th>
                 <th>Acțiuni</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {displayed.length === 0 ? (
                 <tr><td colSpan={10} className="no-results">Niciun punct de interes găsit.</td></tr>
               ) : (
-                filtered.map((p) => (
+                displayed.map((p) => (
                   <tr key={p._id} className={`admin-row${p.active === false ? ' admin-row--inactive' : ''}`} onClick={() => { window.location.href = `/admin/poi/${p._id}/edit`; }}>
                     <td className="admin-cell-img">
                       {p.mainPhoto || p.photos?.[0]

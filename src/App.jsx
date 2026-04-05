@@ -56,6 +56,7 @@ function matchesAiFilters(hike, aiFilters, drivingDurationMap, userLocation) {
   if (aiFilters.maxDistanceKm != null && hike.distance > aiFilters.maxDistanceKm) return false;
   if (aiFilters.minDistanceKm != null && hike.distance < aiFilters.minDistanceKm) return false;
   if (maxElevation != null && (hike.up == null || hike.up > maxElevation)) return false;
+  if (aiFilters.minElevation != null && (hike.up == null || hike.up < aiFilters.minElevation)) return false;
   if (aiFilters.difficulty && hike.difficulty !== aiFilters.difficulty) return false;
   if (aiFilters.mountains && hike.mountains !== aiFilters.mountains) return false;
   if (aiFilters.zone && hike.zone !== aiFilters.zone) return false;
@@ -67,6 +68,21 @@ function matchesAiFilters(hike, aiFilters, drivingDurationMap, userLocation) {
   if (aiFilters.maxAgeRecommended != null && (hike.minAgeRecommended == null || hike.minAgeRecommended > aiFilters.maxAgeRecommended)) return false;
   if (aiFilters.kidEngagementMin != null && (hike.kidEngagementScore == null || hike.kidEngagementScore < aiFilters.kidEngagementMin)) return false;
   if (aiFilters.bearRisk && hike.bearRisk !== aiFilters.bearRisk) return false;
+  if (aiFilters.mobileSignal != null && hike.mobileSignal !== aiFilters.mobileSignal) return false;
+  if (aiFilters.hasBathrooms === true && !hike.hasBathrooms) return false;
+  if (aiFilters.hasPicknicArea === true && !hike.hasPicknicArea) return false;
+  if (aiFilters.nearbyPlayground === true && !hike.nearbyPlayground) return false;
+  if (aiFilters.safeWaterSource === true && !hike.safeWaterSource) return false;
+  if (aiFilters.hasRestAreas === true && !hike.hasRestAreas) return false;
+  if (aiFilters.sheepdogFree === true && hike.sheepdogWarning) return false;
+
+  if (aiFilters.highlights != null && aiFilters.highlights.length > 0) {
+    const hikeHighlights = (hike.highlights || []).map((h) => h.toLowerCase());
+    const hasMatch = aiFilters.highlights.some((kw) =>
+      hikeHighlights.some((h) => h.includes(kw) || kw.includes(h))
+    );
+    if (!hasMatch) return false;
+  }
 
   if (aiFilters.maxDriveHours != null && userLocation) {
     const secs = drivingDurationMap[hike._id];

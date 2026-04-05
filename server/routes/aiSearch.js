@@ -23,6 +23,15 @@ Available hike fields:
 - kidEngagementMin: number | null (minimum kid engagement score on a 1-5 scale)
 - bearRisk: "low" | "medium" | "high" | null
 - maxElevation: number | null (maximum elevation gain in meters; maps to the "up" field)
+- minElevation: number | null (minimum elevation gain in meters; for challenging climbs)
+- mobileSignal: "good" | "partial" | "none" | null (mobile signal quality on the trail)
+- hasBathrooms: boolean | null (trail has toilet facilities)
+- hasPicknicArea: boolean | null (trail has picnic area)
+- nearbyPlayground: boolean | null (trail has nearby playground)
+- safeWaterSource: boolean | null (trail has safe drinking water source)
+- hasRestAreas: boolean | null (trail has rest areas)
+- sheepdogFree: boolean | null (set to true when user wants trails WITHOUT sheepdog risk)
+- highlights: string[] | null (keywords to match against trail highlights, e.g. ["cascada", "lac", "marmote", "peisaj", "waterfall", "lake", "marmots"])
 
 Return ONLY a valid JSON object with these fields (use null for unspecified):
 {
@@ -31,6 +40,7 @@ Return ONLY a valid JSON object with these fields (use null for unspecified):
   "maxDistanceKm": number | null,
   "minDistanceKm": number | null,
   "maxElevation": number | null,
+  "minElevation": number | null,
   "difficulty": "easy" | "medium" | null,
   "mountains": string | null,
   "zone": string | null,
@@ -43,10 +53,18 @@ Return ONLY a valid JSON object with these fields (use null for unspecified):
   "maxAgeRecommended": number | null,
   "kidEngagementMin": number | null,
   "bearRisk": "low" | "medium" | "high" | null,
+  "mobileSignal": "good" | "partial" | "none" | null,
+  "hasBathrooms": boolean | null,
+  "hasPicknicArea": boolean | null,
+  "nearbyPlayground": boolean | null,
+  "safeWaterSource": boolean | null,
+  "hasRestAreas": boolean | null,
+  "sheepdogFree": boolean | null,
+  "highlights": string[] | null,
   "explanation": string
 }
 
-For boolean filters, return true or null, never false. Leave fields null when the query does not clearly ask for them.
+For boolean filters, return true or null, never false (except sheepdogFree which means "no sheepdog risk"). Leave fields null when the query does not clearly ask for them.
 
 The "explanation" field should be a short human-readable summary in the same language as the query (Romanian or English) describing what filters were applied.
 
@@ -59,6 +77,14 @@ Examples:
 - "drumetie pentru copii de 4 ani" -> familyFriendly: true, toddlerFriendly: true, maxAgeRecommended: 4, maxHikeHours: 2
 - "traseu cu carucior" -> strollerAccessible: true
 - "drumetie fara ursi" -> bearRisk: "low"
+- "vreau sa vad o cascada" -> highlights: ["cascada", "waterfall"]
+- "traseu cu lac de munte" -> highlights: ["lac", "lake"]
+- "urcare de cel putin 800 de metri" -> minElevation: 800
+- "traseu cu semnal bun" -> mobileSignal: "good"
+- "traseu cu toaleta si loc de picnic" -> hasBathrooms: true, hasPicknicArea: true
+- "fara caini ciobanesti" -> sheepdogFree: true
+- "traseu cu apa potabila" -> safeWaterSource: true
+- "cu loc de joaca pentru copii" -> nearbyPlayground: true, familyFriendly: true
 
 Only output the JSON object, no markdown, no explanation outside the JSON.`;
 
@@ -112,12 +138,17 @@ router.post('/', async (req, res) => {
       return res.status(422).json({ error: 'AI returned invalid JSON', raw });
     }
 
+    const normalizedHighlights = Array.isArray(filters.highlights) && filters.highlights.length > 0
+      ? filters.highlights.filter((h) => typeof h === 'string' && h.trim().length > 0).map((h) => h.trim().toLowerCase())
+      : null;
+
     const normalizedFilters = {
       maxHikeHours: toNumberOrNull(filters.maxHikeHours),
       minHikeHours: toNumberOrNull(filters.minHikeHours),
       maxDistanceKm: toNumberOrNull(filters.maxDistanceKm),
       minDistanceKm: toNumberOrNull(filters.minDistanceKm),
       maxElevation: toNumberOrNull(filters.maxElevation ?? filters.maxElevationUp),
+      minElevation: toNumberOrNull(filters.minElevation),
       difficulty: pickOrNull(filters.difficulty, ['easy', 'medium']),
       mountains: matchAvailable(filters.mountains, availableMountains),
       zone: matchAvailable(filters.zone, availableZones),
@@ -130,6 +161,14 @@ router.post('/', async (req, res) => {
       maxAgeRecommended: toNumberOrNull(filters.maxAgeRecommended),
       kidEngagementMin: toNumberOrNull(filters.kidEngagementMin),
       bearRisk: pickOrNull(filters.bearRisk, ['low', 'medium', 'high']),
+      mobileSignal: pickOrNull(filters.mobileSignal, ['good', 'partial', 'none']),
+      hasBathrooms: toTrueOrNull(filters.hasBathrooms),
+      hasPicknicArea: toTrueOrNull(filters.hasPicknicArea),
+      nearbyPlayground: toTrueOrNull(filters.nearbyPlayground),
+      safeWaterSource: toTrueOrNull(filters.safeWaterSource),
+      hasRestAreas: toTrueOrNull(filters.hasRestAreas),
+      sheepdogFree: toTrueOrNull(filters.sheepdogFree),
+      highlights: normalizedHighlights,
     };
 
     return res.json({
