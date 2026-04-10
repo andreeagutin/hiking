@@ -14,6 +14,7 @@ import poiRouter from './routes/poi.js';
 import mountainsRouter from './routes/mountains.js';
 import aiSearchRouter from './routes/aiSearch.js';
 import usersRouter from './routes/users.js';
+import sitemapRouter from './routes/sitemap.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/restaurants', restaurantsRouter);
 app.use('/api/poi', poiRouter);
 app.use('/api/mountains', mountainsRouter);
 app.use('/api/ai-search', aiSearchRouter);
+app.use('/sitemap.xml', sitemapRouter);
 
 if (isProd && !process.env.RENDER) {
   const distPath = path.join(__dirname, '..', 'dist');

@@ -2,8 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchPoi } from '../api/poi.js';
 import { fetchHikes } from '../api/hikes.js';
 import WeatherForecast from './WeatherForecast.jsx';
+import SiteFooter from './SiteFooter.jsx';
 import t from '../i18n.js';
 import useLang from '../hooks/useLang.js';
+
+function setMeta(nameOrProp, content, isProperty = false) {
+  const attr = isProperty ? 'property' : 'name';
+  let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, nameOrProp);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
 
 function StatCard({ icon, value, label }) {
   if (value == null || value === '') return null;
@@ -65,6 +77,30 @@ export default function PoiDetail({ id }) {
       )))
       .catch(() => {});
   }, [id]);
+
+  useEffect(() => {
+    if (!poi) return;
+    const image = poi.mainPhoto || poi.photos?.[0] || '';
+    const desc = [poi.poiType, poi.mountains, poi.zone].filter(Boolean).join(', ') ||
+      `Punct de interes: ${poi.name}`;
+    const title = `${poi.name} — Hike & Seek`;
+
+    document.title = title;
+    setMeta('description', desc);
+    setMeta('og:title', title, true);
+    setMeta('og:description', desc, true);
+    setMeta('og:type', 'article', true);
+    if (image) setMeta('og:image', image, true);
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', title);
+    setMeta('twitter:description', desc);
+    if (image) setMeta('twitter:image', image);
+
+    return () => {
+      document.title = 'Hike & Seek — Trasee montane din România';
+      setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
+    };
+  }, [poi]);
 
   const photos = poi?.photos?.length ? poi.photos : (poi?.mainPhoto ? [poi.mainPhoto] : []);
 
@@ -179,6 +215,7 @@ export default function PoiDetail({ id }) {
           onNext={nextPhoto}
         />
       )}
+      <SiteFooter />
     </div>
   );
 }

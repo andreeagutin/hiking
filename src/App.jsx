@@ -14,6 +14,14 @@ import AdminRestaurantForm from './components/admin/AdminRestaurantForm.jsx';
 import AdminPoi from './components/admin/AdminPoi.jsx';
 import AdminPoiForm from './components/admin/AdminPoiForm.jsx';
 import PoiDetail from './components/PoiDetail.jsx';
+import SafetyTipsPage from './components/SafetyTipsPage.jsx';
+import GearGuidePage from './components/GearGuidePage.jsx';
+import TrailMapPage from './components/TrailMapPage.jsx';
+import AboutPage from './components/AboutPage.jsx';
+import SubmitTrailPage from './components/SubmitTrailPage.jsx';
+import ReportIssuePage from './components/ReportIssuePage.jsx';
+import FamilyFriendlyPage from './components/FamilyFriendlyPage.jsx';
+import MountainViewsPage from './components/MountainViewsPage.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
 
@@ -33,6 +41,16 @@ const poiDetailMatch        = pathname.match(/^\/poi\/([^/]+)$/);
 const isAdminRoute          = pathname === '/admin' || !!adminEditMatch || isAdminNewRoute
   || isAdminRestaurantsRoute || !!adminRestaurantEdit || isAdminNewRestaurant
   || isAdminPoiRoute || !!adminPoiEdit || isAdminNewPoi;
+
+// Static pages
+const isSafetyTipsRoute    = pathname === '/safety-tips';
+const isGearGuideRoute     = pathname === '/gear-guide';
+const isTrailMapRoute      = pathname === '/trail-map';
+const isAboutRoute         = pathname === '/about';
+const isSubmitTrailRoute   = pathname === '/submit-trail';
+const isReportIssueRoute   = pathname === '/report-issue';
+const isFamilyFriendlyRoute = pathname === '/family-friendly';
+const isMountainViewsRoute = pathname === '/mountain-views';
 
 function AdminAuthGate({ children }) {
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
@@ -212,6 +230,14 @@ export default function App() {
   if (hikeDetailMatch)        return <HikeDetail id={hikeDetailMatch[1]} />;
   if (poiDetailMatch)         return <PoiDetail id={poiDetailMatch[1]} />;
   if (isStatsRoute)           return <StatsPage />;
+  if (isSafetyTipsRoute)      return <SafetyTipsPage />;
+  if (isGearGuideRoute)       return <GearGuidePage />;
+  if (isTrailMapRoute)        return <TrailMapPage />;
+  if (isAboutRoute)           return <AboutPage />;
+  if (isSubmitTrailRoute)     return <SubmitTrailPage />;
+  if (isReportIssueRoute)     return <ReportIssuePage />;
+  if (isFamilyFriendlyRoute)  return <FamilyFriendlyPage />;
+  if (isMountainViewsRoute)   return <MountainViewsPage />;
   if (isAdminNewRoute)        return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
   if (adminEditMatch)         return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
   if (isAdminNewRestaurant)   return <AdminAuthGate><AdminRestaurantForm /></AdminAuthGate>;

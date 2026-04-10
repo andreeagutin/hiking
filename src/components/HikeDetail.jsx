@@ -2,8 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { marked } from 'marked';
 import { fetchHike } from '../api/hikes.js';
 import WeatherForecast from './WeatherForecast.jsx';
+import SiteFooter from './SiteFooter.jsx';
 import t from '../i18n.js';
 import useLang from '../hooks/useLang.js';
+
+function setMeta(nameOrProp, content, isProperty = false) {
+  const attr = isProperty ? 'property' : 'name';
+  let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, nameOrProp);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
 
 function isSafeUrl(url) {
   try {
@@ -104,6 +116,31 @@ export default function HikeDetail({ id }) {
   useEffect(() => {
     fetchHike(id).then(setHike).catch((e) => setError(e.message));
   }, [id]);
+
+  useEffect(() => {
+    if (!hike) return;
+    const image = hike.mainPhoto || hike.photos?.[0] || hike.imageUrl || '';
+    const rawDesc = hike.description || '';
+    const plainDesc = rawDesc.replace(/[#*_`[\]()>!\-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 160);
+    const desc = plainDesc || `Traseu ${hike.name}${hike.mountains ? ` în ${hike.mountains}` : ''}.`;
+    const title = `${hike.name} — Hike & Seek`;
+
+    document.title = title;
+    setMeta('description', desc);
+    setMeta('og:title', title, true);
+    setMeta('og:description', desc, true);
+    setMeta('og:type', 'article', true);
+    if (image) setMeta('og:image', image, true);
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', title);
+    setMeta('twitter:description', desc);
+    if (image) setMeta('twitter:image', image);
+
+    return () => {
+      document.title = 'Hike & Seek — Trasee montane din România';
+      setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
+    };
+  }, [hike]);
 
   if (error) {
     return (
@@ -374,6 +411,7 @@ export default function HikeDetail({ id }) {
           </div>
         )}
       </div>
+      <SiteFooter />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
 import { fetchHikes } from '../api/hikes.js';
+import SiteFooter from './SiteFooter.jsx';
 
 const PURPLE   = '#7c3aed';
 const INDIGO   = '#4f46e5';
@@ -204,6 +205,7 @@ export default function StatsPage() {
           </>
         )}
       </div>
+      <SiteFooter />
     </div>
   );
 }

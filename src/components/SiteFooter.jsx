@@ -16,11 +16,13 @@ export default function SiteFooter() {
               <span>Hike &amp; Seek</span>
             </a>
             <p className="site-footer-tagline">{t('footer.tagline')}</p>
+            {/* Social media links — not available yet
             <div className="site-footer-socials">
               <a href="#" className="site-footer-social-btn" aria-label="Instagram">📸</a>
               <a href="#" className="site-footer-social-btn" aria-label="Facebook">📘</a>
               <a href="#" className="site-footer-social-btn" aria-label="Email">✉️</a>
             </div>
+            */}
           </div>
 
           {/* Explore */}
@@ -28,9 +30,9 @@ export default function SiteFooter() {
             <h3>{t('footer.explore')}</h3>
             <ul>
               <li><a href="/#trails">{t('footer.allTrails')}</a></li>
-              <li><a href="/#trails">{t('footer.familyFriendly')}</a></li>
+              <li><a href="/family-friendly">{t('footer.familyFriendly')}</a></li>
               <li><a href="/#trails">{t('footer.easyWalks')}</a></li>
-              <li><a href="/#trails">{t('footer.mountainViews')}</a></li>
+              <li><a href="/mountain-views">{t('footer.mountainViews')}</a></li>
             </ul>
           </div>
 
@@ -39,9 +41,9 @@ export default function SiteFooter() {
             <h3>{t('footer.resources')}</h3>
             <ul>
               <li><a href="/stats">{t('footer.statistics')}</a></li>
-              <li><a href="#">{t('footer.safetyTips')}</a></li>
-              <li><a href="#">{t('footer.gearGuide')}</a></li>
-              <li><a href="#">{t('footer.trailMap')}</a></li>
+              <li><a href="/safety-tips">{t('footer.safetyTips')}</a></li>
+              <li><a href="/gear-guide">{t('footer.gearGuide')}</a></li>
+              <li><a href="/trail-map">{t('footer.trailMap')}</a></li>
             </ul>
           </div>
 
@@ -49,10 +51,9 @@ export default function SiteFooter() {
           <div className="site-footer-col">
             <h3>{t('footer.info')}</h3>
             <ul>
-              <li><a href="#">{t('footer.aboutUs')}</a></li>
-              <li><a href="#">{t('footer.submitTrail')}</a></li>
-              <li><a href="#">{t('footer.reportIssue')}</a></li>
-              <li><a href="/admin">{t('footer.admin')}</a></li>
+              <li><a href="/about">{t('footer.aboutUs')}</a></li>
+              <li><a href="/submit-trail">{t('footer.submitTrail')}</a></li>
+              <li><a href="/report-issue">{t('footer.reportIssue')}</a></li>
             </ul>
           </div>
         </div>
