@@ -41,7 +41,12 @@
       "WebFetch(domain:clujtourism.ro)",
       "WebFetch(domain:bogdanbalaban.ro)",
       "Bash(node data/update-descriptions-2.js)",
-      "Bash(curl -s --retry 8 --retry-delay 2 --retry-connrefused http://localhost:3001/api/hikes)"
+      "Bash(curl -s --retry 8 --retry-delay 2 --retry-connrefused http://localhost:3001/api/hikes)",
+      "Edit(/.claude/skills/trail-mix-dev/**)",
+      "Read(//c/Users/andre/.claude/projects/c--Users-andre-Documents-dev-hiking/**)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\andre\\Documents\\dev\\hiking\\.claude\\skills"
     ]
   }
 }

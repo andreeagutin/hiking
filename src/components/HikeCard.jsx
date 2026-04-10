@@ -18,18 +18,26 @@ function cardGradient(name) {
   return GRADIENTS[Math.abs(h) % GRADIENTS.length];
 }
 
-const DIFF_BAR = { easy: { pct: 33, color: '#22c55e' }, medium: { pct: 66, color: '#f59e0b' }, hard: { pct: 100, color: '#ef4444' } };
-const BEAR_COLOR = { low: '#22c55e', medium: '#f59e0b', high: '#ef4444' };
-
-function StatBar({ icon, label, pct, color }) {
+// SVG icons (inline, no dependency)
+function IconRoute() {
   return (
-    <div className="hc-overlay-row">
-      <span className="hc-overlay-icon">{icon}</span>
-      <span className="hc-overlay-label">{label}</span>
-      <div className="hc-overlay-track">
-        <div className="hc-overlay-fill" style={{ width: `${pct}%`, background: color }} />
-      </div>
-    </div>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>
+    </svg>
+  );
+}
+function IconClock() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </svg>
+  );
+}
+function IconMountain() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m8 3 4 8 5-5 5 15H2L8 3z"/>
+    </svg>
   );
 }
 
@@ -37,11 +45,6 @@ export default function HikeCard({ hike, distance }) {
   useLang();
   const hikeImg = hike.mainPhoto || hike.photos?.[0] || hike.imageUrl;
   const bg = hikeImg ? undefined : cardGradient(hike.name);
-
-  const diffBar = hike.difficulty ? DIFF_BAR[hike.difficulty] : null;
-  const distPct = hike.distance ? Math.min(hike.distance / 30 * 100, 100) : null;
-  const timePct = hike.time ? Math.min(hike.time / 10 * 100, 100) : null;
-  const upPct   = hike.up   ? Math.min(hike.up / 2000 * 100, 100) : null;
 
   return (
     <article
@@ -51,59 +54,94 @@ export default function HikeCard({ hike, distance }) {
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && (window.location.href = `/hike/${hike.slug || hike._id}`)}
     >
+      {/* ── Image area ── */}
       <div className="hike-card-media" style={bg ? { background: bg } : {}}>
         {hikeImg
           ? <img src={hikeImg} alt={hike.name} className="hike-card-img" loading="lazy" />
           : <div className="hike-card-no-img"><span>🏔️</span></div>
         }
-        <div className="hike-card-media-top">
-        </div>
 
-        {/* Hover overlay */}
-        <div className="hc-overlay">
-          {diffBar  && <StatBar icon="💪" label={t(`difficulty.${hike.difficulty}`)} pct={diffBar.pct} color={diffBar.color} />}
-          {distPct  != null && <StatBar icon="📏" label={`${hike.distance} km`} pct={distPct} color="#818cf8" />}
-          {timePct  != null && <StatBar icon="⏱" label={`${hike.time} h`} pct={timePct} color="#38bdf8" />}
-          {upPct    != null && <StatBar icon="↑" label={`${hike.up} m`} pct={upPct} color="#fb923c" />}
-          <div className="hc-overlay-chips">
-            {hike.familyFriendly && <span className="hc-chip hc-chip-green">👨‍👩‍👧 {t('hike.familyFriendly')}</span>}
-            {hike.bearRisk && <span className="hc-chip" style={{ background: BEAR_COLOR[hike.bearRisk] + '33', color: BEAR_COLOR[hike.bearRisk], border: `1px solid ${BEAR_COLOR[hike.bearRisk]}55` }}>🐻 {hike.bearRisk}</span>}
-          </div>
-        </div>
-      </div>
+        {/* Bottom gradient overlay */}
+        <div className="hike-card-img-overlay" />
 
-      <div className="hike-card-body">
-        <div className="hike-card-location">
-          {hike.mountains && <span className="hike-card-tag">{hike.mountains}</span>}
-          {hike.zone      && <span className="hike-card-tag hike-card-tag-zone">{hike.zone}</span>}
-          {hike.trailMarkers && hike.trailMarkers.length > 0 && (
-            <div className="hike-card-markers">
-              {hike.trailMarkers.map((id) => (
-                <img key={id} src={`/hiking_markers/${id}.svg`} alt={id} className="hike-card-marker-img" />
-              ))}
-            </div>
+        {/* Badges top-left: difficulty + family */}
+        <div className="hike-card-badges">
+          {hike.difficulty && (
+            <span className={`hike-badge hike-badge-diff-${hike.difficulty}`}>
+              {t(`difficulty.${hike.difficulty}`)}
+            </span>
           )}
-        </div>
-
-        <h3 className="hike-card-title">{hike.name}</h3>
-
-        <div className="hike-card-stats">
-          {hike.distance  && <span className="hike-card-stat"><span className="hike-stat-icon">📏</span>{hike.distance} km</span>}
-          {hike.time      && <span className="hike-card-stat"><span className="hike-stat-icon">⏱</span>{hike.time} h</span>}
-          {hike.up        && <span className="hike-card-stat"><span className="hike-stat-icon">↑</span>{hike.up} m</span>}
-          {distance != null && (
-            <span className="hike-card-stat hike-card-stat-distance">
-              <span className="hike-stat-icon">📍</span>{distance < 1 ? `${(distance * 1000).toFixed(0)} m` : `${distance.toFixed(0)} km`} {t('card.away')}
+          {hike.familyFriendly && (
+            <span className="hike-badge hike-badge-family">
+              👨‍👩‍👧 {t('hike.familyFriendly')}
             </span>
           )}
         </div>
 
-        {hike.difficulty && (
-          <div className="hike-card-footer">
-            <span className={`badge diff-${hike.difficulty}`}>{t(`difficulty.${hike.difficulty}`)}</span>
-            {hike.tip && <span className="hike-card-tip">{t(`tripType.${hike.tip}`)}</span>}
+        {/* Location overlay bottom-left */}
+        {(hike.mountains || hike.zone) && (
+          <div className="hike-card-img-location">
+            {hike.mountains && <p className="hike-card-img-region">{hike.mountains}</p>}
+            {hike.zone && <p className="hike-card-img-zone">{hike.zone}</p>}
           </div>
         )}
+      </div>
+
+      {/* ── Card body ── */}
+      <div className="hike-card-body">
+        <h3 className="hike-card-title">{hike.name}</h3>
+
+        {/* Stats grid — 3 columns */}
+        {(hike.distance || hike.time || hike.up) && (
+          <div className="hike-card-stats-grid">
+            {hike.distance && (
+              <div className="hike-card-stat-cell">
+                <IconRoute />
+                <span className="hike-stat-value">{hike.distance} km</span>
+                <span className="hike-stat-lbl">{t('stat.distance')}</span>
+              </div>
+            )}
+            {hike.time && (
+              <div className="hike-card-stat-cell">
+                <IconClock />
+                <span className="hike-stat-value">{hike.time}h</span>
+                <span className="hike-stat-lbl">{t('stat.duration')}</span>
+              </div>
+            )}
+            {hike.up && (
+              <div className="hike-card-stat-cell">
+                <IconMountain />
+                <span className="hike-stat-value">{hike.up}m</span>
+                <span className="hike-stat-lbl">{t('stat.elevationGain')}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Trail markers */}
+        {hike.trailMarkers && hike.trailMarkers.length > 0 && (
+          <div className="hike-card-markers">
+            {hike.trailMarkers.map((id) => (
+              <img key={id} src={`/hiking_markers/${id}.svg`} alt={id} className="hike-card-marker-img" />
+            ))}
+          </div>
+        )}
+
+        {/* Footer: age badge · trip type · distance · details → */}
+        <div className="hike-card-footer">
+          <div className="hike-card-footer-left">
+            {hike.minAgeRecommended != null && (
+              <span className="hike-age-badge">{t('card.agesPlus', { age: hike.minAgeRecommended })}</span>
+            )}
+            {hike.tip && <span className="hike-card-tip">{t(`tripType.${hike.tip}`)}</span>}
+            {distance != null && (
+              <span className="hike-card-tip hike-card-stat-distance">
+                📍 {distance < 1 ? `${(distance * 1000).toFixed(0)} m` : `${distance.toFixed(0)} km`} {t('card.away')}
+              </span>
+            )}
+          </div>
+          <span className="hike-card-details-btn">{t('card.details')} →</span>
+        </div>
       </div>
     </article>
   );

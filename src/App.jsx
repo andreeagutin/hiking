@@ -3,6 +3,9 @@ import HeroSearch from './components/HeroSearch.jsx';
 import HikeCard from './components/HikeCard.jsx';
 import HikeDetail from './components/HikeDetail.jsx';
 import StatsPage from './components/StatsPage.jsx';
+import AgeFilter, { AGE_GROUPS } from './components/AgeFilter.jsx';
+import FeaturesSection from './components/FeaturesSection.jsx';
+import SiteFooter from './components/SiteFooter.jsx';
 import AdminLogin from './components/admin/AdminLogin.jsx';
 import AdminPanel from './components/admin/AdminPanel.jsx';
 import AdminHikeForm from './components/admin/AdminHikeForm.jsx';
@@ -119,6 +122,13 @@ async function fetchDrivingDistances(userLoc, hikes) {
   return { distanceMap, durationMap };
 }
 
+function matchesAgeFilter(hike, selectedAge) {
+  if (!selectedAge) return true;
+  const group = AGE_GROUPS.find((g) => g.id === selectedAge);
+  if (!group) return true;
+  return hike.minAgeRecommended == null || hike.minAgeRecommended <= group.maxAge;
+}
+
 function PublicApp() {
   const [hikes, setHikes]                     = useState([]);
   const [error, setError]                     = useState('');
@@ -126,6 +136,7 @@ function PublicApp() {
   const [drivingDurationMap, setDrivingDurationMap] = useState({});
   const [aiFilters, setAiFilters]             = useState(null);
   const [aiExplanation, setAiExplanation]     = useState('');
+  const [selectedAge, setSelectedAge]         = useState(null);
   const [userLocation, setUserLocation] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('userLocation')); } catch { return null; }
   });
@@ -150,10 +161,12 @@ function PublicApp() {
     else sessionStorage.removeItem('userLocation');
   }
 
-  const filtered = hikes.filter((h) => matchesAiFilters(h, aiFilters, drivingDurationMap, userLocation));
+  const filtered = hikes
+    .filter((h) => matchesAiFilters(h, aiFilters, drivingDurationMap, userLocation))
+    .filter((h) => matchesAgeFilter(h, selectedAge));
 
   return (
-    <>
+    <div className="public-page">
       <HeroSearch
         hikes={hikes}
         userLocation={userLocation} onLocationChange={handleLocationChange}
@@ -162,7 +175,9 @@ function PublicApp() {
         onAiClear={() => { setAiFilters(null); setAiExplanation(''); }}
       />
 
-      <div className="page-content">
+      <AgeFilter selectedAge={selectedAge} onAgeSelect={setSelectedAge} />
+
+      <div id="trails" className="page-content">
         {error && <div className="error-banner">⚠ {error}</div>}
         <div className="results-bar">
           {filtered.length === hikes.length
@@ -186,7 +201,10 @@ function PublicApp() {
           </div>
         )}
       </div>
-    </>
+
+      <FeaturesSection />
+      <SiteFooter />
+    </div>
   );
 }
 

@@ -7,18 +7,24 @@ Based on the market research: **no family-first hiking app exists in Europe**. T
 ## Current Foundation (Trail Mix)
 
 Already built and production-ready:
-- Trail database (hikes, caves, restaurants) with full CRUD admin
-- AI natural language search (Claude Haiku)
+- Trail database (hikes, points of interest, restaurants) with full CRUD admin
+- AI natural language search (Claude Haiku) — extended to support 25+ filter fields incl. all family/safety fields, highlights, signal, amenities
 - RO/EN i18n system
 - Leaflet maps + Mapy.cz embed + weather (Open-Meteo)
 - OSRM driving distances from user location
 - Cloudinary image hosting
 - JWT admin auth, Cloudinary uploads, stats page
-- **Multi-photo hikes** — `photos[]` + `mainPhoto` on Hike model (same as caves)
+- **Multi-photo hikes** — `photos[]` + `mainPhoto` on Hike model
 - **Family & Safety schema** — all fields live in DB and admin form
 - **Trail markers** — 15 SVG markers (red/yellow/blue × 5 shapes), ordered multi-select in admin, displayed in hike detail
 - **Family & Safety public UI** — card with suitability chips, highlights, amenities, safety indicators
 - **Admin UX improvements** — TagMultiSelect for restaurants, datalist combos for mountains/zone, MarkerPicker for trail markers
+- **HikeCard hover overlay** — stat bars (difficulty, distance, time, elevation), family-friendly + bear risk chips
+- **Points of Interest (POI)** — generalized POI model replacing Cave, with `poiType`, slug, full admin CRUD, public detail page at `/poi/:slug`
+- **URL slugs** — hikes and POIs have human-readable URL slugs; routes accept both slug and ObjectId
+- **User accounts** — `User` model with email/password (bcrypt), children profiles, subscription tier; full register/login/profile API with 30d JWT
+- **Server security** — `helmet` headers + `express-rate-limit` on login endpoints
+- **Mountains API** — `/api/mountains` serves static Romanian mountain ranges list
 
 This is the data layer and admin backend. Everything below builds on top of it.
 
@@ -118,7 +124,7 @@ filter.familyFriendly, filter.stroller, filter.minAge
 
 **Deliverable:** Updated schema + admin form. All new fields visible in admin, filterable via AI search.
 
-> ✅ **Phase 0 complete** — schema extended, admin form updated, public UI shows Family & Safety data and trail markers. Shipped in HIK-17.
+> ✅ **Phase 0 complete** — schema extended, admin form updated, public UI shows Family & Safety data and trail markers. Shipped in HIK-17 through HIK-21. Also includes: User model + auth API, POI (generalized points of interest replacing Cave), URL slugs on hikes + POIs, improved AI search with full family/safety filter support, server security (helmet, rate limiting).
 
 ---
 
@@ -594,16 +600,16 @@ External services:
 
 ### MVP sprint (Phase 0 + 1)
 - [x] HIK-17: Extend Hike schema with family + safety fields + multi-photo + trail markers
-- [x] HIK-18: Add family fields to AdminHikeForm (Family & Safety collapsible section)
+- [x] HIK-18: HikeCard hover overlay with stat bars + kid engagement stars; User model
+- [x] HIK-19: Points of interest (generalized POI replacing Cave), URL slugs, remove status field
+- [x] HIK-20: Bug fixes across admin, POI, and family fields
+- [x] HIK-21: Improve AI search — extend system prompt with 25+ filter fields (amenities, signal, highlights, sheepdogFree, elevation range)
 - [x] HIK-22: Family & Safety card in HikeDetail (suitability, highlights, amenities, safety chips)
 - [x] HIK-24: Romania trail markings display in HikeDetail (real SVG markers, stat card + safety card header)
 - [x] HIK-25: Safety section in HikeDetail (bear risk, sheepdog, Salvamont, signal — color-coded chips)
 - [x] HIK-27: Add all new i18n keys (RO + EN) for family/safety/markers
-- [ ] HIK-19: Create User model + register/login API endpoints
-- [ ] HIK-20: Family pacing calculator utility + HikeDetail integration
-- [ ] HIK-21: Family badge + kid engagement stars on HikeCard
-- [ ] HIK-23: Family quick-filter buttons in HeroSearch
-- [ ] HIK-26: Update AI search system prompt for family queries
+- [ ] HIK-23: Family quick-filter buttons in HeroSearch (family-friendly, stroller, age, kid score toggles)
+- [ ] HIK-26: Family pacing calculator + "with kids" time estimate on HikeCard and HikeDetail
 
 ### Freemium sprint (Phase 1.5)
 - [ ] HIK-28: Stripe integration (checkout + webhook)
@@ -637,7 +643,11 @@ Month 14+   Phase 5: European expansion
 
 ---
 
-## Start here: HIK-17
+## Next up: HIK-23 + HIK-26
 
-The first PR to make: extend the Hike schema and admin form.
-Everything else depends on the data being there.
+Phase 0 is complete. The next milestone is Phase 1 MVP family features:
+
+- **HIK-23**: Family quick-filter buttons in `HeroSearch.jsx` (family-friendly, stroller, age range, kid score toggles)
+- **HIK-26**: Family pacing calculator (`src/utils/familyPacing.js`) + "~Xh with kids" estimate on `HikeCard` and `HikeDetail`
+
+After that, Phase 1.5 freemium sprint (Stripe, PWA).

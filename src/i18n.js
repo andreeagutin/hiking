@@ -84,12 +84,16 @@ const TRANSLATIONS = {
     'poi.label':                 'Punct de interes',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
-    'hero.appName':              'Trail Mix',
-    'hero.title':                'Unde vrei să mergi la drumeție?',
+    'hero.appName':              'Hike & Seek',
+    'hero.title':                'Găsește drumeția perfectă pentru familia ta',
+    'hero.subtitle':             'Trasee potrivite vârstei copiilor tăi. Fiecare aventură în aer liber, sigură și de neuitat.',
+    'hero.adventureBadge':       'Aventura te așteaptă',
     'hero.searchPlaceholder':    'Caută după nume, munți, zonă…',
     'hero.trails':               'trasee',
     'hero.kmHiked':              'km parcurși',
-    'hero.viewStats':            'Vezi statistici →',
+    'hero.kidFriendly':          'Potrivite copiilor',
+    'hero.regions':              'Regiuni montane',
+    'hero.viewStats':            'Statistici',
     'hero.aiPlaceholder':        'Descrie drumeția visată… (ex: 2h, max 1h cu mașina)',
     'hero.aiButton':             'Caută cu AI',
     'hero.aiLoading':            'Analizez…',
@@ -114,8 +118,62 @@ const TRANSLATIONS = {
     'location.notFound':         'Locație negăsită',
     'location.yourLocation':     'Locația ta',
 
+    // ── Navigation ──────────────────────────────────────────────────────────
+    'nav.trails':                'Trasee',
+    'nav.about':                 'Despre',
+
+    // ── Footer ───────────────────────────────────────────────────────────────
+    'footer.tagline':            'Ajutăm familiile să descopere bucuria drumeției în munții României.',
+    'footer.explore':            'Explorează',
+    'footer.allTrails':          'Toate traseele',
+    'footer.familyFriendly':     'Potrivite familiei',
+    'footer.easyWalks':          'Drumeții ușoare',
+    'footer.mountainViews':      'Priveliști montane',
+    'footer.resources':          'Resurse',
+    'footer.statistics':         'Statistici',
+    'footer.safetyTips':         'Sfaturi de siguranță',
+    'footer.gearGuide':          'Ghid echipament',
+    'footer.trailMap':           'Hartă trasee',
+    'footer.info':               'Info',
+    'footer.aboutUs':            'Despre noi',
+    'footer.submitTrail':        'Trimite un traseu',
+    'footer.reportIssue':        'Raportează o problemă',
+    'footer.admin':              'Admin',
+    'footer.rights':             'Toate drepturile rezervate.',
+    'footer.madeWith':           'Făcut cu ❤️ pentru familiile care iubesc natura',
+
+    // ── Age filter ───────────────────────────────────────────────────────────
+    'age.title':                 'Câți ani au exploratorii voștri?',
+    'age.subtitle':              'Selectează o grupă de vârstă pentru trasee potrivite copiilor tăi',
+    'age.allAges':               'Toate vârstele',
+    'age.allAgesDesc':           'Arată toate traseele',
+    'age.toddlers':              'Copii mici',
+    'age.toddlersRange':         '0–3 ani',
+    'age.preschool':             'Preșcolari',
+    'age.preschoolRange':        '3–5 ani',
+    'age.kids':                  'Copii',
+    'age.kidsRange':             '6–9 ani',
+    'age.tweens':                'Adolescenți',
+    'age.tweensRange':           '10–12 ani',
+    'age.teens':                 'Tineri',
+    'age.teensRange':            '13+ ani',
+
+    // ── Features section ─────────────────────────────────────────────────────
+    'features.title':            'De ce familiile aleg Hike & Seek',
+    'features.subtitle':         'Ușurăm căutarea traseelor sigure și plăcute adaptate vârstei copiilor tăi.',
+    'features.age.title':        'Potrivit vârstei',
+    'features.age.desc':         'Fiecare traseu are vârsta minimă recomandată, ca să găsești aventura perfectă pentru micuții tăi.',
+    'features.safety.title':     'Siguranță mai întâi',
+    'features.safety.desc':      'Informații detaliate despre condițiile traseului, dificultate și facilități pentru familii.',
+    'features.local.title':      'Expertiză locală',
+    'features.local.desc':       'Trasee selectate de familii locale care le-au testat cu propriii copii.',
+    'features.nav.title':        'Navigare ușoară',
+    'features.nav.desc':         'Direcții clare, coordonate GPS și hărți offline pentru fiecare traseu.',
+
     // ── Hike card ────────────────────────────────────────────────────────────
     'card.away':                 'distanță',
+    'card.details':              'Detalii',
+    'card.agesPlus':             'Vârsta {{age}}+',
 
     // ── Carousel ─────────────────────────────────────────────────────────────
     'carousel.noPhoto':          'Fără poză încă',
@@ -189,7 +247,7 @@ const TRANSLATIONS = {
 
     // ── Admin — login ────────────────────────────────────────────────────────
     'login.title':               'Panou Admin',
-    'login.subtitle':            'Trail Mix',
+    'login.subtitle':            'Hike & Seek',
     'login.username':            'Utilizator',
     'login.password':            'Parolă',
     'login.submit':              'Conectare',
@@ -275,12 +333,16 @@ const TRANSLATIONS = {
     'poi.label':                 'Point of interest',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
-    'hero.appName':              'Trail Mix',
-    'hero.title':                'Where would you like to hike?',
+    'hero.appName':              'Hike & Seek',
+    'hero.title':                'Find the Perfect Hike for Your Family',
+    'hero.subtitle':             'Discover trails tailored to your children\'s age. Make every outdoor adventure safe, fun, and unforgettable.',
+    'hero.adventureBadge':       'Adventure awaits your family',
     'hero.searchPlaceholder':    'Search by name, mountains, zone…',
-    'hero.trails':               'trails',
-    'hero.kmHiked':              'km hiked',
-    'hero.viewStats':            'View stats →',
+    'hero.trails':               'Family Trails',
+    'hero.kmHiked':              'Total Distance',
+    'hero.kidFriendly':          'Kid-Friendly',
+    'hero.regions':              'Mountain Regions',
+    'hero.viewStats':            'Stats',
     'hero.aiPlaceholder':        'Describe your dream hike… (e.g. 2h hike, max 1h drive)',
     'hero.aiButton':             'Search with AI',
     'hero.aiLoading':            'Thinking…',
@@ -305,8 +367,62 @@ const TRANSLATIONS = {
     'location.notFound':         'Location not found',
     'location.yourLocation':     'Your location',
 
+    // ── Navigation ──────────────────────────────────────────────────────────
+    'nav.trails':                'Explore Trails',
+    'nav.about':                 'About',
+
+    // ── Footer ───────────────────────────────────────────────────────────────
+    'footer.tagline':            'Helping families discover the joy of hiking together in Romania\'s mountains.',
+    'footer.explore':            'Explore',
+    'footer.allTrails':          'All Trails',
+    'footer.familyFriendly':     'Family-Friendly',
+    'footer.easyWalks':          'Easy Walks',
+    'footer.mountainViews':      'Mountain Views',
+    'footer.resources':          'Resources',
+    'footer.statistics':         'Statistics',
+    'footer.safetyTips':         'Safety Tips',
+    'footer.gearGuide':          'Gear Guide',
+    'footer.trailMap':           'Trail Map',
+    'footer.info':               'Info',
+    'footer.aboutUs':            'About Us',
+    'footer.submitTrail':        'Submit a Trail',
+    'footer.reportIssue':        'Report an Issue',
+    'footer.admin':              'Admin',
+    'footer.rights':             'All rights reserved.',
+    'footer.madeWith':           'Made with ❤️ for families who love the outdoors',
+
+    // ── Age filter ───────────────────────────────────────────────────────────
+    'age.title':                 'How old are your little explorers?',
+    'age.subtitle':              'Select an age group to find trails perfect for your children',
+    'age.allAges':               'All Ages',
+    'age.allAgesDesc':           'Show all trails',
+    'age.toddlers':              'Toddlers',
+    'age.toddlersRange':         '0–3 yrs',
+    'age.preschool':             'Preschool',
+    'age.preschoolRange':        '3–5 yrs',
+    'age.kids':                  'Kids',
+    'age.kidsRange':             '6–9 yrs',
+    'age.tweens':                'Tweens',
+    'age.tweensRange':           '10–12 yrs',
+    'age.teens':                 'Teens',
+    'age.teensRange':            '13+ yrs',
+
+    // ── Features section ─────────────────────────────────────────────────────
+    'features.title':            'Why Families Choose Hike & Seek',
+    'features.subtitle':         'We make it easy for families to find safe, enjoyable hiking experiences tailored to their children\'s abilities.',
+    'features.age.title':        'Age-Appropriate',
+    'features.age.desc':         'Every trail is rated by minimum recommended age, so you can find the perfect adventure for your little ones.',
+    'features.safety.title':     'Safety First',
+    'features.safety.desc':      'Detailed information about trail conditions, difficulty levels, and family-friendly amenities.',
+    'features.local.title':      'Local Expertise',
+    'features.local.desc':       'Trails curated by local families who have tested every path with their own children.',
+    'features.nav.title':        'Easy Navigation',
+    'features.nav.desc':         'Clear directions, GPS coordinates, and maps for every trail.',
+
     // ── Hike card ────────────────────────────────────────────────────────────
     'card.away':                 'away',
+    'card.details':              'Details',
+    'card.agesPlus':             'Ages {{age}}+',
 
     // ── Carousel ─────────────────────────────────────────────────────────────
     'carousel.noPhoto':          'No photo yet',
@@ -380,7 +496,7 @@ const TRANSLATIONS = {
 
     // ── Admin — login ────────────────────────────────────────────────────────
     'login.title':               'Admin Panel',
-    'login.subtitle':            'Trail Mix',
+    'login.subtitle':            'Hike & Seek',
     'login.username':            'Username',
     'login.password':            'Password',
     'login.submit':              'Sign in',
