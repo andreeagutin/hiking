@@ -6,6 +6,8 @@ import SiteFooter from './SiteFooter.jsx';
 import t from '../i18n.js';
 import useLang from '../hooks/useLang.js';
 
+const SITE_BASE_URL = 'https://hiking-high.netlify.app';
+
 function setMeta(nameOrProp, content, isProperty = false) {
   const attr = isProperty ? 'property' : 'name';
   let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
@@ -15,6 +17,22 @@ function setMeta(nameOrProp, content, isProperty = false) {
     document.head.appendChild(el);
   }
   el.setAttribute('content', content);
+}
+
+function setCanonical(href) {
+  let el = document.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', 'canonical');
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+}
+
+function toAbsoluteUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${SITE_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 
 function StatCard({ icon, value, label }) {
@@ -84,27 +102,45 @@ export default function PoiDetail({ id }) {
     const desc = [poi.poiType, poi.mountains, poi.zone].filter(Boolean).join(', ') ||
       `Punct de interes: ${poi.name}`;
     const title = `${poi.name} — Hike'n'Seek`;
+    const poiSlug = poi.slug || poi._id;
+    const canonicalUrl = `${SITE_BASE_URL}/poi/${poiSlug}`;
+    const absImage = toAbsoluteUrl(image);
 
     document.title = title;
     setMeta('description', desc);
+    const autoKeywords = [
+      poi.name,
+      poi.poiType,
+      poi.mountains,
+      poi.zone,
+      poi.poiType === 'Cave' ? 'cave tours Romania' : null,
+      poi.poiType === 'Waterfall' ? 'waterfall hikes Romania' : null,
+      poi.poiType === 'Viewpoint' ? 'mountain viewpoints Romania' : null,
+      'points of interest Romania',
+      'trasee montane România',
+      'Hike\'n\'Seek',
+    ].filter(Boolean);
+    const allKeywords = [...new Set([...(poi.keywords || []), ...autoKeywords])];
+    setMeta('keywords', allKeywords.join(', '));
+    setCanonical(canonicalUrl);
     setMeta('og:title', title, true);
     setMeta('og:description', desc, true);
+    setMeta('og:url', canonicalUrl, true);
     setMeta('og:type', 'article', true);
-    if (image) setMeta('og:image', image, true);
+    if (absImage) setMeta('og:image', absImage, true);
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', title);
     setMeta('twitter:description', desc);
-    if (image) setMeta('twitter:image', image);
+    if (absImage) setMeta('twitter:image', absImage);
 
-    // JSON-LD structured data
-    const poiSlug = poi.slug || poi._id;
+    // JSON-LD — TouristAttraction
     const poiJsonLd = {
       '@context': 'https://schema.org',
       '@type': ['TouristAttraction', 'Place'],
       name: poi.name,
       description: desc,
-      ...(image && { image }),
-      url: `https://hiking-high.netlify.app/poi/${poiSlug}`,
+      ...(absImage && { image: absImage }),
+      url: canonicalUrl,
       isAccessibleForFree: true,
       ...(poi.mountains && {
         address: { '@type': 'PostalAddress', addressRegion: poi.mountains, addressCountry: 'RO' },
@@ -126,10 +162,31 @@ export default function PoiDetail({ id }) {
     }
     poiLdScript.textContent = JSON.stringify(poiJsonLd);
 
+    // JSON-LD — BreadcrumbList
+    const breadcrumbLd = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_BASE_URL },
+        { '@type': 'ListItem', position: 2, name: poi.poiType || 'Point of Interest', item: `${SITE_BASE_URL}/#trails` },
+        { '@type': 'ListItem', position: 3, name: poi.name, item: canonicalUrl },
+      ],
+    };
+    let bcScript = document.getElementById('poi-breadcrumb-jsonld');
+    if (!bcScript) {
+      bcScript = document.createElement('script');
+      bcScript.id = 'poi-breadcrumb-jsonld';
+      bcScript.type = 'application/ld+json';
+      document.head.appendChild(bcScript);
+    }
+    bcScript.textContent = JSON.stringify(breadcrumbLd);
+
     return () => {
-      document.title = 'Hike'n'Seek — Trasee montane din România';
+      document.title = `Hike'n'Seek — Trasee montane din România`;
       setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
+      setCanonical(`${SITE_BASE_URL}/`);
       document.getElementById('poi-jsonld')?.remove();
+      document.getElementById('poi-breadcrumb-jsonld')?.remove();
     };
   }, [poi]);
 

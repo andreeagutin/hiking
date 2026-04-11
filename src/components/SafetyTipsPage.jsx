@@ -49,6 +49,8 @@ export default function SafetyTipsPage() {
       icon="🛡️"
       title="Safety Tips"
       subtitle="Essential mountain safety for families hiking in Romania's Carpathians"
+      path="/safety-tips"
+      metaDescription="Bear awareness, mountain weather, trail marking system and emergency procedures for hiking in Romania's Carpathians."
     >
       <div className="info-alert">
         <strong>Emergency: </strong> Call <strong>112</strong> (general emergency) or{' '}

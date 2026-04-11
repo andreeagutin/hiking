@@ -18,6 +18,8 @@ export default function AboutPage() {
       icon="🌿"
       title="About Us"
       subtitle="The story behind Hike'n'Seek — built by parents, for parents"
+      path="/about"
+      metaDescription="Learn about Hike'n'Seek — the hiking trail guide for Romania's Carpathian mountains, built by parents for families."
     >
       <div className="info-intro">
         <p>

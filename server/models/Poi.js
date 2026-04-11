@@ -18,6 +18,7 @@ const poiSchema = new mongoose.Schema(
     notes:          { type: String, default: null },
     lat:            { type: Number, default: null },
     lng:            { type: Number, default: null },
+    keywords:       { type: [String], default: [] },
     active:         { type: Boolean, default: true },
   },
   { timestamps: true }

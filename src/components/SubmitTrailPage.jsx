@@ -70,6 +70,8 @@ export default function SubmitTrailPage() {
       icon="📝"
       title="Submit a Trail"
       subtitle="Know a great family hiking route that's not on Hike'n'Seek? Tell us about it."
+      path="/submit-trail"
+      metaDescription="Know a great hiking trail in Romania? Submit it to Hike'n'Seek and help families discover new routes in the Carpathians."
     >
       <div className="info-intro">
         <p>

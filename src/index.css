@@ -977,8 +977,9 @@ td input.edit-input[type="number"] { max-width: 90px; }
   text-decoration: none;
 }
 .site-nav-logo-img {
-  height: 36px;
+  height: 90px;
   width: auto;
+  max-width: 560px;
 }
 
 .site-nav-logo-text {

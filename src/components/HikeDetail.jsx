@@ -6,6 +6,8 @@ import SiteFooter from './SiteFooter.jsx';
 import t from '../i18n.js';
 import useLang from '../hooks/useLang.js';
 
+const SITE_BASE_URL = 'https://hiking-high.netlify.app';
+
 function setMeta(nameOrProp, content, isProperty = false) {
   const attr = isProperty ? 'property' : 'name';
   let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
@@ -17,11 +19,20 @@ function setMeta(nameOrProp, content, isProperty = false) {
   el.setAttribute('content', content);
 }
 
-function isSafeUrl(url) {
-  try {
-    const u = new URL(url);
-    return u.protocol === 'http:' || u.protocol === 'https:';
-  } catch { return false; }
+function setCanonical(href) {
+  let el = document.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', 'canonical');
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+}
+
+function toAbsoluteUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${SITE_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 
 
@@ -125,19 +136,37 @@ export default function HikeDetail({ id }) {
     const desc = plainDesc || `Traseu ${hike.name}${hike.mountains ? ` în ${hike.mountains}` : ''}.`;
     const title = `${hike.name} — Hike'n'Seek`;
 
+    const slug = hike.slug || hike._id;
+    const canonicalUrl = `${SITE_BASE_URL}/hike/${slug}`;
+    const absImage = toAbsoluteUrl(image);
+
     document.title = title;
     setMeta('description', desc);
+    const autoKeywords = [
+      hike.name,
+      hike.mountains,
+      hike.zone,
+      hike.difficulty === 'easy' ? 'easy hike' : hike.difficulty === 'medium' ? 'moderate hike' : null,
+      hike.familyFriendly ? 'family friendly hiking' : null,
+      hike.familyFriendly ? 'hiking with kids Romania' : null,
+      'hiking trails Romania',
+      'trasee montane România',
+      'Hike\'n\'Seek',
+    ].filter(Boolean);
+    const allKeywords = [...new Set([...(hike.keywords || []), ...autoKeywords])];
+    setMeta('keywords', allKeywords.join(', '));
+    setCanonical(canonicalUrl);
     setMeta('og:title', title, true);
     setMeta('og:description', desc, true);
+    setMeta('og:url', canonicalUrl, true);
     setMeta('og:type', 'article', true);
-    if (image) setMeta('og:image', image, true);
+    if (absImage) setMeta('og:image', absImage, true);
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', title);
     setMeta('twitter:description', desc);
-    if (image) setMeta('twitter:image', image);
+    if (absImage) setMeta('twitter:image', absImage);
 
-    // JSON-LD structured data
-    const slug = hike.slug || hike._id;
+    // JSON-LD — TouristAttraction
     const amenities = [];
     if (hike.hasBathrooms)    amenities.push({ '@type': 'LocationFeatureSpecification', name: 'Bathroom', value: true });
     if (hike.hasPicknicArea)  amenities.push({ '@type': 'LocationFeatureSpecification', name: 'Picnic area', value: true });
@@ -148,8 +177,8 @@ export default function HikeDetail({ id }) {
       '@type': ['TouristAttraction', 'Place'],
       name: hike.name,
       description: desc,
-      ...(image && isSafeUrl(image) && { image }),
-      url: `https://hiking-high.netlify.app/hike/${slug}`,
+      ...(absImage && { image: absImage }),
+      url: canonicalUrl,
       isAccessibleForFree: true,
       ...(hike.mountains && {
         address: { '@type': 'PostalAddress', addressRegion: hike.mountains, addressCountry: 'RO' },
@@ -181,10 +210,31 @@ export default function HikeDetail({ id }) {
     }
     ldScript.textContent = JSON.stringify(jsonLd);
 
+    // JSON-LD — BreadcrumbList
+    const breadcrumbLd = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home',   item: SITE_BASE_URL },
+        { '@type': 'ListItem', position: 2, name: 'Trails', item: `${SITE_BASE_URL}/#trails` },
+        { '@type': 'ListItem', position: 3, name: hike.name, item: canonicalUrl },
+      ],
+    };
+    let bcScript = document.getElementById('hike-breadcrumb-jsonld');
+    if (!bcScript) {
+      bcScript = document.createElement('script');
+      bcScript.id = 'hike-breadcrumb-jsonld';
+      bcScript.type = 'application/ld+json';
+      document.head.appendChild(bcScript);
+    }
+    bcScript.textContent = JSON.stringify(breadcrumbLd);
+
     return () => {
-      document.title = 'Hike'n'Seek — Trasee montane din România';
+      document.title = `Hike'n'Seek — Trasee montane din România`;
       setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
+      setCanonical(`${SITE_BASE_URL}/`);
       document.getElementById('hike-jsonld')?.remove();
+      document.getElementById('hike-breadcrumb-jsonld')?.remove();
     };
   }, [hike]);
 

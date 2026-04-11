@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import HeroSearch from './components/HeroSearch.jsx';
 import HikeCard from './components/HikeCard.jsx';
 import HikeDetail from './components/HikeDetail.jsx';
@@ -25,6 +25,7 @@ import MountainViewsPage from './components/MountainViewsPage.jsx';
 import CookieBanner from './components/CookieBanner.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
+import { getLang } from './i18n.js';
 
 
 const pathname = window.location.pathname.replace(/\/$/, '') || '/';
@@ -52,6 +53,27 @@ const isSubmitTrailRoute   = pathname === '/submit-trail';
 const isReportIssueRoute   = pathname === '/report-issue';
 const isFamilyFriendlyRoute = pathname === '/family-friendly';
 const isMountainViewsRoute = pathname === '/mountain-views';
+
+function NotFoundPage() {
+  useEffect(() => {
+    document.title = "Page Not Found — Hike'n'Seek";
+    let noindex = document.querySelector('meta[name="robots"]');
+    if (!noindex) {
+      noindex = document.createElement('meta');
+      noindex.setAttribute('name', 'robots');
+      document.head.appendChild(noindex);
+    }
+    noindex.setAttribute('content', 'noindex, nofollow');
+    return () => noindex.setAttribute('content', 'index, follow');
+  }, []);
+
+  return (
+    <div className="detail-error-wrap">
+      <div className="error-banner">404 — Page not found</div>
+      <button className="detail-back-btn" onClick={() => window.location.href = '/'}>← Back to trails</button>
+    </div>
+  );
+}
 
 function AdminAuthGate({ children }) {
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
@@ -248,10 +270,45 @@ function AppRoutes() {
   if (adminPoiEdit)           return <AdminAuthGate><AdminPoiForm id={adminPoiEdit[1]} /></AdminAuthGate>;
   if (isAdminPoiRoute)        return <AdminAuthGate><AdminPoi /></AdminAuthGate>;
   if (isAdminRoute)           return <AdminAuthGate><AdminPanel /></AdminAuthGate>;
-  return <PublicApp />;
+  if (pathname === '/')       return <PublicApp />;
+  return <NotFoundPage />;
 }
 
 export default function App() {
+  const orgLdRef = useRef(null);
+
+  useEffect(() => {
+    // Keep <html lang> in sync with the active language
+    const syncLang = () => {
+      document.documentElement.lang = getLang();
+    };
+    syncLang();
+    window.addEventListener('langchange', syncLang);
+
+    // Organization JSON-LD (injected once for the whole site)
+    const orgLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: "Hike'n'Seek",
+      url: 'https://hiking-high.netlify.app',
+      logo: 'https://hiking-high.netlify.app/logo.svg',
+      description: "Romania's family hiking trail guide — browse, filter and discover mountain routes in the Carpathians.",
+      address: { '@type': 'PostalAddress', addressCountry: 'RO' },
+      sameAs: [],
+    };
+    let script = document.createElement('script');
+    script.id = 'org-jsonld';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(orgLd);
+    document.head.appendChild(script);
+    orgLdRef.current = script;
+
+    return () => {
+      window.removeEventListener('langchange', syncLang);
+      orgLdRef.current?.remove();
+    };
+  }, []);
+
   return (
     <>
       <AppRoutes />

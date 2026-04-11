@@ -71,6 +71,8 @@ export default function GearGuidePage() {
       icon="🎒"
       title="Gear Guide"
       subtitle="What to pack for family hiking in Romania's mountains — from day trips to mountain adventures"
+      path="/gear-guide"
+      metaDescription="Essential hiking gear checklist for family trips in Romania's mountains — footwear, clothing, safety equipment and more."
     >
       <div className="info-intro">
         <p>

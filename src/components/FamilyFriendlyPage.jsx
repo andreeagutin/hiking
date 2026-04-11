@@ -25,6 +25,8 @@ export default function FamilyFriendlyPage() {
       icon="👨‍👩‍👧‍👦"
       title="Family-Friendly Trails"
       subtitle="Curated routes verified as suitable for children — with family safety info on every trail"
+      path="/family-friendly"
+      metaDescription="Best family-friendly hiking trails in Romania, verified for children of all ages. Bear safety, difficulty ratings, and stroller-accessible routes."
     >
       <div className="info-intro">
         <p>

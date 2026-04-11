@@ -200,6 +200,7 @@ const EMPTY = {
   hasPicknicArea: false, nearbyPlayground: false,
   bearRisk: null, sheepdogWarning: false, safeWaterSource: false, mobileSignal: null,
   trailMarkColor: null, trailMarkShape: null, trailMarkers: [], salvamontPoint: null,
+  keywords: [],
 };
 
 const NUMERIC_FIELDS = ['time', 'distance', 'up', 'minAgeRecommended', 'restAreaCount', 'kidEngagementScore'];
@@ -227,6 +228,7 @@ function normalizeHikeForm(data = {}) {
     mainPhoto,
     pois: Array.isArray(data.pois) ? data.pois : [],
     highlights: Array.isArray(data.highlights) ? data.highlights.filter(Boolean) : [],
+    keywords: Array.isArray(data.keywords) ? data.keywords.filter(Boolean) : [],
     trailMarkers: Array.isArray(data.trailMarkers) ? data.trailMarkers.filter(Boolean) : [],
     history: Array.isArray(data.history) ? data.history : [],
   };
@@ -859,6 +861,23 @@ export default function AdminHikeForm({ id }) {
               </div>
             )}
           </div>
+
+          <div className="form-section-title">SEO Keywords</div>
+          <Field label="Keywords" full>
+            <input
+              type="text"
+              value={(form.keywords || []).join(', ')}
+              onChange={(e) => {
+                const keywords = e.target.value
+                  .split(',')
+                  .map((item) => item.trim())
+                  .filter(Boolean);
+                setForm((f) => ({ ...f, keywords }));
+              }}
+              placeholder="e.g. hiking Romania, Bucegi, waterfall, family trail"
+            />
+            <div className="form-input-hint">Comma-separated keywords used in search engines. Add trail name, mountain, POI types, and activities.</div>
+          </Field>
 
           <div className="form-section-title">Trail map (Mapy.cz)</div>
           <Field label="Paste iframe code from Mapy.cz">

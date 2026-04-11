@@ -51,6 +51,8 @@ export default function MountainViewsPage() {
       icon="🌄"
       title="Mountain Views"
       subtitle="Trails with the most spectacular panoramas in Romania's Carpathians"
+      path="/mountain-views"
+      metaDescription="Top panoramic hiking trails and mountain viewpoints in Romania's Carpathians — Bucegi, Fagaras, Piatra Craiului and more."
     >
       <div className="info-intro">
         <p>

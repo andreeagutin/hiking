@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { fetchHikes } from '../api/hikes.js';
 import SiteFooter from './SiteFooter.jsx';
+import usePageMeta from '../hooks/usePageMeta.js';
 
 const PURPLE   = '#7c3aed';
 const INDIGO   = '#4f46e5';
@@ -66,6 +67,11 @@ function CustomPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 }
 
 export default function StatsPage() {
+  usePageMeta(
+    'Hiking Stats',
+    'Trail statistics for Romania\'s Carpathian mountain hikes — total distance, elevation gain, difficulty breakdown and more.',
+    '/stats',
+  );
   const [hikes, setHikes] = useState([]);
   const [error, setError] = useState('');
 

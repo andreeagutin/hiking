@@ -140,6 +140,7 @@ const EMPTY = {
   address: null,
   link: null,
   notes: null,
+  keywords: [],
   development: null,
   verticalExtent: null,
   altitude: null,
@@ -370,6 +371,25 @@ export default function AdminPoiForm({ id }) {
                 </Field>
               </>
             )}
+          </div>
+
+          <div className="form-section-title">SEO Keywords</div>
+          <div className="form-grid">
+            <Field label="Keywords" full>
+              <input
+                type="text"
+                value={(form.keywords || []).join(', ')}
+                onChange={(e) => {
+                  const keywords = e.target.value
+                    .split(',')
+                    .map((item) => item.trim())
+                    .filter(Boolean);
+                  setForm((f) => ({ ...f, keywords }));
+                }}
+                placeholder="e.g. cave Romania, Apuseni, waterfall, viewpoint"
+              />
+              <div className="form-input-hint">Comma-separated keywords for search engines. Add POI type, mountain, and notable features.</div>
+            </Field>
           </div>
 
           <div className="form-section-title">Poze</div>

@@ -1,10 +1,14 @@
 import SiteFooter from './SiteFooter.jsx';
+import usePageMeta from '../hooks/usePageMeta.js';
 
 /**
  * Shared layout for static informational pages.
  * Renders a dark header, main content area, and site footer.
+ * @param {string} path            - URL path for canonical tag, e.g. "/safety-tips"
+ * @param {string} [metaDescription] - Custom meta description; falls back to subtitle
  */
-export default function InfoPage({ icon, title, subtitle, children }) {
+export default function InfoPage({ icon, title, subtitle, path, metaDescription, children }) {
+  usePageMeta(title, metaDescription || subtitle || title, path || '/');
   return (
     <div className="public-page">
       <div className="info-page-header">

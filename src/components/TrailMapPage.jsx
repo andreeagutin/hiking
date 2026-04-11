@@ -81,6 +81,8 @@ export default function TrailMapPage() {
       icon="🗺️"
       title="Trail Map"
       subtitle="Explore Romania's mountain regions and discover the best mapping resources"
+      path="/trail-map"
+      metaDescription="Interactive trail maps for Romania's mountain regions — Bucegi, Retezat, Fagaras, Apuseni and more."
     >
       <div className="info-intro">
         <p>

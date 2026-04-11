@@ -84,21 +84,21 @@ const TRANSLATIONS = {
     'poi.label':                 'Punct de interes',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
-    'hero.appName':              'Hike'n'Seek',
-    'hero.title':                'Găsește drumeția perfectă pentru familia ta',
-    'hero.subtitle':             'Trasee potrivite vârstei copiilor tăi. Fiecare aventură în aer liber, sigură și de neuitat.',
-    'hero.adventureBadge':       'Aventura te așteaptă',
-    'hero.searchPlaceholder':    'Caută după nume, munți, zonă…',
-    'hero.trails':               'trasee',
-    'hero.kmHiked':              'km parcurși',
-    'hero.kidFriendly':          'Potrivite copiilor',
-    'hero.regions':              'Regiuni montane',
-    'hero.viewStats':            'Statistici',
-    'hero.aiPlaceholder':        'Descrie drumeția visată… (ex: 2h, max 1h cu mașina)',
-    'hero.aiButton':             'Caută cu AI',
-    'hero.aiLoading':            'Analizez…',
-    'hero.aiClear':              'Șterge filtrul AI',
-    'hero.aiDriveNote':          '(Setează locația pentru filtrul de timp cu mașina)',
+    'hero.appName':              `Hike'n'Seek`,
+    'hero.title':                `Găsește drumeția perfectă pentru familia ta`,
+    'hero.subtitle':             `Trasee potrivite vârstei copiilor tăi. Fiecare aventură în aer liber, sigură și de neuitat.`,
+    'hero.adventureBadge':       `Aventura te așteaptă`,
+    'hero.searchPlaceholder':    `Caută după nume, munți, zonă…`,
+    'hero.trails':               `trasee`,
+    'hero.kmHiked':              `km parcurși`,
+    'hero.kidFriendly':          `Potrivite copiilor`,
+    'hero.regions':              `Regiuni montane`,
+    'hero.viewStats':            `Statistici`,
+    'hero.aiPlaceholder':        `Descrie drumeția visată… (ex: 2h, max 1h cu mașina)`,
+    'hero.aiButton':             `Caută cu AI`,
+    'hero.aiLoading':            `Analizez…`,
+    'hero.aiClear':              `Șterge filtrul AI`,
+    'hero.aiDriveNote':          `(Setează locația pentru filtrul de timp cu mașina)`,
 
     // ── Filters ──────────────────────────────────────────────────────────────
     'filter.allDifficulties':    'Toate dificultățile',
@@ -166,7 +166,7 @@ const TRANSLATIONS = {
     'age.teensRange':            '13+ ani',
 
     // ── Features section ─────────────────────────────────────────────────────
-    'features.title':            'De ce familiile aleg Hike'n'Seek',
+    'features.title':            `De ce familiile aleg Hike'n'Seek`,
     'features.subtitle':         'Ușurăm căutarea traseelor sigure și plăcute adaptate vârstei copiilor tăi.',
     'features.age.title':        'Potrivit vârstei',
     'features.age.desc':         'Fiecare traseu are vârsta minimă recomandată, ca să găsești aventura perfectă pentru micuții tăi.',
@@ -254,7 +254,7 @@ const TRANSLATIONS = {
 
     // ── Admin — login ────────────────────────────────────────────────────────
     'login.title':               'Panou Admin',
-    'login.subtitle':            'Hike'n'Seek',
+    'login.subtitle':            `Hike'n'Seek`,
     'login.username':            'Utilizator',
     'login.password':            'Parolă',
     'login.submit':              'Conectare',
@@ -340,7 +340,7 @@ const TRANSLATIONS = {
     'poi.label':                 'Point of interest',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
-    'hero.appName':              'Hike'n'Seek',
+    'hero.appName':              `Hike'n'Seek`,
     'hero.title':                'Find the Perfect Hike for Your Family',
     'hero.subtitle':             'Discover trails tailored to your children\'s age. Make every outdoor adventure safe, fun, and unforgettable.',
     'hero.adventureBadge':       'Adventure awaits your family',
@@ -422,16 +422,16 @@ const TRANSLATIONS = {
     'age.teensRange':            '13+ yrs',
 
     // ── Features section ─────────────────────────────────────────────────────
-    'features.title':            'Why Families Choose Hike'n'Seek',
-    'features.subtitle':         'We make it easy for families to find safe, enjoyable hiking experiences tailored to their children\'s abilities.',
-    'features.age.title':        'Age-Appropriate',
-    'features.age.desc':         'Every trail is rated by minimum recommended age, so you can find the perfect adventure for your little ones.',
-    'features.safety.title':     'Safety First',
-    'features.safety.desc':      'Detailed information about trail conditions, difficulty levels, and family-friendly amenities.',
-    'features.local.title':      'Local Expertise',
-    'features.local.desc':       'Trails curated by local families who have tested every path with their own children.',
-    'features.nav.title':        'Easy Navigation',
-    'features.nav.desc':         'Clear directions, GPS coordinates, and maps for every trail.',
+    'features.title':            `Why Families Choose Hike'n'Seek`,
+    'features.subtitle':         `We make it easy for families to find safe, enjoyable hiking experiences tailored to their children's abilities.`,
+    'features.age.title':        `Age-Appropriate`,
+    'features.age.desc':         `Every trail is rated by minimum recommended age, so you can find the perfect adventure for your little ones.`,
+    'features.safety.title':     `Safety First`,
+    'features.safety.desc':      `Detailed information about trail conditions, difficulty levels, and family-friendly amenities.`,
+    'features.local.title':      `Local Expertise`,
+    'features.local.desc':       `Trails curated by local families who have tested every path with their own children.`,
+    'features.nav.title':        `Easy Navigation`,
+    'features.nav.desc':         `Clear directions, GPS coordinates, and maps for every trail.`,
 
     // ── Hike card ────────────────────────────────────────────────────────────
     'card.away':                 'away',
@@ -509,12 +509,12 @@ const TRANSLATIONS = {
     'admin.restaurant.add':      '+ Add restaurant',
 
     // ── Admin — login ────────────────────────────────────────────────────────
-    'login.title':               'Admin Panel',
-    'login.subtitle':            'Hike'n'Seek',
-    'login.username':            'Username',
-    'login.password':            'Password',
-    'login.submit':              'Sign in',
-    'login.submitting':          'Signing in…',
+    'login.title':               `Admin Panel`,
+    'login.subtitle':            `Hike'n'Seek`,
+    'login.username':            `Username`,
+    'login.password':            `Password`,
+    'login.submit':              `Sign in`,
+    'login.submitting':          `Signing in…`,
   },
 };
 

@@ -26,9 +26,9 @@ export default function AdminLogin({ onSuccess }) {
   return (
     <div className="admin-login-wrap">
       <form className="admin-login-card" onSubmit={handleSubmit}>
-        <div className="admin-login-icon">🏔️</div>
+        <img src="/hikenSeek-owl-icon.svg" alt="Hike'n'Seek" style={{ width: '4rem', height: '4rem', margin: '0 auto 0.5rem' }} />
         <h1 className="admin-login-title">Admin Panel</h1>
-        <p className="admin-login-sub">Trail Mix</p>
+        <p className="admin-login-sub">Hike'n'Seek</p>
 
         {error && <div className="admin-login-error">{error}</div>}
 

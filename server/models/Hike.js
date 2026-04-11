@@ -47,6 +47,7 @@ const hikeSchema = new mongoose.Schema(
     trailMarkShape:     { type: String, enum: ['stripe', 'cross', 'triangle', 'dot', null], default: null },
     trailMarkers:       { type: [String], default: [] },
     salvamontPoint:     { type: String, default: null },
+    keywords:    { type: [String], default: [] },
     sources:     { type: [String], default: [] },
     active:      { type: Boolean, default: true },
     history:     { type: [historySchema], default: [] },

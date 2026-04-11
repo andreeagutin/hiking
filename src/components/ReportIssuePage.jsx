@@ -75,6 +75,8 @@ export default function ReportIssuePage() {
       icon="⚠️"
       title="Report an Issue"
       subtitle="Help keep trails safe for all families by flagging problems you encounter"
+      path="/report-issue"
+      metaDescription="Report trail conditions, inaccurate information, or safety issues on hiking routes in Romania's Carpathian mountains."
     >
       <div className="info-intro">
         <p>
