@@ -250,5 +250,5 @@ export default function App() {
   if (adminPoiEdit)           return <AdminAuthGate><AdminPoiForm id={adminPoiEdit[1]} /></AdminAuthGate>;
   if (isAdminPoiRoute)        return <AdminAuthGate><AdminPoi /></AdminAuthGate>;
   if (isAdminRoute)           return <AdminAuthGate><AdminPanel /></AdminAuthGate>;
-  return <PublicApp />;
+  return <LogoShowcase />;
 }
