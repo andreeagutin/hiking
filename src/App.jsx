@@ -22,6 +22,7 @@ import SubmitTrailPage from './components/SubmitTrailPage.jsx';
 import ReportIssuePage from './components/ReportIssuePage.jsx';
 import FamilyFriendlyPage from './components/FamilyFriendlyPage.jsx';
 import MountainViewsPage from './components/MountainViewsPage.jsx';
+import LogoShowcase from './components/LogoShowcase.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
 
@@ -51,6 +52,7 @@ const isSubmitTrailRoute   = pathname === '/submit-trail';
 const isReportIssueRoute   = pathname === '/report-issue';
 const isFamilyFriendlyRoute = pathname === '/family-friendly';
 const isMountainViewsRoute = pathname === '/mountain-views';
+const isLogoShowcaseRoute  = pathname === '/logo-showcase';
 
 function AdminAuthGate({ children }) {
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
@@ -238,6 +240,7 @@ export default function App() {
   if (isReportIssueRoute)     return <ReportIssuePage />;
   if (isFamilyFriendlyRoute)  return <FamilyFriendlyPage />;
   if (isMountainViewsRoute)   return <MountainViewsPage />;
+  if (isLogoShowcaseRoute)    return <LogoShowcase />;
   if (isAdminNewRoute)        return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
   if (adminEditMatch)         return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
   if (isAdminNewRestaurant)   return <AdminAuthGate><AdminRestaurantForm /></AdminAuthGate>;
