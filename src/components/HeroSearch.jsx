@@ -165,8 +165,8 @@ function SiteNav() {
     <nav className="site-nav">
       <div className="site-nav-inner">
         <a href="/" className="site-nav-logo">
-          <img src="/hike-and-seek.png" alt="Hike &amp; Seek" className="site-nav-logo-img" />
-          <span className="site-nav-logo-text">Hike &amp; Seek</span>
+          <img src="/hike-and-seek.png" alt="Hike'n'Seek" className="site-nav-logo-img" />
+          <span className="site-nav-logo-text">Hike'n'Seek</span>
         </a>
 
         <div className="site-nav-links">

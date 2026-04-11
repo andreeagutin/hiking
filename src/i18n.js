@@ -84,7 +84,7 @@ const TRANSLATIONS = {
     'poi.label':                 'Punct de interes',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
-    'hero.appName':              'Hike & Seek',
+    'hero.appName':              'Hike'n'Seek',
     'hero.title':                'Găsește drumeția perfectă pentru familia ta',
     'hero.subtitle':             'Trasee potrivite vârstei copiilor tăi. Fiecare aventură în aer liber, sigură și de neuitat.',
     'hero.adventureBadge':       'Aventura te așteaptă',
@@ -166,7 +166,7 @@ const TRANSLATIONS = {
     'age.teensRange':            '13+ ani',
 
     // ── Features section ─────────────────────────────────────────────────────
-    'features.title':            'De ce familiile aleg Hike & Seek',
+    'features.title':            'De ce familiile aleg Hike'n'Seek',
     'features.subtitle':         'Ușurăm căutarea traseelor sigure și plăcute adaptate vârstei copiilor tăi.',
     'features.age.title':        'Potrivit vârstei',
     'features.age.desc':         'Fiecare traseu are vârsta minimă recomandată, ca să găsești aventura perfectă pentru micuții tăi.',
@@ -254,7 +254,7 @@ const TRANSLATIONS = {
 
     // ── Admin — login ────────────────────────────────────────────────────────
     'login.title':               'Panou Admin',
-    'login.subtitle':            'Hike & Seek',
+    'login.subtitle':            'Hike'n'Seek',
     'login.username':            'Utilizator',
     'login.password':            'Parolă',
     'login.submit':              'Conectare',
@@ -340,7 +340,7 @@ const TRANSLATIONS = {
     'poi.label':                 'Point of interest',
 
     // ── Hero / Search ────────────────────────────────────────────────────────
-    'hero.appName':              'Hike & Seek',
+    'hero.appName':              'Hike'n'Seek',
     'hero.title':                'Find the Perfect Hike for Your Family',
     'hero.subtitle':             'Discover trails tailored to your children\'s age. Make every outdoor adventure safe, fun, and unforgettable.',
     'hero.adventureBadge':       'Adventure awaits your family',
@@ -422,7 +422,7 @@ const TRANSLATIONS = {
     'age.teensRange':            '13+ yrs',
 
     // ── Features section ─────────────────────────────────────────────────────
-    'features.title':            'Why Families Choose Hike & Seek',
+    'features.title':            'Why Families Choose Hike'n'Seek',
     'features.subtitle':         'We make it easy for families to find safe, enjoyable hiking experiences tailored to their children\'s abilities.',
     'features.age.title':        'Age-Appropriate',
     'features.age.desc':         'Every trail is rated by minimum recommended age, so you can find the perfect adventure for your little ones.',
@@ -510,7 +510,7 @@ const TRANSLATIONS = {
 
     // ── Admin — login ────────────────────────────────────────────────────────
     'login.title':               'Admin Panel',
-    'login.subtitle':            'Hike & Seek',
+    'login.subtitle':            'Hike'n'Seek',
     'login.username':            'Username',
     'login.password':            'Password',
     'login.submit':              'Sign in',

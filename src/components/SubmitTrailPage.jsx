@@ -44,7 +44,7 @@ export default function SubmitTrailPage() {
 
   if (submitted) {
     return (
-      <InfoPage icon="✅" title="Trail Submitted" subtitle="Thank you for contributing to Hike & Seek">
+      <InfoPage icon="✅" title="Trail Submitted" subtitle="Thank you for contributing to Hike'n'Seek">
         <div className="submit-success">
           <div className="submit-success-icon">🎉</div>
           <h2>We received your trail!</h2>
@@ -69,7 +69,7 @@ export default function SubmitTrailPage() {
     <InfoPage
       icon="📝"
       title="Submit a Trail"
-      subtitle="Know a great family hiking route that's not on Hike & Seek? Tell us about it."
+      subtitle="Know a great family hiking route that's not on Hike'n'Seek? Tell us about it."
     >
       <div className="info-intro">
         <p>

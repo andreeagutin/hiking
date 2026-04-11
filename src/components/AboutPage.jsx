@@ -17,11 +17,11 @@ export default function AboutPage() {
     <InfoPage
       icon="🌿"
       title="About Us"
-      subtitle="The story behind Hike & Seek — built by parents, for parents"
+      subtitle="The story behind Hike'n'Seek — built by parents, for parents"
     >
       <div className="info-intro">
         <p>
-          Hike & Seek started from a frustrating afternoon googling "easy hikes for toddlers
+          Hike'n'Seek started from a frustrating afternoon googling "easy hikes for toddlers
           in the Bucegi" and getting results that ranged from "walk in the park" to "bring
           crampons". We needed trail information that understood what it actually means to
           hike with young children — minimum ages, rest areas, bear risks, stroller access,
@@ -74,7 +74,7 @@ export default function AboutPage() {
       <div className="info-section">
         <h2>Our Community</h2>
         <p className="info-text">
-          Beyond the two of us, Hike & Seek is shaped by dozens of families who share
+          Beyond the two of us, Hike'n'Seek is shaped by dozens of families who share
           trail reports, submit new routes, and flag issues. If you've hiked a trail with
           your kids and have something to add — conditions, kid-friendliness ratings, photos —
           we'd love to hear from you.

@@ -123,7 +123,7 @@ export default function HikeDetail({ id }) {
     const rawDesc = hike.description || '';
     const plainDesc = rawDesc.replace(/[#*_`[\]()>!\-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 160);
     const desc = plainDesc || `Traseu ${hike.name}${hike.mountains ? ` în ${hike.mountains}` : ''}.`;
-    const title = `${hike.name} — Hike & Seek`;
+    const title = `${hike.name} — Hike'n'Seek`;
 
     document.title = title;
     setMeta('description', desc);
@@ -182,7 +182,7 @@ export default function HikeDetail({ id }) {
     ldScript.textContent = JSON.stringify(jsonLd);
 
     return () => {
-      document.title = 'Hike & Seek — Trasee montane din România';
+      document.title = 'Hike'n'Seek — Trasee montane din România';
       setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
       document.getElementById('hike-jsonld')?.remove();
     };

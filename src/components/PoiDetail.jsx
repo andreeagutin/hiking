@@ -83,7 +83,7 @@ export default function PoiDetail({ id }) {
     const image = poi.mainPhoto || poi.photos?.[0] || '';
     const desc = [poi.poiType, poi.mountains, poi.zone].filter(Boolean).join(', ') ||
       `Punct de interes: ${poi.name}`;
-    const title = `${poi.name} — Hike & Seek`;
+    const title = `${poi.name} — Hike'n'Seek`;
 
     document.title = title;
     setMeta('description', desc);
@@ -127,7 +127,7 @@ export default function PoiDetail({ id }) {
     poiLdScript.textContent = JSON.stringify(poiJsonLd);
 
     return () => {
-      document.title = 'Hike & Seek — Trasee montane din România';
+      document.title = 'Hike'n'Seek — Trasee montane din România';
       setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
       document.getElementById('poi-jsonld')?.remove();
     };

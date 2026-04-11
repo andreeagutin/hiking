@@ -12,8 +12,8 @@ export default function SiteFooter() {
           {/* Brand */}
           <div>
             <a href="/" className="site-footer-brand-logo">
-              <img src="/hike-and-seek.png" alt="Hike & Seek" className="site-footer-logo-img" />
-              <span>Hike &amp; Seek</span>
+              <img src="/hike-and-seek.png" alt="Hike'n'Seek" className="site-footer-logo-img" />
+              <span>Hike'n'Seek</span>
             </a>
             <p className="site-footer-tagline">{t('footer.tagline')}</p>
             {/* Social media links — not available yet
@@ -59,7 +59,7 @@ export default function SiteFooter() {
         </div>
 
         <div className="site-footer-bottom">
-          <p>© {year} Hike &amp; Seek. {t('footer.rights')}</p>
+          <p>© {year} Hike'n'Seek. {t('footer.rights')}</p>
           <p>{t('footer.madeWith')}</p>
           <p>
             <button
