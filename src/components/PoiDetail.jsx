@@ -96,9 +96,40 @@ export default function PoiDetail({ id }) {
     setMeta('twitter:description', desc);
     if (image) setMeta('twitter:image', image);
 
+    // JSON-LD structured data
+    const poiSlug = poi.slug || poi._id;
+    const poiJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': ['TouristAttraction', 'Place'],
+      name: poi.name,
+      description: desc,
+      ...(image && { image }),
+      url: `https://hiking-high.netlify.app/poi/${poiSlug}`,
+      isAccessibleForFree: true,
+      ...(poi.mountains && {
+        address: { '@type': 'PostalAddress', addressRegion: poi.mountains, addressCountry: 'RO' },
+      }),
+      ...(poi.lat && poi.lng && {
+        geo: { '@type': 'GeoCoordinates', latitude: poi.lat, longitude: poi.lng },
+      }),
+      additionalProperty: [
+        ...(poi.poiType  ? [{ '@type': 'PropertyValue', name: 'Type',     value: poi.poiType }] : []),
+        ...(poi.altitude ? [{ '@type': 'PropertyValue', name: 'Altitude', value: `${poi.altitude} m` }] : []),
+      ],
+    };
+    let poiLdScript = document.getElementById('poi-jsonld');
+    if (!poiLdScript) {
+      poiLdScript = document.createElement('script');
+      poiLdScript.id = 'poi-jsonld';
+      poiLdScript.type = 'application/ld+json';
+      document.head.appendChild(poiLdScript);
+    }
+    poiLdScript.textContent = JSON.stringify(poiJsonLd);
+
     return () => {
       document.title = 'Hike & Seek — Trasee montane din România';
       setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
+      document.getElementById('poi-jsonld')?.remove();
     };
   }, [poi]);
 

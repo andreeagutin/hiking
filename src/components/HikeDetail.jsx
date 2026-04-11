@@ -136,9 +136,55 @@ export default function HikeDetail({ id }) {
     setMeta('twitter:description', desc);
     if (image) setMeta('twitter:image', image);
 
+    // JSON-LD structured data
+    const slug = hike.slug || hike._id;
+    const amenities = [];
+    if (hike.hasBathrooms)    amenities.push({ '@type': 'LocationFeatureSpecification', name: 'Bathroom', value: true });
+    if (hike.hasPicknicArea)  amenities.push({ '@type': 'LocationFeatureSpecification', name: 'Picnic area', value: true });
+    if (hike.hasRestAreas)    amenities.push({ '@type': 'LocationFeatureSpecification', name: 'Rest area', value: true });
+    if (hike.safeWaterSource) amenities.push({ '@type': 'LocationFeatureSpecification', name: 'Drinking water', value: true });
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': ['TouristAttraction', 'Place'],
+      name: hike.name,
+      description: desc,
+      ...(image && isSafeUrl(image) && { image }),
+      url: `https://hiking-high.netlify.app/hike/${slug}`,
+      isAccessibleForFree: true,
+      ...(hike.mountains && {
+        address: { '@type': 'PostalAddress', addressRegion: hike.mountains, addressCountry: 'RO' },
+      }),
+      ...(hike.startLat && hike.startLng && {
+        geo: { '@type': 'GeoCoordinates', latitude: hike.startLat, longitude: hike.startLng },
+      }),
+      ...(amenities.length && { amenityFeature: amenities }),
+      ...(hike.familyFriendly && {
+        audience: {
+          '@type': 'PeopleAudience',
+          suggestedMinAge: hike.minAgeRecommended ?? 0,
+          audienceType: 'Families with children',
+        },
+      }),
+      additionalProperty: [
+        ...(hike.distance  ? [{ '@type': 'PropertyValue', name: 'Distance',       value: `${hike.distance} km` }] : []),
+        ...(hike.time      ? [{ '@type': 'PropertyValue', name: 'Duration',        value: `PT${Math.floor(hike.time)}H${Math.round((hike.time % 1) * 60)}M` }] : []),
+        ...(hike.up        ? [{ '@type': 'PropertyValue', name: 'Elevation gain',  value: `${hike.up} m` }] : []),
+        ...(hike.difficulty ? [{ '@type': 'PropertyValue', name: 'Difficulty',     value: hike.difficulty === 'easy' ? 'Easy' : 'Moderate' }] : []),
+      ],
+    };
+    let ldScript = document.getElementById('hike-jsonld');
+    if (!ldScript) {
+      ldScript = document.createElement('script');
+      ldScript.id = 'hike-jsonld';
+      ldScript.type = 'application/ld+json';
+      document.head.appendChild(ldScript);
+    }
+    ldScript.textContent = JSON.stringify(jsonLd);
+
     return () => {
       document.title = 'Hike & Seek — Trasee montane din România';
       setMeta('description', 'Descoperă cele mai frumoase trasee montane din România.');
+      document.getElementById('hike-jsonld')?.remove();
     };
   }, [hike]);
 
