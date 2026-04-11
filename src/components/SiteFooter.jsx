@@ -61,6 +61,14 @@ export default function SiteFooter() {
         <div className="site-footer-bottom">
           <p>© {year} Hike &amp; Seek. {t('footer.rights')}</p>
           <p>{t('footer.madeWith')}</p>
+          <p>
+            <button
+              className="site-footer-cookie-btn"
+              onClick={() => window.__showCookieSettings?.()}
+            >
+              {t('footer.cookieSettings')}
+            </button>
+          </p>
         </div>
       </div>
     </footer>

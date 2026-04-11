@@ -22,6 +22,7 @@ import SubmitTrailPage from './components/SubmitTrailPage.jsx';
 import ReportIssuePage from './components/ReportIssuePage.jsx';
 import FamilyFriendlyPage from './components/FamilyFriendlyPage.jsx';
 import MountainViewsPage from './components/MountainViewsPage.jsx';
+import CookieBanner from './components/CookieBanner.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
 
@@ -226,7 +227,7 @@ function PublicApp() {
   );
 }
 
-export default function App() {
+function AppRoutes() {
   if (hikeDetailMatch)        return <HikeDetail id={hikeDetailMatch[1]} />;
   if (poiDetailMatch)         return <PoiDetail id={poiDetailMatch[1]} />;
   if (isStatsRoute)           return <StatsPage />;
@@ -248,4 +249,13 @@ export default function App() {
   if (isAdminPoiRoute)        return <AdminAuthGate><AdminPoi /></AdminAuthGate>;
   if (isAdminRoute)           return <AdminAuthGate><AdminPanel /></AdminAuthGate>;
   return <PublicApp />;
+}
+
+export default function App() {
+  return (
+    <>
+      <AppRoutes />
+      {!isAdminRoute && <CookieBanner />}
+    </>
+  );
 }

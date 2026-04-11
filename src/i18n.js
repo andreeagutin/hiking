@@ -141,6 +141,13 @@ const TRANSLATIONS = {
     'footer.admin':              'Admin',
     'footer.rights':             'Toate drepturile rezervate.',
     'footer.madeWith':           'Făcut cu ❤️ pentru familiile care iubesc natura',
+    'footer.cookieSettings':     'Setări cookies',
+
+    // ── Cookie consent ──────────────────────────────────────────────────────
+    'cookie.title':              'Folosim cookies',
+    'cookie.body':               'Folosim Google Analytics pentru a înțelege cum este utilizat site-ul. Nu stocăm date personale. Poți accepta sau refuza.',
+    'cookie.accept':             'Accept',
+    'cookie.reject':             'Refuz',
 
     // ── Age filter ───────────────────────────────────────────────────────────
     'age.title':                 'Câți ani au exploratorii voștri?',
@@ -390,6 +397,13 @@ const TRANSLATIONS = {
     'footer.admin':              'Admin',
     'footer.rights':             'All rights reserved.',
     'footer.madeWith':           'Made with ❤️ for families who love the outdoors',
+    'footer.cookieSettings':     'Cookie settings',
+
+    // ── Cookie consent ──────────────────────────────────────────────────────
+    'cookie.title':              'We use cookies',
+    'cookie.body':               'We use Google Analytics to understand how the site is used. No personal data is stored. You can accept or decline.',
+    'cookie.accept':             'Accept',
+    'cookie.reject':             'Decline',
 
     // ── Age filter ───────────────────────────────────────────────────────────
     'age.title':                 'How old are your little explorers?',

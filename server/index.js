@@ -22,8 +22,17 @@ const PORT = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
 
 app.use(helmet());
+const allowedOrigins = process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(',').map(o => o.trim())
+  : ['http://localhost:5173', 'http://localhost:4173'];
+
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || '*',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
 }));
 app.use(express.json());
 
