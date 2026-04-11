@@ -56,6 +56,13 @@ app.use('/api/mountains', mountainsRouter);
 app.use('/api/ai-search', aiSearchRouter);
 app.use('/sitemap.xml', sitemapRouter);
 
+// JSON error handler — catches CORS rejections and other middleware errors
+// so the client always receives JSON instead of Express's default HTML error page
+app.use((err, _req, res, _next) => {
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({ error: err.message || 'Internal server error' });
+});
+
 if (isProd && !process.env.RENDER) {
   const distPath = path.join(__dirname, '..', 'dist');
   app.use(express.static(distPath));
