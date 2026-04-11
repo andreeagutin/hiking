@@ -9,16 +9,24 @@ function authHeaders() {
     : { 'Content-Type': 'application/json' };
 }
 
+function parseJSON(res) {
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    throw new Error('Server is starting up — please refresh in a moment.');
+  }
+  return res.json();
+}
+
 export async function fetchPois() {
   const res = await fetch(BASE);
   if (!res.ok) throw new Error('Failed to load points of interest');
-  return res.json();
+  return parseJSON(res);
 }
 
 export async function fetchPoi(id) {
   const res = await fetch(`${BASE}/${id}`);
   if (!res.ok) throw new Error('Point of interest not found');
-  return res.json();
+  return parseJSON(res);
 }
 
 export async function createPoi(data) {

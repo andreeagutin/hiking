@@ -9,16 +9,24 @@ function authHeaders() {
     : { 'Content-Type': 'application/json' };
 }
 
+function parseJSON(res) {
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    throw new Error('Server is starting up — please refresh in a moment.');
+  }
+  return res.json();
+}
+
 export async function fetchRestaurants() {
   const res = await fetch(BASE);
   if (!res.ok) throw new Error('Failed to load restaurants');
-  return res.json();
+  return parseJSON(res);
 }
 
 export async function fetchRestaurant(id) {
   const res = await fetch(`${BASE}/${id}`);
   if (!res.ok) throw new Error('Restaurant not found');
-  return res.json();
+  return parseJSON(res);
 }
 
 export async function createRestaurant(data) {
