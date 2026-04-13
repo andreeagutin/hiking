@@ -1,4 +1,4 @@
-# Trail Mix
+# Hike'n'Seek
 
 A full-stack hiking trail tracker for Romanian mountains. Users browse hikes and points of interest publicly. An admin at `/admin` manages all data behind JWT authentication.
 
@@ -25,6 +25,9 @@ A full-stack hiking trail tracker for Romanian mountains. Users browse hikes and
 | AI Search | Claude Haiku via Anthropic SDK |
 | i18n | Custom `src/i18n.js` — RO + EN |
 | Security | helmet, express-rate-limit |
+| API Docs | Swagger UI (`swagger-ui-express`) at `/api-docs` |
+| Analytics | Google Analytics (gtag.js in `index.html`) |
+| PWA | Web app manifest — installable on mobile |
 | Deployment | Netlify (frontend), Render (backend) |
 
 ## Getting Started
@@ -89,6 +92,7 @@ hiking/
 │   │   ├── mountains.js      # GET /api/mountains (static Romanian mountains list)
 │   │   ├── upload.js         # Cloudinary upload
 │   │   └── aiSearch.js       # Claude Haiku natural language search
+│   ├── swagger.js            # OpenAPI 3.0 spec (served at /api-docs)
 │   ├── utils/slugify.js      # Slug generation + uniqueness helper
 │   └── data/mountains-ro.js  # Static list of Romanian mountain ranges
 ├── src/
@@ -108,6 +112,11 @@ hiking/
 │       ├── Controls.jsx      # Filter bar (search, difficulty, mountains, zone, tip)
 │       ├── StatsPage.jsx     # Stats + Recharts
 │       ├── WeatherForecast.jsx
+│       ├── CookieBanner.jsx  # GDPR cookie consent (non-admin pages)
+│       ├── SiteFooter.jsx    # Footer with links to all info pages
+│       ├── FeaturesSection.jsx
+│       ├── AgeFilter.jsx
+│       ├── InfoPage.jsx + {About,SafetyTips,GearGuide,TrailMap,SubmitTrail,ReportIssue,FamilyFriendly,MountainViews}Page.jsx
 │       └── admin/
 │           ├── AdminLogin.jsx
 │           ├── AdminPanel.jsx        # Hikes CRUD table
@@ -149,6 +158,8 @@ hiking/
 | GET | `/api/mountains` | public | Romanian mountain ranges list |
 | POST | `/api/upload` | admin JWT | Upload to Cloudinary |
 | POST | `/api/ai-search` | public | Natural language hike search (Claude Haiku) |
+| GET | `/sitemap.xml` | public | Auto-generated XML sitemap |
+| GET | `/api-docs` | public | Swagger UI (OpenAPI 3.0) |
 
 Rate limiting: 10 requests / 15 min on both login endpoints.
 
@@ -160,9 +171,13 @@ Rate limiting: 10 requests / 15 min on both login endpoints.
 - **HikeCard hover overlay** — stat bars for difficulty, distance, time, elevation; family-friendly and bear risk chips.
 - **RO/EN language switcher** — persisted in `localStorage`.
 - Driving distance from user location via OSRM (geolocation or Nominatim city search).
-- Hike detail: multi-photo lightbox, trail marker card, Family & Safety card, weather forecast, Mapy.cz embed, history, restaurants, POIs.
-- POI detail (`/poi/:slug`): photo gallery, coordinates (Google Maps link), weather forecast, linked hikes.
+- Hike detail: multi-photo lightbox, trail marker card, Family & Safety card, weather forecast, Mapy.cz embed, history, restaurants, POIs. Includes JSON-LD (`TouristAttraction`) structured data.
+- POI detail (`/poi/:slug`): photo gallery, coordinates (Google Maps link), weather forecast, linked hikes. Includes JSON-LD structured data.
 - Stats page (`/stats`): totals + Recharts charts (difficulty pie, monthly bar, distance by mountains).
+- **Static info pages**: About, Safety Tips, Gear Guide, Trail Map, Submit Trail, Report Issue, Family Friendly, Mountain Views — all linked from the site footer.
+- **Cookie consent banner** (GDPR) on all non-admin pages.
+- **Google Analytics** via gtag.js.
+- **PWA manifest** — installable on Android/iOS home screen.
 
 ### Admin
 
@@ -190,6 +205,8 @@ Rate limiting: 10 requests / 15 min on both login endpoints.
 | `/admin/hike/new`, `/admin/hike/:id/edit` | `AdminHikeForm` |
 | `/admin/restaurants`, `/admin/restaurant/new`, `/admin/restaurant/:id/edit` | Restaurant admin |
 | `/admin/poi`, `/admin/poi/new`, `/admin/poi/:id/edit` | POI admin |
+| `/about`, `/safety-tips`, `/gear-guide`, `/trail-map` | Static info pages |
+| `/submit-trail`, `/report-issue`, `/family-friendly`, `/mountain-views` | Static info pages |
 
 ## Known Gotchas
 

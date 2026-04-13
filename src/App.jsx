@@ -14,6 +14,8 @@ import AdminRestaurantForm from './components/admin/AdminRestaurantForm.jsx';
 import AdminPoi from './components/admin/AdminPoi.jsx';
 import AdminPoiForm from './components/admin/AdminPoiForm.jsx';
 import PoiDetail from './components/PoiDetail.jsx';
+import HikeTracker from './components/HikeTracker.jsx';
+import TrackDetail from './components/TrackDetail.jsx';
 import SafetyTipsPage from './components/SafetyTipsPage.jsx';
 import GearGuidePage from './components/GearGuidePage.jsx';
 import TrailMapPage from './components/TrailMapPage.jsx';
@@ -39,6 +41,8 @@ const isAdminNewRestaurant  = pathname === '/admin/restaurant/new';
 const isAdminPoiRoute       = pathname === '/admin/poi';
 const isAdminNewPoi         = pathname === '/admin/poi/new';
 const isStatsRoute          = pathname === '/stats';
+const isTrackRoute          = pathname === '/track' || pathname.startsWith('/track/active') || pathname.startsWith('/track/save');
+const trackDetailMatch      = pathname.match(/^\/track\/([a-f0-9]{24})$/);
 const poiDetailMatch        = pathname.match(/^\/poi\/([^/]+)$/);
 const isAdminRoute          = pathname === '/admin' || !!adminEditMatch || isAdminNewRoute
   || isAdminRestaurantsRoute || !!adminRestaurantEdit || isAdminNewRestaurant
@@ -251,6 +255,8 @@ function PublicApp() {
 
 function AppRoutes() {
   if (hikeDetailMatch)        return <HikeDetail id={hikeDetailMatch[1]} />;
+  if (trackDetailMatch)       return <TrackDetail id={trackDetailMatch[1]} />;
+  if (isTrackRoute)           return <HikeTracker />;
   if (poiDetailMatch)         return <PoiDetail id={poiDetailMatch[1]} />;
   if (isStatsRoute)           return <StatsPage />;
   if (isSafetyTipsRoute)      return <SafetyTipsPage />;

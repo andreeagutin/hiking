@@ -1,7 +1,7 @@
-# Trail Mix — Project Guide for Claude
+# Hike'n'Seek — Project Guide for Claude
 
 ## Overview
-A full-stack hiking trail tracker. Users browse hikes and points of interest publicly (read-only). An admin at `/admin` manages all data (CRUD) behind JWT authentication. User accounts with family profiles are supported.
+A full-stack hiking trail tracker branded **Hike'n'Seek**. Users browse hikes and points of interest publicly (read-only). An admin at `/admin` manages all data (CRUD) behind JWT authentication. User accounts with family profiles are supported.
 
 ## Tech Stack
 | Layer | Technology |
@@ -19,6 +19,9 @@ A full-stack hiking trail tracker. Users browse hikes and points of interest pub
 | AI Search | Claude Haiku (`claude-haiku-4-5-20251001`) via Anthropic SDK |
 | i18n | Custom `src/i18n.js` — `t('key')` helper, RO/EN dual-language |
 | Security | `helmet`, `express-rate-limit` |
+| API Docs | Swagger UI (`swagger-ui-express`) at `/api-docs` |
+| Analytics | Google Analytics (gtag.js injected in `index.html`) |
+| PWA | Web app manifest (`public/manifest.json`), installable |
 
 ## Project Structure
 ```text
@@ -41,7 +44,9 @@ hiking/
 │   │   ├── users.js          # POST register/login, GET/PUT /me, GET /me/subscription
 │   │   ├── mountains.js      # GET /api/mountains (static Romanian mountains list)
 │   │   ├── upload.js         # POST /api/upload (Cloudinary)
+│   │   ├── sitemap.js        # GET /sitemap.xml (auto-generated sitemap)
 │   │   └── aiSearch.js       # POST /api/ai-search (Claude Haiku natural language search)
+│   ├── swagger.js            # OpenAPI 3.0 spec (served at /api-docs via swagger-ui-express)
 │   ├── utils/
 │   │   └── slugify.js        # Slug generation + uniqueness helper
 │   └── data/
@@ -62,14 +67,27 @@ hiking/
 │   └── components/
 │       ├── HeroSearch.jsx    # Hero section with AI search, location widget, RO/EN switcher
 │       ├── HikeCard.jsx      # Hike card with hover overlay stat bars + family/bear chips
-│       ├── HikeDetail.jsx    # Full hike detail page (/hike/:slug-or-id)
-│       ├── PoiDetail.jsx     # POI detail page (/poi/:slug-or-id)
+│       ├── HikeDetail.jsx    # Full hike detail page (/hike/:slug-or-id) — includes JSON-LD
+│       ├── PoiDetail.jsx     # POI detail page (/poi/:slug-or-id) — includes JSON-LD
 │       ├── StatsPage.jsx     # Stats page (/stats) with Recharts
 │       ├── WeatherForecast.jsx # 7-day forecast via Open-Meteo
 │       ├── HikeCarousel.jsx  # Auto-sliding carousel (hikes with photos)
 │       ├── HikeRow.jsx       # Table row component (view + edit modes)
 │       ├── HikingTable.jsx   # Sortable/filterable hike table
 │       ├── Controls.jsx      # Filter bar (text search, difficulty, mountains, zone, tip)
+│       ├── AgeFilter.jsx     # Age-range quick filter UI
+│       ├── FeaturesSection.jsx # Feature highlights section on homepage
+│       ├── SiteFooter.jsx    # Site-wide footer with links to info pages
+│       ├── CookieBanner.jsx  # GDPR cookie consent banner (shown on all non-admin pages)
+│       ├── InfoPage.jsx      # Generic wrapper for static info pages
+│       ├── AboutPage.jsx           # /about
+│       ├── SafetyTipsPage.jsx      # /safety-tips
+│       ├── GearGuidePage.jsx       # /gear-guide
+│       ├── TrailMapPage.jsx        # /trail-map
+│       ├── SubmitTrailPage.jsx     # /submit-trail
+│       ├── ReportIssuePage.jsx     # /report-issue
+│       ├── FamilyFriendlyPage.jsx  # /family-friendly
+│       └── MountainViewsPage.jsx   # /mountain-views
 │       └── admin/
 │           ├── AdminLogin.jsx        # Login form
 │           ├── AdminPanel.jsx        # Hikes CRUD table
@@ -81,7 +99,7 @@ hiking/
 │           └── ConfirmModal.jsx      # Reusable confirm dialog
 ├── public/
 │   ├── favicon.svg           # SVG hiker icon (used in browser tab + admin header)
-│   ├── logo.svg              # Trail Mix wordmark/logo (displayed in hero)
+│   ├── logo.svg              # Hike'n'seek wordmark/logo (displayed in hero)
 │   └── hiking_markers/       # 15 SVG trail marker files served statically
 ├── hiking_markers/           # Source copies of SVG trail markers
 ├── data/
@@ -151,6 +169,8 @@ npm run build     # Production build
 | DELETE | `/api/poi/:id` | admin JWT | Delete POI |
 | GET | `/api/mountains` | public | Static list of Romanian mountain ranges |
 | POST | `/api/ai-search` | public | Natural language hike search via Claude Haiku |
+| GET | `/sitemap.xml` | public | Auto-generated XML sitemap (hikes + POIs) |
+| GET | `/api-docs` | public | Swagger UI (OpenAPI 3.0 interactive docs) |
 
 Rate limiting: 10 requests / 15 min on both login endpoints (`/api/auth/login` and `/api/users/login`).
 
@@ -184,6 +204,14 @@ Rate limiting: 10 requests / 15 min on both login endpoints (`/api/auth/login` a
 - `/admin/poi` → `AdminPoi` list
 - `/admin/poi/:id/edit` → `AdminPoiForm` (edit existing)
 - `/admin/poi/new` → `AdminPoiForm` (create new)
+- `/safety-tips` → `SafetyTipsPage`
+- `/gear-guide` → `GearGuidePage`
+- `/trail-map` → `TrailMapPage`
+- `/about` → `AboutPage`
+- `/submit-trail` → `SubmitTrailPage`
+- `/report-issue` → `ReportIssuePage`
+- `/family-friendly` → `FamilyFriendlyPage`
+- `/mountain-views` → `MountainViewsPage`
 
 Hike and POI routes accept both slug and ObjectId — the API resolves either. Vite handles SPA fallback in dev; Express serves `dist/` in production.
 
@@ -387,6 +415,10 @@ All UI strings go through `src/i18n.js`. Two languages: **Romanian (`ro`)** and 
 - `imageUrl` is kept in sync with `mainPhoto` on every photo upload/remove/set-main in `AdminHikeForm` — don't set them independently
 - `TagMultiSelect` and `MarkerPicker` are defined as module-level functions at the top of `AdminHikeForm.jsx` (before `EMPTY`) — not in separate files
 - Hike and POI routes accept both slug and ObjectId — the server resolves either via `isObjectId()` check
+- Swagger UI at `/api-docs` uses a relaxed CSP (mounted before `helmet()`) — scoped to that path only
+- `CookieBanner` is shown on all non-admin pages; it sets a `cookieConsent` key in `localStorage`
+- PWA manifest is at `public/manifest.json`; `index.html` links it with `<link rel="manifest">`
+- Google Analytics tag is injected directly in `index.html` — no npm package needed
 
 ## Design System
 All CSS variables are in `src/index.css` under `:root`. Color palette:

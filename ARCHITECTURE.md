@@ -1,4 +1,4 @@
-# Trail Mix — What Was Built & How
+# Hike'n'seek — What Was Built & How
 
 A step-by-step reference of every feature in this project — useful for rebuilding from scratch or extending.
 
@@ -340,13 +340,15 @@ t('weather.forecastLabel', { n: 7 }) // → '7-day forecast · near trailhead'
 
 ## 20. Branding (Logo + Favicon)
 
-**Favicon:** `public/favicon.svg` — custom SVG of a hiker with backpack and hiking stick, in forest green palette. Referenced in `index.html` as `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Also used inline in the admin header as `<img src="/favicon.svg">`.
+The app is branded **Hike'n'Seek**.
 
-**Logo:** `public/logo.svg` — Trail Mix wordmark/logo. Displayed in the hero section:
+**Favicon:** `public/favicon.svg` — custom SVG owl icon in the Hike'n'Seek brand palette. Referenced in `index.html` as `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Also used inline in the admin header.
+
+**Logo:** `public/logo.svg` — Hike'n'Seek wordmark/logo. Displayed in the hero section:
 ```jsx
-<img src="/logo.svg" alt="Trail Mix" style={{ height: '2.4rem', verticalAlign: 'middle' }} />
+<img src="/logo.svg" alt="Hike'n'Seek" style={{ height: '2.4rem', verticalAlign: 'middle' }} />
 ```
-Both files live in `public/` so Vite serves them at root (`/favicon.svg`, `/logo.svg`) without import handling.
+Both files live in `public/` so Vite serves them at root without import handling.
 
 ---
 
@@ -494,6 +496,75 @@ In `HikeDetail.jsx`, rendered when any family/safety field is set. Four subsecti
 
 Trail markers in the card header use `detail-family-markers` flex row of `<img>` elements.
 The markers stat card uses `detail-stat--markers` modifier class — removes label, centers images.
+
+---
+
+## 26. Swagger UI (OpenAPI Docs)
+
+Interactive API docs served at `/api-docs` via `swagger-ui-express`.
+
+**`server/swagger.js`** — exports a plain JS object (OpenAPI 3.0 spec) defining all schemas and paths. No YAML parser needed.
+
+**Mounting** (in `server/index.js`, before `helmet()`):
+```js
+app.use('/api-docs', (req, res, next) => {
+  res.setHeader('Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;");
+  next();
+}, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+```
+The CSP override is scoped to `/api-docs` only so the global `helmet()` CSP is not weakened for other routes.
+
+**Install:**
+```bash
+npm install swagger-ui-express
+```
+
+Spec covers all endpoints (Auth, Users, Hikes, Restaurants, POIs, Mountains, AI Search, Upload) with request/response schemas, security schemes (`adminAuth` / `userAuth`), and example values.
+
+---
+
+## 27. Static Info Pages
+
+Eight static content pages linked from `SiteFooter.jsx`:
+
+| Path | Component |
+|------|-----------|
+| `/about` | `AboutPage.jsx` |
+| `/safety-tips` | `SafetyTipsPage.jsx` |
+| `/gear-guide` | `GearGuidePage.jsx` |
+| `/trail-map` | `TrailMapPage.jsx` |
+| `/submit-trail` | `SubmitTrailPage.jsx` |
+| `/report-issue` | `ReportIssuePage.jsx` |
+| `/family-friendly` | `FamilyFriendlyPage.jsx` |
+| `/mountain-views` | `MountainViewsPage.jsx` |
+
+All share `InfoPage.jsx` as a layout wrapper. Routes added to `App.jsx` using the same `pathname` switch pattern.
+
+`SiteFooter.jsx` renders below the main content on the public homepage.
+`FeaturesSection.jsx` renders a feature highlights grid above the footer on the homepage.
+
+---
+
+## 28. Cookie Consent, PWA, Analytics & JSON-LD
+
+### Cookie consent
+`CookieBanner.jsx` — GDPR banner shown on all non-admin pages. Stores consent in `localStorage` under key `cookieConsent`. Hidden when consent already given.
+
+### PWA manifest
+`public/manifest.json` — makes the app installable on Android/iOS. Referenced in `index.html`:
+```html
+<link rel="manifest" href="/manifest.json" />
+```
+
+### Google Analytics
+gtag.js snippet injected directly into `index.html` — no npm package. Fires page views automatically.
+
+### JSON-LD structured data
+`HikeDetail.jsx` and `PoiDetail.jsx` each inject a `<script type="application/ld+json">` tag with `TouristAttraction` schema, helping search engines index trail/POI details.
+
+### Sitemap
+`server/routes/sitemap.js` — generates an XML sitemap on the fly from all active hikes and POIs (using their slugs). Mounted at `GET /sitemap.xml` in `server/index.js`.
 
 ---
 

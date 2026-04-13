@@ -1,0 +1,17 @@
+{
+  "appId": "com.hikenseek.app",
+  "appName": "Hike'n'Seek",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Geolocation": {
+      "permissions": ["location", "coarseLocation"]
+    },
+    "BackgroundGeolocation": {
+      "backgroundMessage": "Recording your hike...",
+      "backgroundTitle": "Hike'n'Seek"
+    }
+  }
+}

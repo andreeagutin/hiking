@@ -6,6 +6,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import swaggerUi from 'swagger-ui-express';
 import { connectDB } from './db.js';
 import hikesRouter from './routes/hikes.js';
 import authRouter from './routes/auth.js';
@@ -16,11 +17,22 @@ import mountainsRouter from './routes/mountains.js';
 import aiSearchRouter from './routes/aiSearch.js';
 import usersRouter from './routes/users.js';
 import sitemapRouter from './routes/sitemap.js';
+import trackedHikesRouter from './routes/trackedHikes.js';
+import swaggerSpec from './swagger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
+
+// Swagger UI — relaxed CSP scoped to /api-docs only (before global helmet)
+app.use('/api-docs', (req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+  );
+  next();
+}, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(helmet());
 app.use(compression());
@@ -55,6 +67,7 @@ app.use('/api/poi', poiRouter);
 app.use('/api/mountains', mountainsRouter);
 app.use('/api/ai-search', aiSearchRouter);
 app.use('/sitemap.xml', sitemapRouter);
+app.use('/api/tracked-hikes', trackedHikesRouter);
 
 // JSON error handler — catches CORS rejections and other middleware errors
 // so the client always receives JSON instead of Express's default HTML error page

@@ -1,10 +1,10 @@
-# Trail Mix Family — Development Roadmap
+# Hike'n'seek Family — Development Roadmap
 
-Based on the market research: **no family-first hiking app exists in Europe**. Trail Mix evolves from a personal tracker into a family hiking platform, launching in Romania and expanding across Europe.
+Based on the market research: **no family-first hiking app exists in Europe**. Hike'n'Seek evolves from a personal tracker into a family hiking platform, launching in Romania and expanding across Europe.
 
 ---
 
-## Current Foundation (Trail Mix)
+## Current Foundation (Hike'n'Seek)
 
 Already built and production-ready:
 - Trail database (hikes, points of interest, restaurants) with full CRUD admin
@@ -25,6 +25,14 @@ Already built and production-ready:
 - **User accounts** — `User` model with email/password (bcrypt), children profiles, subscription tier; full register/login/profile API with 30d JWT
 - **Server security** — `helmet` headers + `express-rate-limit` on login endpoints
 - **Mountains API** — `/api/mountains` serves static Romanian mountain ranges list
+- **New design** — redesigned public UI (HIK-22)
+- **Static info pages** — About, Safety Tips, Gear Guide, Trail Map, Submit Trail, Report Issue, Family Friendly, Mountain Views; site footer + features section (HIK-23)
+- **Google Analytics** — gtag.js in `index.html` (HIK-24)
+- **JSON-LD structured data** — `TouristAttraction` schema in `HikeDetail` + `PoiDetail` (HIK-25)
+- **Cookie consent banner** — GDPR `CookieBanner.jsx`; PWA manifest; CORS hardening (HIK-26)
+- **Hike'n'Seek branding** — owl favicon, updated logo (HIK-27)
+- **Swagger UI** — OpenAPI 3.0 spec at `/api-docs` via `swagger-ui-express`
+- **Sitemap** — auto-generated `/sitemap.xml` from active hikes + POIs
 
 This is the data layer and admin backend. Everything below builds on top of it.
 
@@ -604,28 +612,30 @@ External services:
 - [x] HIK-19: Points of interest (generalized POI replacing Cave), URL slugs, remove status field
 - [x] HIK-20: Bug fixes across admin, POI, and family fields
 - [x] HIK-21: Improve AI search — extend system prompt with 25+ filter fields (amenities, signal, highlights, sheepdogFree, elevation range)
-- [x] HIK-22: Family & Safety card in HikeDetail (suitability, highlights, amenities, safety chips)
-- [x] HIK-24: Romania trail markings display in HikeDetail (real SVG markers, stat card + safety card header)
-- [x] HIK-25: Safety section in HikeDetail (bear risk, sheepdog, Salvamont, signal — color-coded chips)
-- [x] HIK-27: Add all new i18n keys (RO + EN) for family/safety/markers
-- [ ] HIK-23: Family quick-filter buttons in HeroSearch (family-friendly, stroller, age, kid score toggles)
-- [ ] HIK-26: Family pacing calculator + "with kids" time estimate on HikeCard and HikeDetail
+- [x] HIK-22: New design — redesigned public UI
+- [x] HIK-23: Static info pages (About, Safety Tips, Gear Guide, Trail Map, Submit Trail, Report Issue, Family Friendly, Mountain Views) + site footer + features section
+- [x] HIK-24: Google Analytics (gtag.js)
+- [x] HIK-25: JSON-LD TouristAttraction structured data on HikeDetail + PoiDetail
+- [x] HIK-26: Cookie consent banner (GDPR), PWA manifest, CORS hardening
+- [x] HIK-27: Hike'n'Seek branding — owl favicon + updated logo
+- [ ] HIK-28: Family quick-filter buttons in HeroSearch (family-friendly, stroller, age, kid score toggles)
+- [ ] HIK-29: Family pacing calculator + "with kids" time estimate on HikeCard and HikeDetail
 
 ### Freemium sprint (Phase 1.5)
-- [ ] HIK-28: Stripe integration (checkout + webhook)
-- [ ] HIK-29: Subscription gating middleware
-- [ ] HIK-30: UpgradeModal component
-- [ ] HIK-31: PWA setup (vite-plugin-pwa, service worker, offline cache)
+- [ ] HIK-30: Stripe integration (checkout + webhook)
+- [ ] HIK-31: Subscription gating middleware
+- [ ] HIK-32: UpgradeModal component
+- [ ] HIK-33: PWA offline cache (vite-plugin-pwa, service worker, offline trail data)
 
 ### Mobile sprint (Phase 2)
-- [ ] HIK-32: Bootstrap trail-mix-mobile repo (Expo + navigation)
-- [ ] HIK-33: Trail list + detail screens
-- [ ] HIK-34: Mapbox integration + offline tile download
-- [ ] HIK-35: GPS tracking screen (live position + breadcrumb)
-- [ ] HIK-36: Family group WebSocket session
-- [ ] HIK-37: Push notifications (Expo)
-- [ ] HIK-38: iOS App Store submission
-- [ ] HIK-39: Google Play submission
+- [ ] HIK-34: Bootstrap trail-mix-mobile repo (Expo + navigation)
+- [ ] HIK-35: Trail list + detail screens
+- [ ] HIK-36: Mapbox integration + offline tile download
+- [ ] HIK-37: GPS tracking screen (live position + breadcrumb)
+- [ ] HIK-38: Family group WebSocket session
+- [ ] HIK-39: Push notifications (Expo)
+- [ ] HIK-40: iOS App Store submission
+- [ ] HIK-41: Google Play submission
 
 ---
 
@@ -643,11 +653,11 @@ Month 14+   Phase 5: European expansion
 
 ---
 
-## Next up: HIK-23 + HIK-26
+## Next up: HIK-28 + HIK-29
 
 Phase 0 is complete. The next milestone is Phase 1 MVP family features:
 
-- **HIK-23**: Family quick-filter buttons in `HeroSearch.jsx` (family-friendly, stroller, age range, kid score toggles)
-- **HIK-26**: Family pacing calculator (`src/utils/familyPacing.js`) + "~Xh with kids" estimate on `HikeCard` and `HikeDetail`
+- **HIK-28**: Family quick-filter buttons in `HeroSearch.jsx` (family-friendly, stroller, age range, kid score toggles)
+- **HIK-29**: Family pacing calculator (`src/utils/familyPacing.js`) + "~Xh with kids" estimate on `HikeCard` and `HikeDetail`
 
-After that, Phase 1.5 freemium sprint (Stripe, PWA).
+After that, Phase 1.5 freemium sprint (Stripe, full offline PWA).
