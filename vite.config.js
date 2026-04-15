@@ -27,6 +27,13 @@ export default defineConfig({
         '@capacitor/preferences',
         '@capacitor/share',
       ],
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-maps': ['leaflet'],
+        },
+      },
     },
   },
 });

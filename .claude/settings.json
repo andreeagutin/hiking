@@ -43,7 +43,11 @@
       "Bash(node data/update-descriptions-2.js)",
       "Bash(curl -s --retry 8 --retry-delay 2 --retry-connrefused http://localhost:3001/api/hikes)",
       "Edit(/.claude/skills/trail-mix-dev/**)",
-      "Read(//c/Users/andre/.claude/projects/c--Users-andre-Documents-dev-hiking/**)"
+      "Read(//c/Users/andre/.claude/projects/c--Users-andre-Documents-dev-hiking/**)",
+      "Read(//c/Users/andre/.claude/**)",
+      "Edit(/.claude/skills/hiken-i18n/**)",
+      "Edit(/.claude/skills/hiken-schema/**)",
+      "Bash(git add:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\andre\\Documents\\dev\\hiking\\.claude\\skills"

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HikeNSeek</string>
+    <string name="title_activity_main">HikeNSeek</string>
+    <string name="package_name">com.hikenseek.app</string>
+    <string name="custom_url_scheme">com.hikenseek.app</string>
+</resources>
