@@ -290,7 +290,7 @@ export default function HikeDetail({ id }) {
       {lightbox && (
         <div className="cave-lightbox" onClick={closeLightbox}>
           <button className="cave-lightbox-close" onClick={closeLightbox}>✕</button>
-          <img src={lightbox} alt="" onClick={(e) => e.stopPropagation()} />
+          <img src={lightbox} alt="" className="cave-lightbox-img" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
 

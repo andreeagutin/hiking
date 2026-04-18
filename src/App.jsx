@@ -24,6 +24,7 @@ import SubmitTrailPage from './components/SubmitTrailPage.jsx';
 import ReportIssuePage from './components/ReportIssuePage.jsx';
 import FamilyFriendlyPage from './components/FamilyFriendlyPage.jsx';
 import MountainViewsPage from './components/MountainViewsPage.jsx';
+import HikingCalculatorPage from './components/HikingCalculatorPage.jsx';
 import CookieBanner from './components/CookieBanner.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
@@ -55,8 +56,9 @@ const isTrailMapRoute      = pathname === '/trail-map';
 const isAboutRoute         = pathname === '/about';
 const isSubmitTrailRoute   = pathname === '/submit-trail';
 const isReportIssueRoute   = pathname === '/report-issue';
-const isFamilyFriendlyRoute = pathname === '/family-friendly';
-const isMountainViewsRoute = pathname === '/mountain-views';
+const isFamilyFriendlyRoute    = pathname === '/family-friendly';
+const isMountainViewsRoute     = pathname === '/mountain-views';
+const isHikingCalculatorRoute  = pathname === '/hiking-calculator';
 
 function NotFoundPage() {
   useEffect(() => {
@@ -241,6 +243,7 @@ function PublicApp() {
                 distance={userLocation && h.startLat && h.startLng
                   ? (drivingMap[h._id] ?? haversineKm(userLocation.lat, userLocation.lng, h.startLat, h.startLng))
                   : null}
+                driveDuration={drivingDurationMap[h._id] ?? null}
               />
             ))}
           </div>
@@ -266,7 +269,8 @@ function AppRoutes() {
   if (isSubmitTrailRoute)     return <SubmitTrailPage />;
   if (isReportIssueRoute)     return <ReportIssuePage />;
   if (isFamilyFriendlyRoute)  return <FamilyFriendlyPage />;
-  if (isMountainViewsRoute)   return <MountainViewsPage />;
+  if (isMountainViewsRoute)      return <MountainViewsPage />;
+  if (isHikingCalculatorRoute)   return <HikingCalculatorPage />;
   if (isAdminNewRoute)        return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
   if (adminEditMatch)         return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
   if (isAdminNewRestaurant)   return <AdminAuthGate><AdminRestaurantForm /></AdminAuthGate>;

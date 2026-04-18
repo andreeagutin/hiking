@@ -114,11 +114,12 @@ npm run build     # Production build
 - **Stats page** (`/stats`) — totals (km, elevation, hours) + Recharts charts (difficulty pie, monthly bar, mountains bar)
 - **RO/EN language switcher** — persisted in `localStorage`, custom i18n system (no library)
 - GDPR cookie consent banner, Google Analytics, PWA manifest (installable on Android/iOS)
+- **Hiking Calculator** (`/hiking-calculator`) — Naismith's Rule time estimator: distance + elevation → moving time + pause-level multiplier; optional child-age estimation with recommended max distance warning
 
 ### Admin (`/admin`)
 
 - CRUD for hikes, restaurants, and POIs behind JWT auth
-- Multi-photo gallery per hike/POI (upload, set main, remove)
+- Multi-photo gallery per hike/POI (multi-select upload with progress counter, set main, remove)
 - Trail marker picker — 15 SVG markers (red/yellow/blue × stripe/circle/cross/ring/triangle), ordered multi-select
 - Family & Safety collapsible section with all family/safety fields
 - Restaurants tag multi-select — pill tags with dropdown
@@ -204,7 +205,7 @@ A native Android app (and eventually iOS) is being built using [Capacitor](https
 - `@capacitor/geolocation` + `@capacitor-community/background-geolocation` configured
 - `TrackedHike` backend — Mongoose schema + REST API (`/api/tracked-hikes`) for saving GPS tracks
 
-**What's next:**
+**What's next (HIK-35):**
 - `HikeTracker.jsx` GPS tracking screen — live Leaflet map with polyline, elapsed time, distance, elevation
 - GPX export via `@capacitor/filesystem` + native share sheet
 - Track detail page with Recharts elevation profile

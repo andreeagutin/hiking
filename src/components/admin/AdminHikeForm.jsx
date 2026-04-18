@@ -411,6 +411,7 @@ export default function AdminHikeForm({ id }) {
   const [loading, setLoading]   = useState(!isNew);
   const [saving, setSaving]       = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [error, setError]         = useState('');
   const [historyEdit, setHistoryEdit] = useState(null);
   const [historyForm, setHistoryForm] = useState({});
@@ -451,22 +452,27 @@ export default function AdminHikeForm({ id }) {
   }
 
   async function handlePhotoUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     setUploading(true);
+    setUploadProgress(files.length > 1 ? `0/${files.length}` : '');
     setError('');
     try {
-      const { url } = await uploadImage(file);
-      setForm((f) => ({
-        ...f,
-        photos: [...(f.photos || []), url],
-        mainPhoto: f.mainPhoto || url,
-        imageUrl: f.imageUrl || url,
-      }));
+      for (let i = 0; i < files.length; i++) {
+        if (files.length > 1) setUploadProgress(`${i + 1}/${files.length}`);
+        const { url } = await uploadImage(files[i]);
+        setForm((f) => ({
+          ...f,
+          photos: [...(f.photos || []), url],
+          mainPhoto: f.mainPhoto || url,
+          imageUrl: f.imageUrl || url,
+        }));
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setUploading(false);
+      setUploadProgress('');
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
@@ -660,6 +666,7 @@ export default function AdminHikeForm({ id }) {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 style={{ display: 'none' }}
                 onChange={handlePhotoUpload}
               />
@@ -669,7 +676,7 @@ export default function AdminHikeForm({ id }) {
                 onClick={() => fileInputRef.current.click()}
                 disabled={uploading}
               >
-                {uploading ? 'Uploading…' : '+ Add photo'}
+                {uploading ? `Uploading${uploadProgress ? ` ${uploadProgress}` : ''}…` : '+ Add photos'}
               </button>
               {(form.photos || []).length > 0 && (
                 <span className="upload-filename">{(form.photos || []).length} photo{(form.photos || []).length !== 1 ? 's' : ''} · click a photo to set as main</span>

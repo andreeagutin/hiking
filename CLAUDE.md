@@ -87,7 +87,8 @@ hiking/
 │       ├── SubmitTrailPage.jsx     # /submit-trail
 │       ├── ReportIssuePage.jsx     # /report-issue
 │       ├── FamilyFriendlyPage.jsx  # /family-friendly
-│       └── MountainViewsPage.jsx   # /mountain-views
+│       ├── MountainViewsPage.jsx   # /mountain-views
+│       ├── HikingCalculatorPage.jsx # /hiking-calculator — Naismith's Rule time estimator + child age estimation
 │       └── admin/
 │           ├── AdminLogin.jsx        # Login form
 │           ├── AdminPanel.jsx        # Hikes CRUD table
@@ -212,6 +213,7 @@ Rate limiting: 10 requests / 15 min on both login endpoints (`/api/auth/login` a
 - `/report-issue` → `ReportIssuePage`
 - `/family-friendly` → `FamilyFriendlyPage`
 - `/mountain-views` → `MountainViewsPage`
+- `/hiking-calculator` → `HikingCalculatorPage`
 
 Hike and POI routes accept both slug and ObjectId — the API resolves either. Vite handles SPA fallback in dev; Express serves `dist/` in production.
 
@@ -351,6 +353,7 @@ Hike and POI routes accept both slug and ObjectId — the API resolves either. V
   - Stat bars for difficulty (green/amber/red), distance (max 30 km), time (max 10h), elevation (max 2000m)
   - Family-friendly chip (green) if `familyFriendly: true`
   - Bear risk chip (color-coded) if `bearRisk` is set
+- Distance chip shows drive duration when available: "25 km (30 min 🚗)" — `driveDuration` prop (seconds from OSRM) formatted by `fmtDriveDuration()`
 - Card navigates to `/hike/${hike.slug || hike._id}` on click
 
 ## Admin Panel Features
@@ -358,7 +361,7 @@ Hike and POI routes accept both slug and ObjectId — the API resolves either. V
 - **Edit form** (`AdminHikeForm`) opens at `/admin/hike/:id/edit`
 - **Prev/Next navigation** in edit form header — arrows to move between hikes in order
 - **Unsaved changes guard** — confirm dialog if navigating away with dirty form
-- **Multi-photo gallery** — upload multiple photos, click to set as main, ✕ to remove; `imageUrl` kept in sync with `mainPhoto` for backward compat
+- **Multi-photo gallery** — upload multiple photos at once (multi-select file input), click to set as main, ✕ to remove; upload progress shown as "1/3", "2/3" etc.; `imageUrl` kept in sync with `mainPhoto` for backward compat
 - **Markdown description editor** — rich toolbar (bold, italic, headings, lists, links, etc.)
 - **Mountains & Zone** — `<input list>` + `<datalist>` comboboxes; suggestions derived from `/api/mountains`, free-text entry allowed
 - **Trail starting point** — interactive Leaflet map; click to set `startLat`/`startLng`
@@ -404,6 +407,14 @@ All UI strings go through `src/i18n.js`. Two languages: **Romanian (`ro`)** and 
 - Naming: `{color}_{shape}.svg` — colors: `red`, `yellow`, `blue`; shapes: `stripe`, `circle`, `cross`, `ring`, `triangle`
 - `trailMarkers` field stores an ordered array of marker IDs; order is preserved in display
 - Legacy `trailMarkColor` + `trailMarkShape` fields kept for backward compat but `trailMarkers` takes precedence
+
+## Hiking Calculator (`/hiking-calculator`)
+- `HikingCalculatorPage.jsx` — static page (no API), linked from `SiteFooter`
+- **Naismith's Rule:** moving time = `(km / 5) × 60 min` + `(elevation m / 600) × 60 min`; circuit toggle adds descent (`elevation m / 300 × 0.4`)
+- **Pause levels:** Rapid ×1.15 / Moderat ×1.35 / Relaxat ×1.55 multiplier applied on top
+- **Child-age estimation:** `getChildFactor(age)` interpolates 2.5× (age 4) → 1.1× (age 14); `getMaxKm(age)` returns recommended max daily distance; warning shown if input exceeds child's max
+- All styles under `.calc-*` CSS prefix
+- i18n key: `footer.hikingCalculator` (RO + EN)
 
 ## Known Gotchas
 - Port 3001 conflict: run `cmd //c "taskkill /F /IM node.exe"` then `npm run dev`

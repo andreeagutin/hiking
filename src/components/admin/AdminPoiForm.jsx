@@ -165,6 +165,7 @@ export default function AdminPoiForm({ id }) {
   const [loading, setLoading]     = useState(!isNew);
   const [saving, setSaving]       = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [error, setError]         = useState('');
   const [allHikes, setAllHikes]       = useState([]);
   const [allMountains, setAllMountains] = useState([]);
@@ -221,21 +222,26 @@ export default function AdminPoiForm({ id }) {
   }
 
   async function handlePhotoUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     setUploading(true);
+    setUploadProgress(files.length > 1 ? `0/${files.length}` : '');
     setError('');
     try {
-      const { url } = await uploadImage(file);
-      setForm((f) => ({
-        ...f,
-        photos: [...(f.photos || []), url],
-        mainPhoto: f.mainPhoto || url,
-      }));
+      for (let i = 0; i < files.length; i++) {
+        if (files.length > 1) setUploadProgress(`${i + 1}/${files.length}`);
+        const { url } = await uploadImage(files[i]);
+        setForm((f) => ({
+          ...f,
+          photos: [...(f.photos || []), url],
+          mainPhoto: f.mainPhoto || url,
+        }));
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setUploading(false);
+      setUploadProgress('');
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
@@ -422,6 +428,7 @@ export default function AdminPoiForm({ id }) {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 style={{ display: 'none' }}
                 onChange={handlePhotoUpload}
               />
@@ -431,7 +438,7 @@ export default function AdminPoiForm({ id }) {
                 onClick={() => fileInputRef.current.click()}
                 disabled={uploading}
               >
-                {uploading ? 'Se încarcă…' : '+ Adaugă poză'}
+                {uploading ? `Se încarcă${uploadProgress ? ` ${uploadProgress}` : ''}…` : '+ Adaugă poze'}
               </button>
               {(form.photos || []).length > 0 && (
                 <span className="upload-filename">{(form.photos || []).length} poze · apasă o poză pentru a o seta ca principală</span>

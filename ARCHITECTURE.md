@@ -275,6 +275,48 @@ npm install marked
 
 ---
 
+## 29. Hiking Calculator Page (`/hiking-calculator`) — HIK-29
+
+Static page (no API calls) at `src/components/HikingCalculatorPage.jsx`, linked from `SiteFooter`.
+
+**Naismith's Rule implementation:**
+- Moving time = `(distance km / 5) × 60 min` + `(elevation m / 600) × 60 min`
+- Circuit toggle adds descent time: `(elevation m / 300) × 60 × 0.4`
+- Pause factor applied on top: Rapid × 1.15 / Moderat × 1.35 / Relaxat × 1.55
+- Difficulty badge from distance + elevation thresholds
+
+**Child-age estimation:**
+- `getChildFactor(age)` — linear interpolation between anchor points: ages 4–14, factors 2.5×→1.1×
+- `getMaxKm(age)` — recommended max daily distance by age group (3–18 km)
+- Shows a warning chip when input distance exceeds the child's recommended max
+- Age range: 3–16 years
+
+**Route:** added to `App.jsx` as `isHikingCalculatorRoute = pathname === '/hiking-calculator'`
+**i18n keys added:** `footer.hikingCalculator` (RO + EN)
+**CSS:** all styles under `.calc-*` prefix in `index.css`
+
+---
+
+## 30. Drive Duration on HikeCard — HIK-29
+
+`HikeCard` now accepts a `driveDuration` prop (seconds from OSRM). When set, it renders alongside the distance chip: `"25 km (30 min 🚗)"`.
+
+- `fmtDriveDuration(secs)` — formats seconds to `"Xh Ymin"` string
+- `App.jsx` passes `drivingDurationMap[h._id]` as `driveDuration` — this map is populated from the OSRM Table API response alongside `drivingMap`
+
+---
+
+## 31. Multi-File Photo Upload — HIK-29
+
+`AdminHikeForm.jsx` and `AdminPoiForm.jsx` now support selecting multiple files at once:
+
+- `<input type="file" accept="image/*" multiple>` — browser allows multi-select
+- Sequential upload loop: each file is sent one at a time to Cloudinary via the existing `uploadImage()` helper
+- Progress counter state `uploadProgress` shows `"1/3"`, `"2/3"` etc. in the button label during upload
+- Each uploaded URL is appended to `form.photos[]`; `mainPhoto` and `imageUrl` seeded from the first upload if not already set
+
+---
+
 ## 17. Caves
 
 New collection alongside hikes and restaurants.

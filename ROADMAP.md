@@ -33,6 +33,10 @@ Already built and production-ready:
 - **Hike'n'Seek branding** — owl favicon, updated logo (HIK-27)
 - **Swagger UI** — OpenAPI 3.0 spec at `/api-docs` via `swagger-ui-express`
 - **Sitemap** — auto-generated `/sitemap.xml` from active hikes + POIs
+- **Android Capacitor shell** — `android/` project bootstrapped, `com.hikenseek.app`, GPS + background geolocation plugins; `TrackedHike` model + `/api/tracked-hikes` REST API (HIK-28)
+- **Hiking Calculator** — `/hiking-calculator` page using Naismith's Rule with pause-level selector and child-age time/distance estimation (HIK-29)
+- **Drive duration on HikeCard** — shows driving time next to distance when OSRM data is available (HIK-29)
+- **Multi-file photo upload** — AdminHikeForm + AdminPoiForm now accept multiple files at once with per-file progress counter (HIK-29)
 
 This is the data layer and admin backend. Everything below builds on top of it.
 
@@ -568,7 +572,7 @@ External services:
 - [x] HIK-26: Cookie consent banner (GDPR), PWA manifest, CORS hardening
 - [x] HIK-27: Hike'n'Seek branding — owl favicon + updated logo
 - [x] HIK-28: Age quick-filter section (AgeFilter component with 5 age groups, integrated in App.jsx); TrackedHike model + `/api/tracked-hikes` CRUD routes; Android Capacitor shell (`android/`, `capacitor.config.json`, GPS + background geolocation plugin config)
-- [ ] HIK-29: Family pacing calculator + "with kids" time estimate on HikeCard and HikeDetail
+- [x] HIK-29: Hiking Calculator page (`/hiking-calculator`) — Naismith's Rule time estimator with pause-level selector and child-age estimation; drive duration shown on HikeCard ("X km · 30 min 🚗"); multi-file photo upload with progress counter in AdminHikeForm + AdminPoiForm
 
 ### Freemium sprint (Phase 1.5)
 - [ ] HIK-30: Stripe integration (checkout + webhook)
@@ -593,9 +597,9 @@ External services:
 
 ```
 Month 1–2   Phase 0: Schema + admin form extensions        ✅ DONE
-Month 2–4   Phase 1: MVP family web app (public launch)    ✅ DONE
+Month 2–4   Phase 1: MVP family web app (public launch)    ✅ DONE (HIK-17–29)
 Month 4–5   Phase 1.5: Freemium + PWA                      (HIK-30–33, upcoming)
-Month 5–8   Phase 2: Android/iOS via Capacitor             🔄 IN PROGRESS
+Month 5–8   Phase 2: Android/iOS via Capacitor             🔄 IN PROGRESS (HIK-28 shell done)
 Month 8–11  Phase 3: Community + gamification
 Month 11–13 Phase 4: Advanced safety
 Month 14+   Phase 5: European expansion
@@ -607,9 +611,8 @@ Month 14+   Phase 5: European expansion
 
 Phase 0 and Phase 1 are complete. Phase 2 (Android) has the backend and shell in place; the GPS tracking UI is next.
 
-**Parallel tracks:**
-- **HIK-29**: Family pacing calculator (`src/utils/familyPacing.js`) + "~Xh with kids" estimate on `HikeCard` and `HikeDetail` — last Phase 1 item
+**Next tracks:**
 - **HIK-35**: `HikeTracker.jsx` GPS tracking screen — the next Android milestone, unlocks Play Store submission
-- **HIK-30–33**: Freemium sprint (Stripe + PWA offline cache) — can run after HIK-29
+- **HIK-30–33**: Freemium sprint (Stripe + PWA offline cache)
 
 **Android app status:** Capacitor shell built, GPS plugins configured, `TrackedHike` backend ready. The tracking UI (`HikeTracker.jsx`) is the next code task before the first APK can be tested end-to-end. See `MOBILE_PLAN.md` for the full step-by-step build order.

@@ -41,7 +41,16 @@ function IconMountain() {
   );
 }
 
-export default function HikeCard({ hike, distance }) {
+function fmtDriveDuration(secs) {
+  if (secs == null) return null;
+  const h = Math.floor(secs / 3600);
+  const m = Math.round((secs % 3600) / 60);
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
+}
+
+export default function HikeCard({ hike, distance, driveDuration }) {
   useLang();
   const hikeImg = hike.mainPhoto || hike.photos?.[0] || hike.imageUrl;
   const bg = hikeImg ? undefined : cardGradient(hike.name);
@@ -137,6 +146,9 @@ export default function HikeCard({ hike, distance }) {
             {distance != null && (
               <span className="hike-card-tip hike-card-stat-distance">
                 📍 {distance < 1 ? `${(distance * 1000).toFixed(0)} m` : `${distance.toFixed(0)} km`} {t('card.away')}
+                {fmtDriveDuration(driveDuration) && (
+                  <span className="hike-card-drive-duration"> ({fmtDriveDuration(driveDuration)} 🚗)</span>
+                )}
               </span>
             )}
           </div>

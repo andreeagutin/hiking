@@ -44,6 +44,7 @@ export default function SiteFooter() {
               <li><a href="/safety-tips">{t('footer.safetyTips')}</a></li>
               <li><a href="/gear-guide">{t('footer.gearGuide')}</a></li>
               <li><a href="/trail-map">{t('footer.trailMap')}</a></li>
+              <li><a href="/hiking-calculator">{t('footer.hikingCalculator')}</a></li>
             </ul>
           </div>
 
