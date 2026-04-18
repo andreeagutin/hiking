@@ -294,98 +294,51 @@ Add to `vite.config.js` via `vite-plugin-pwa`:
 
 ---
 
-## Phase 2 — Native Mobile Apps (iOS + Android)
-**Duration: 10–14 weeks**
-**Stack: React Native + Expo**
+## Phase 2 — Native Mobile Apps (Android + iOS)
+**Duration: 8–12 weeks**
+**Stack: Capacitor 6 (wraps existing React/Vite app in a native shell)**
 
-React Native chosen because: team already knows React, shared business logic with web, Expo simplifies deployment to both stores.
+Capacitor chosen over React Native/Expo because:
+- Zero framework rewrite — all 30+ components, i18n, admin, and AI search stay exactly as-is
+- Leaflet maps already work in the WebView
+- One build command (`npx cap sync`) syncs the Vite build into the native project
+- Switches to React Native only if background GPS reliability becomes a blocker
 
-### 2.1 New repo: `trail-mix-mobile`
+**Already bootstrapped (HIK-28):**
+- `android/` Capacitor project, bundle ID `com.hikenseek.app`
+- `capacitor.config.json` with GPS + background geolocation plugin config
+- `TrackedHike` Mongoose model + REST API at `/api/tracked-hikes`
 
-```bash
-npx create-expo-app trail-mix-mobile --template blank-typescript
-```
-
-Key dependencies:
-```bash
-expo install expo-location expo-notifications expo-file-system
-npx expo install react-native-maps
-npm install @mapbox/react-native-mapbox-gl  # offline maps
-npm install @react-navigation/native @react-navigation/bottom-tabs
-npm install @tanstack/react-query  # data fetching + caching
-npm install zustand  # state management
-```
-
-### 2.2 App architecture
+**New screens to build (all React components, same as web):**
 
 ```
-trail-mix-mobile/
-├── app/                    # Expo Router file-based routing
-│   ├── (tabs)/
-│   │   ├── index.tsx       # Discover (trail list)
-│   │   ├── map.tsx         # Full map view
-│   │   ├── saved.tsx       # Saved trails (offline)
-│   │   └── profile.tsx     # Family profile + subscription
-│   ├── hike/[id].tsx       # Trail detail
-│   ├── cave/[id].tsx       # Cave detail
-│   ├── auth/
-│   │   ├── login.tsx
-│   │   └── register.tsx
-│   └── hike/[id]/track.tsx # Active hike tracking screen
-├── components/
-│   ├── TrailCard.tsx
-│   ├── TrailMap.tsx
-│   ├── FamilyPacingBadge.tsx
-│   ├── SafetyWidget.tsx
-│   └── AiSearchBar.tsx
-├── hooks/
-│   ├── useLocation.ts
-│   ├── useOfflineTrails.ts
-│   └── useFamilyPacing.ts
-├── lib/
-│   ├── api.ts              # Same endpoints as web (shared backend)
-│   ├── i18n.ts             # Same translation keys as web
-│   └── familyPacing.ts     # Same logic as web utility
-└── store/
-    ├── authStore.ts
-    ├── trailsStore.ts
-    └── trackingStore.ts
+src/components/
+├── HikeTracker.jsx    # /track — start/stop recording, live Leaflet map + polyline
+├── TrackSave.jsx      # /track/save — name the track, link to hike, export GPX
+└── TrackDetail.jsx    # /track/:id — elevation chart (Recharts), route map, stats
 ```
 
-### 2.3 Maps (Mapbox)
+**New routes in App.jsx:** `/track`, `/track/save`, `/track/:id`
 
-Mapbox chosen over Google Maps for:
-- Better offline tile support (critical for mountains)
-- Romania trail overlay possible via custom style
-- No per-request billing surprises
+### 2.3 Maps
 
-```tsx
-// Offline map download for a trail
-import MapboxGL from '@react-native-mapbox-gl/maps';
+Leaflet (already in the web app) works as-is inside the Capacitor WebView — no Mapbox or native map library needed for the MVP. Leaflet renders the live tracking polyline, trailhead markers, and auto-pans to the user's position. Offline tile caching can be added later via a service worker if needed.
 
-async function downloadTrailMap(trailBounds: BoundingBox) {
-  await MapboxGL.offlineManager.createPack({
-    name: `trail-${trailId}`,
-    styleURL: MapboxGL.StyleURL.Outdoors,
-    bounds: [[trailBounds.sw.lng, trailBounds.sw.lat],
-             [trailBounds.ne.lng, trailBounds.ne.lat]],
-    minZoom: 10,
-    maxZoom: 16,
-  });
-}
-```
+### 2.4 GPS tracking screen (`HikeTracker.jsx`)
 
-### 2.4 GPS tracking screen
+- `@capacitor/geolocation` for foreground location; `@capacitor-community/background-geolocation` keeps recording when the screen is off
+- `distanceFilter: 10` — only log a point if the user moved ≥10m (saves battery)
+- Haversine distance accumulates as points come in
+- Leaflet `Polyline` drawn from `trackPoints` array, auto-centered on current position
+- Stats bar: elapsed time | distance (km) | elevation gain (m) | current speed
+- "Stop & Save" → navigates to `TrackSave.jsx`
+- `@capacitor/preferences` persists partial track so a crash/force-close doesn't lose data
 
-Active hike screen (`hike/[id]/track.tsx`):
-- Real-time position on trail map (expo-location background tracking)
-- Current elevation, distance covered, elapsed time
-- Family time estimate updating live
-- "I'm lost" button → copies what3words + opens Salvamont phone dialer
-- Breadcrumb trail drawn as user moves
-- Alert if user moves >100m off trail (geofencing — Phase 4 full implementation)
+### 2.5 GPX export
 
-### 2.5 Live family group tracking
+`generateGPX(trackPoints, hikeName)` utility builds standard GPX 1.1 XML compatible with Strava, Komoot, AllTrails. Saved to device via `@capacitor/filesystem`, shared via native share sheet (`@capacitor/share`).
+
+### 2.6 Live family group tracking *(Phase 2 stretch goal)*
 
 Backend: add `WebSocket` support via `ws` package in `server/index.js`:
 
@@ -396,33 +349,29 @@ WS /ws/hike-session/:sessionId
 Session flow:
 1. Family starts a hike → creates session (`POST /api/sessions`)
 2. App opens WS connection, broadcasts GPS position every 10s
-3. Other family members (or emergency contacts) join session via shared link
+3. Other family members join session via shared link
 4. Map shows all family member positions with name labels
 5. Session ends when all leave or after 12h
 
-### 2.6 Push notifications
+### 2.7 Push notifications *(Phase 2 stretch goal)*
 
-Expo Notifications handles both iOS + Android:
-- "Your family group started a hike — join tracking"
-- "Turn-around reminder: 30 min until sunset, 2km remaining"
-- "[Child name] has been off-trail for 3 minutes" (Phase 4)
+`@capacitor/push-notifications` handles both Android + iOS:
+- "Turn-around reminder: 30 min until sunset"
 - "Trail condition update for a trail you saved"
 
-### 2.7 App Store deployment
+### 2.8 App Store deployment
 
-**iOS (App Store):**
-- Apple Developer account ($99/yr)
-- `eas build --platform ios` → generates `.ipa`
-- App Store Connect → submit for review (~1–3 days)
-- Required: privacy policy URL, data usage descriptions
-
-**Android (Google Play):**
+**Android (Google Play) — first:**
 - Google Play Console ($25 one-time)
-- `eas build --platform android` → generates `.aab`
-- Internal testing → closed testing → production rollout
-- Faster review than iOS (~1–3 hours for updates)
+- Sign APK: `keytool -genkey -v -keystore release.keystore ...`
+- Build: `npm run build && npx cap sync && npx cap build android --release` (or Android Studio)
+- Target SDK ≥ 35 (required as of 2025); data safety form must declare location collection
+- Internal testing → closed testing → production rollout (~1–3 hours for updates)
 
-**CI/CD:** GitHub Actions + `eas submit` for automated store submissions on tag push.
+**iOS (App Store) — requires Mac:**
+- Apple Developer account ($99/yr)
+- Xcode → archive → upload via Organizer or Transporter → App Store Connect
+- Privacy Manifest (`PrivacyInfo.xcprivacy`) required since Feb 2025
 
 ---
 
@@ -572,9 +521,9 @@ Komoot's Bending Spoons acquisition drove user backlash. Strategy:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    CLIENTS                                   │
-│  Web (React/Vite)    iOS App       Android App             │
-│  hiking-high.netlify  App Store     Google Play             │
-│                    (React Native + Expo)                    │
+│  Web (React/Vite)    Android App        iOS App (planned)   │
+│  hiking-high.netlify  Google Play        App Store           │
+│                    (Capacitor 6 — same React/Vite codebase) │
 └──────────────────────────┬──────────────────────────────────┘
                            │ REST + WebSocket
 ┌──────────────────────────▼──────────────────────────────────┐
@@ -618,7 +567,7 @@ External services:
 - [x] HIK-25: JSON-LD TouristAttraction structured data on HikeDetail + PoiDetail
 - [x] HIK-26: Cookie consent banner (GDPR), PWA manifest, CORS hardening
 - [x] HIK-27: Hike'n'Seek branding — owl favicon + updated logo
-- [ ] HIK-28: Family quick-filter buttons in HeroSearch (family-friendly, stroller, age, kid score toggles)
+- [x] HIK-28: Age quick-filter section (AgeFilter component with 5 age groups, integrated in App.jsx); TrackedHike model + `/api/tracked-hikes` CRUD routes; Android Capacitor shell (`android/`, `capacitor.config.json`, GPS + background geolocation plugin config)
 - [ ] HIK-29: Family pacing calculator + "with kids" time estimate on HikeCard and HikeDetail
 
 ### Freemium sprint (Phase 1.5)
@@ -627,25 +576,26 @@ External services:
 - [ ] HIK-32: UpgradeModal component
 - [ ] HIK-33: PWA offline cache (vite-plugin-pwa, service worker, offline trail data)
 
-### Mobile sprint (Phase 2)
-- [ ] HIK-34: Bootstrap trail-mix-mobile repo (Expo + navigation)
-- [ ] HIK-35: Trail list + detail screens
-- [ ] HIK-36: Mapbox integration + offline tile download
-- [ ] HIK-37: GPS tracking screen (live position + breadcrumb)
-- [ ] HIK-38: Family group WebSocket session
-- [ ] HIK-39: Push notifications (Expo)
-- [ ] HIK-40: iOS App Store submission
-- [ ] HIK-41: Google Play submission
+### Mobile sprint (Phase 2) — Capacitor Android (in progress)
+- [x] HIK-34: Capacitor shell — `android/` project created, `com.hikenseek.app` bundle ID, GPS + background geolocation plugins configured
+- [x] HIK-34b: TrackedHike backend — `server/models/TrackedHike.js` schema + `server/routes/trackedHikes.js` (CRUD + GPX endpoint); registered in `server/index.js`
+- [ ] HIK-35: `HikeTracker.jsx` GPS tracking screen — foreground + background location, live Leaflet map with polyline, elapsed time / distance / elevation stats
+- [ ] HIK-36: GPX export — `generateGPX()` + `@capacitor/filesystem` save + native share sheet
+- [ ] HIK-37: Track detail screen (`TrackDetail.jsx`) — elevation profile (Recharts), full route map, compare to official trail
+- [ ] HIK-38: Battery optimization prompt (Android manufacturer kill, deep-link to battery settings)
+- [ ] HIK-39: App icon, splash screen, production API URL wired in Capacitor
+- [ ] HIK-40: Google Play submission (Android first — easier review cycle)
+- [ ] HIK-41: iOS build via Xcode + App Store submission (requires Mac + Apple Developer account)
 
 ---
 
 ## Timeline Overview
 
 ```
-Month 1–2   Phase 0: Schema + admin form extensions
-Month 2–4   Phase 1: MVP family web app (public launch)
-Month 4–5   Phase 1.5: Freemium + PWA
-Month 5–8   Phase 2: React Native mobile apps
+Month 1–2   Phase 0: Schema + admin form extensions        ✅ DONE
+Month 2–4   Phase 1: MVP family web app (public launch)    ✅ DONE
+Month 4–5   Phase 1.5: Freemium + PWA                      (HIK-30–33, upcoming)
+Month 5–8   Phase 2: Android/iOS via Capacitor             🔄 IN PROGRESS
 Month 8–11  Phase 3: Community + gamification
 Month 11–13 Phase 4: Advanced safety
 Month 14+   Phase 5: European expansion
@@ -653,11 +603,13 @@ Month 14+   Phase 5: European expansion
 
 ---
 
-## Next up: HIK-28 + HIK-29
+## Current state
 
-Phase 0 is complete. The next milestone is Phase 1 MVP family features:
+Phase 0 and Phase 1 are complete. Phase 2 (Android) has the backend and shell in place; the GPS tracking UI is next.
 
-- **HIK-28**: Family quick-filter buttons in `HeroSearch.jsx` (family-friendly, stroller, age range, kid score toggles)
-- **HIK-29**: Family pacing calculator (`src/utils/familyPacing.js`) + "~Xh with kids" estimate on `HikeCard` and `HikeDetail`
+**Parallel tracks:**
+- **HIK-29**: Family pacing calculator (`src/utils/familyPacing.js`) + "~Xh with kids" estimate on `HikeCard` and `HikeDetail` — last Phase 1 item
+- **HIK-35**: `HikeTracker.jsx` GPS tracking screen — the next Android milestone, unlocks Play Store submission
+- **HIK-30–33**: Freemium sprint (Stripe + PWA offline cache) — can run after HIK-29
 
-After that, Phase 1.5 freemium sprint (Stripe, full offline PWA).
+**Android app status:** Capacitor shell built, GPS plugins configured, `TrackedHike` backend ready. The tracking UI (`HikeTracker.jsx`) is the next code task before the first APK can be tested end-to-end. See `MOBILE_PLAN.md` for the full step-by-step build order.

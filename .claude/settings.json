@@ -47,7 +47,8 @@
       "Read(//c/Users/andre/.claude/**)",
       "Edit(/.claude/skills/hiken-i18n/**)",
       "Edit(/.claude/skills/hiken-schema/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\andre\\Documents\\dev\\hiking\\.claude\\skills"

@@ -5,9 +5,10 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://hiking-high.netlify.app/)
 [![API](https://img.shields.io/badge/API-Render-blue)](https://hiking-1.onrender.com/api/hikes)
 [![API Docs](https://img.shields.io/badge/docs-Swagger-orange)](https://hiking-1.onrender.com/api-docs)
+[![Android](https://img.shields.io/badge/Android-in%20development-3DDC84?logo=android&logoColor=white)](MOBILE_PLAN.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
-**[→ Live app](https://hiking-high.netlify.app/)** · **[→ API docs](https://hiking-1.onrender.com/api-docs)**
+**[→ Live app](https://hiking-high.netlify.app/)** · **[→ API docs](https://hiking-1.onrender.com/api-docs)** · **[→ Android app](MOBILE_PLAN.md)** *(in development)*
 
 ---
 
@@ -191,6 +192,25 @@ hiking/
     ├── favicon.svg, logo.svg
     └── hiking_markers/       # 15 SVG trail markers
 ```
+
+---
+
+## Android App (in development)
+
+A native Android app (and eventually iOS) is being built using [Capacitor](https://capacitorjs.com/) — the existing React/Vite codebase is wrapped in a native shell rather than rewritten.
+
+**What's already done:**
+- Capacitor project initialized (`android/`, `capacitor.config.json`, bundle ID `com.hikenseek.app`)
+- `@capacitor/geolocation` + `@capacitor-community/background-geolocation` configured
+- `TrackedHike` backend — Mongoose schema + REST API (`/api/tracked-hikes`) for saving GPS tracks
+
+**What's next:**
+- `HikeTracker.jsx` GPS tracking screen — live Leaflet map with polyline, elapsed time, distance, elevation
+- GPX export via `@capacitor/filesystem` + native share sheet
+- Track detail page with Recharts elevation profile
+- Google Play submission (Android first)
+
+See [MOBILE_PLAN.md](MOBILE_PLAN.md) for the full architecture and step-by-step build order.
 
 ---
 
