@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import t, { setLang } from '../i18n.js';
 import useLang from '../hooks/useLang.js';
 import { askAI } from '../api/aiSearch.js';
+import { isUserLoggedIn, getUserFromToken, logoutUser } from '../api/users.js';
+import UserAuthModal from './UserAuthModal.jsx';
 
 // ── Location widget ────────────────────────────────────────────────────────────
 async function geocodeCity(query) {
@@ -159,46 +161,114 @@ function AiSearch({ hikes, userLocation, aiExplanation, onAiSearch, onAiClear })
 // ── Site nav ───────────────────────────────────────────────────────────────────
 function SiteNav() {
   const lang = useLang();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen]     = useState(false);
+  const [authOpen, setAuthOpen]     = useState(false);
+  const [userDropdown, setUserDropdown] = useState(false);
+  const [loggedIn, setLoggedIn]     = useState(isUserLoggedIn());
+  const userPayload = loggedIn ? getUserFromToken() : null;
+
+  useEffect(() => {
+    function onUserChange() { setLoggedIn(isUserLoggedIn()); }
+    window.addEventListener('userchange', onUserChange);
+    return () => window.removeEventListener('userchange', onUserChange);
+  }, []);
+
+  function handleSignOut() {
+    logoutUser();
+    setUserDropdown(false);
+    setMenuOpen(false);
+  }
 
   return (
-    <nav className="site-nav">
-      <div className="site-nav-inner">
-        <a href="/" className="site-nav-logo">
-          <img src="/hikenSeek_owl_logo_full.svg" alt="Hike'n'Seek" className="site-nav-logo-img" />
-        </a>
+    <>
+      <nav className="site-nav">
+        <div className="site-nav-inner">
+          <a href="/" className="site-nav-logo">
+            <img src="/hikenSeek_owl_logo_full.svg" alt="Hike'n'Seek" className="site-nav-logo-img" />
+          </a>
 
-        <div className="site-nav-links">
-          <a href="#trails" className="site-nav-link">{t('nav.trails')}</a>
-          <a href="/stats" className="site-nav-link">{t('hero.viewStats')}</a>
-        </div>
-
-        <div className="site-nav-actions">
-          <div className="lang-switcher">
-            <button className={`lang-btn${lang === 'ro' ? ' active' : ''}`} onClick={() => setLang('ro')}>RO</button>
-            <span className="lang-sep">|</span>
-            <button className={`lang-btn${lang === 'en' ? ' active' : ''}`} onClick={() => setLang('en')}>EN</button>
+          <div className="site-nav-links">
+            <a href="#trails" className="site-nav-link">{t('nav.trails')}</a>
+            <a href="/stats" className="site-nav-link">{t('hero.viewStats')}</a>
           </div>
-          <a href="/stats" className="site-nav-stats-btn">{t('hero.viewStats')}</a>
-        </div>
 
-        <button className="site-nav-burger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
-          {menuOpen ? '✕' : '☰'}
-        </button>
-      </div>
+          <div className="site-nav-actions">
+            <div className="lang-switcher">
+              <button className={`lang-btn${lang === 'ro' ? ' active' : ''}`} onClick={() => setLang('ro')}>RO</button>
+              <span className="lang-sep">|</span>
+              <button className={`lang-btn${lang === 'en' ? ' active' : ''}`} onClick={() => setLang('en')}>EN</button>
+            </div>
+            <a href="/stats" className="site-nav-stats-btn">{t('hero.viewStats')}</a>
 
-      {menuOpen && (
-        <div className="site-nav-mobile">
-          <a href="#trails" className="site-nav-mobile-link" onClick={() => setMenuOpen(false)}>{t('nav.trails')}</a>
-          <a href="/stats" className="site-nav-mobile-link" onClick={() => setMenuOpen(false)}>{t('hero.viewStats')}</a>
-          <div className="site-nav-mobile-lang">
-            <button className={`lang-btn${lang === 'ro' ? ' active' : ''}`} onClick={() => { setLang('ro'); setMenuOpen(false); }}>RO</button>
-            <span className="lang-sep">|</span>
-            <button className={`lang-btn${lang === 'en' ? ' active' : ''}`} onClick={() => { setLang('en'); setMenuOpen(false); }}>EN</button>
+            {loggedIn ? (
+              <div className="site-nav-user-wrap">
+                <button
+                  className="site-nav-user-btn"
+                  onClick={() => setUserDropdown(d => !d)}
+                >
+                  <span className="site-nav-user-avatar">👤</span>
+                  <span className="site-nav-user-name">
+                    {userPayload?.email?.split('@')[0] || t('auth.myProfile')}
+                  </span>
+                  <span className="site-nav-user-caret">{userDropdown ? '▲' : '▼'}</span>
+                </button>
+                {userDropdown && (
+                  <div className="site-nav-user-dropdown">
+                    <a href="/profile" className="site-nav-dropdown-item" onClick={() => setUserDropdown(false)}>
+                      👤 {t('auth.myProfile')}
+                    </a>
+                    <a href="/track" className="site-nav-dropdown-item" onClick={() => setUserDropdown(false)}>
+                      🥾 {t('track.title')}
+                    </a>
+                    <button className="site-nav-dropdown-item site-nav-dropdown-signout" onClick={handleSignOut}>
+                      {t('common.signOut')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button className="site-nav-signin-btn" onClick={() => setAuthOpen(true)}>
+                {t('common.signIn')}
+              </button>
+            )}
           </div>
+
+          <button className="site-nav-burger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
+            {menuOpen ? '✕' : '☰'}
+          </button>
         </div>
+
+        {menuOpen && (
+          <div className="site-nav-mobile">
+            <a href="#trails" className="site-nav-mobile-link" onClick={() => setMenuOpen(false)}>{t('nav.trails')}</a>
+            <a href="/stats" className="site-nav-mobile-link" onClick={() => setMenuOpen(false)}>{t('hero.viewStats')}</a>
+            {loggedIn ? (
+              <>
+                <a href="/profile" className="site-nav-mobile-link" onClick={() => setMenuOpen(false)}>👤 {t('auth.myProfile')}</a>
+                <a href="/track" className="site-nav-mobile-link" onClick={() => setMenuOpen(false)}>🥾 {t('track.title')}</a>
+                <button className="site-nav-mobile-link site-nav-mobile-signout" onClick={handleSignOut}>{t('common.signOut')}</button>
+              </>
+            ) : (
+              <button className="site-nav-mobile-link" onClick={() => { setMenuOpen(false); setAuthOpen(true); }}>
+                {t('common.signIn')}
+              </button>
+            )}
+            <div className="site-nav-mobile-lang">
+              <button className={`lang-btn${lang === 'ro' ? ' active' : ''}`} onClick={() => { setLang('ro'); setMenuOpen(false); }}>RO</button>
+              <span className="lang-sep">|</span>
+              <button className={`lang-btn${lang === 'en' ? ' active' : ''}`} onClick={() => { setLang('en'); setMenuOpen(false); }}>EN</button>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {authOpen && (
+        <UserAuthModal
+          onClose={() => setAuthOpen(false)}
+          onSuccess={() => setLoggedIn(true)}
+        />
       )}
-    </nav>
+    </>
   );
 }
 

@@ -26,6 +26,9 @@ const userSchema = new mongoose.Schema({
   },
   subExpiresAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
+  savedHikes:       [{ type: mongoose.Schema.Types.ObjectId, ref: 'Hike' }],
+  savedRestaurants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' }],
+  savedPois:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'Poi' }],
 });
 
 export default mongoose.model('User', userSchema);

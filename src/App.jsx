@@ -25,10 +25,12 @@ import ReportIssuePage from './components/ReportIssuePage.jsx';
 import FamilyFriendlyPage from './components/FamilyFriendlyPage.jsx';
 import MountainViewsPage from './components/MountainViewsPage.jsx';
 import HikingCalculatorPage from './components/HikingCalculatorPage.jsx';
+import UserProfile from './components/UserProfile.jsx';
 import CookieBanner from './components/CookieBanner.jsx';
 import { fetchHikes } from './api/hikes.js';
 import { isLoggedIn } from './api/auth.js';
-import { getLang } from './i18n.js';
+import { getLang, t } from './i18n.js';
+import useLang from './hooks/useLang.js';
 
 
 const pathname = window.location.pathname.replace(/\/$/, '') || '/';
@@ -59,6 +61,7 @@ const isReportIssueRoute   = pathname === '/report-issue';
 const isFamilyFriendlyRoute    = pathname === '/family-friendly';
 const isMountainViewsRoute     = pathname === '/mountain-views';
 const isHikingCalculatorRoute  = pathname === '/hiking-calculator';
+const isProfileRoute           = pathname === '/profile';
 
 function NotFoundPage() {
   useEffect(() => {
@@ -176,7 +179,43 @@ function matchesAgeFilter(hike, selectedAge) {
   return hike.minAgeRecommended == null || hike.minAgeRecommended <= group.maxAge;
 }
 
+function sortHikes(hikes, sort, drivingMap, drivingDurationMap) {
+  const sorted = [...hikes];
+  switch (sort) {
+    case 'name-asc':
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    case 'name-desc':
+      return sorted.sort((a, b) => b.name.localeCompare(a.name));
+    case 'distance-asc':
+      return sorted.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+    case 'distance-desc':
+      return sorted.sort((a, b) => (b.distance ?? -1) - (a.distance ?? -1));
+    case 'time-asc':
+      return sorted.sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity));
+    case 'time-desc':
+      return sorted.sort((a, b) => (b.time ?? -1) - (a.time ?? -1));
+    case 'elevation-asc':
+      return sorted.sort((a, b) => (a.up ?? Infinity) - (b.up ?? Infinity));
+    case 'elevation-desc':
+      return sorted.sort((a, b) => (b.up ?? -1) - (a.up ?? -1));
+    case 'difficulty-asc': {
+      const rank = { easy: 0, medium: 1, null: 2, undefined: 2 };
+      return sorted.sort((a, b) => (rank[a.difficulty] ?? 2) - (rank[b.difficulty] ?? 2));
+    }
+    case 'closest': {
+      return sorted.sort((a, b) => {
+        const da = drivingDurationMap[a._id] ?? drivingMap[a._id] ?? Infinity;
+        const db = drivingDurationMap[b._id] ?? drivingMap[b._id] ?? Infinity;
+        return da - db;
+      });
+    }
+    default:
+      return sorted;
+  }
+}
+
 function PublicApp() {
+  useLang();
   const [hikes, setHikes]                     = useState([]);
   const [error, setError]                     = useState('');
   const [drivingMap, setDrivingMap]           = useState({});
@@ -184,6 +223,7 @@ function PublicApp() {
   const [aiFilters, setAiFilters]             = useState(null);
   const [aiExplanation, setAiExplanation]     = useState('');
   const [selectedAge, setSelectedAge]         = useState(null);
+  const [sort, setSort]                       = useState('default');
   const [userLocation, setUserLocation] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('userLocation')); } catch { return null; }
   });
@@ -208,9 +248,14 @@ function PublicApp() {
     else sessionStorage.removeItem('userLocation');
   }
 
-  const filtered = hikes
-    .filter((h) => matchesAiFilters(h, aiFilters, drivingDurationMap, userLocation))
-    .filter((h) => matchesAgeFilter(h, selectedAge));
+  const filtered = sortHikes(
+    hikes
+      .filter((h) => matchesAiFilters(h, aiFilters, drivingDurationMap, userLocation))
+      .filter((h) => matchesAgeFilter(h, selectedAge)),
+    sort,
+    drivingMap,
+    drivingDurationMap
+  );
 
   return (
     <div className="public-page">
@@ -227,9 +272,31 @@ function PublicApp() {
       <div id="trails" className="page-content">
         {error && <div className="error-banner">⚠ {error}</div>}
         <div className="results-bar">
-          {filtered.length === hikes.length
-            ? `${hikes.length} trails`
-            : `${filtered.length} of ${hikes.length} trails`}
+          <span className="results-bar-count">
+            {filtered.length === hikes.length
+              ? `${hikes.length} ${t('sort.trails')}`
+              : `${filtered.length} ${t('sort.of')} ${hikes.length} ${t('sort.trails')}`}
+          </span>
+          <div className="results-bar-sort">
+            <span className="results-bar-sort-label">{t('sort.label')}</span>
+            <select
+              className="results-bar-sort-select"
+              value={sort}
+              onChange={e => setSort(e.target.value)}
+            >
+              <option value="default">{t('sort.default')}</option>
+              <option value="name-asc">{t('sort.nameAsc')}</option>
+              <option value="name-desc">{t('sort.nameDesc')}</option>
+              <option value="distance-asc">{t('sort.distanceAsc')}</option>
+              <option value="distance-desc">{t('sort.distanceDesc')}</option>
+              <option value="time-asc">{t('sort.timeAsc')}</option>
+              <option value="time-desc">{t('sort.timeDesc')}</option>
+              <option value="elevation-asc">{t('sort.elevationAsc')}</option>
+              <option value="elevation-desc">{t('sort.elevationDesc')}</option>
+              <option value="difficulty-asc">{t('sort.difficultyAsc')}</option>
+              {userLocation && <option value="closest">{t('sort.closest')}</option>}
+            </select>
+          </div>
         </div>
         {filtered.length === 0 ? (
           <div className="empty-state">
@@ -271,6 +338,7 @@ function AppRoutes() {
   if (isFamilyFriendlyRoute)  return <FamilyFriendlyPage />;
   if (isMountainViewsRoute)      return <MountainViewsPage />;
   if (isHikingCalculatorRoute)   return <HikingCalculatorPage />;
+  if (isProfileRoute)            return <UserProfile />;
   if (isAdminNewRoute)        return <AdminAuthGate><AdminHikeForm /></AdminAuthGate>;
   if (adminEditMatch)         return <AdminAuthGate><AdminHikeForm id={adminEditMatch[1]} /></AdminAuthGate>;
   if (isAdminNewRestaurant)   return <AdminAuthGate><AdminRestaurantForm /></AdminAuthGate>;

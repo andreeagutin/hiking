@@ -170,6 +170,68 @@ router.put('/me', requireUserAuth, async (req, res) => {
   }
 });
 
+// ── Saved items ──────────────────────────────────────────────────────────────
+router.get('/me/saved', requireUserAuth, async (req, res) => {
+  try {
+    const user = await loadUser(req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const populated = await user.populate([
+      { path: 'savedHikes', select: 'name slug distance time up difficulty mountains zone mainPhoto photos imageUrl familyFriendly' },
+      { path: 'savedRestaurants', select: 'name type mountains zone address link' },
+      { path: 'savedPois', select: 'name slug poiType mountains zone mainPhoto photos' },
+    ]);
+
+    return res.json({
+      hikes:       populated.savedHikes,
+      restaurants: populated.savedRestaurants,
+      pois:        populated.savedPois,
+    });
+  } catch (err) {
+    console.error('[users/saved] error:', err.message);
+    return res.status(500).json({ error: 'Failed to load saved items' });
+  }
+});
+
+const SAVED_FIELD = { hike: 'savedHikes', restaurant: 'savedRestaurants', poi: 'savedPois' };
+
+router.post('/me/saved/:type/:itemId', requireUserAuth, async (req, res) => {
+  const field = SAVED_FIELD[req.params.type];
+  if (!field) return res.status(400).json({ error: 'Invalid type' });
+
+  try {
+    const user = await loadUser(req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const id = req.params.itemId;
+    if (!user[field].some(x => x.toString() === id)) {
+      user[field].push(id);
+      await user.save();
+    }
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[users/save-item] error:', err.message);
+    return res.status(500).json({ error: 'Failed to save item' });
+  }
+});
+
+router.delete('/me/saved/:type/:itemId', requireUserAuth, async (req, res) => {
+  const field = SAVED_FIELD[req.params.type];
+  if (!field) return res.status(400).json({ error: 'Invalid type' });
+
+  try {
+    const user = await loadUser(req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    user[field] = user[field].filter(x => x.toString() !== req.params.itemId);
+    await user.save();
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[users/unsave-item] error:', err.message);
+    return res.status(500).json({ error: 'Failed to unsave item' });
+  }
+});
+
 router.get('/me/subscription', requireUserAuth, async (req, res) => {
   try {
     const user = await loadUser(req.user.userId);

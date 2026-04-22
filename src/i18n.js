@@ -118,6 +118,22 @@ const TRANSLATIONS = {
     'location.notFound':         'Locație negăsită',
     'location.yourLocation':     'Locația ta',
 
+    // ── Sort ────────────────────────────────────────────────────────────────
+    'sort.label':         'Sortare:',
+    'sort.trails':        'trasee',
+    'sort.of':            'din',
+    'sort.default':       'Implicit',
+    'sort.nameAsc':       'Nume A→Z',
+    'sort.nameDesc':      'Nume Z→A',
+    'sort.distanceAsc':   'Distanță ↑ mică',
+    'sort.distanceDesc':  'Distanță ↓ mare',
+    'sort.timeAsc':       'Durată ↑ scurtă',
+    'sort.timeDesc':      'Durată ↓ lungă',
+    'sort.elevationAsc':  'Altitudine ↑ mică',
+    'sort.elevationDesc': 'Altitudine ↓ mare',
+    'sort.difficultyAsc': 'Dificultate: ușor primul',
+    'sort.closest':       'Cel mai aproape',
+
     // ── Navigation ──────────────────────────────────────────────────────────
     'nav.trails':                'Trasee',
     'nav.about':                 'Despre',
@@ -260,6 +276,39 @@ const TRANSLATIONS = {
     'login.password':            'Parolă',
     'login.submit':              'Conectare',
     'login.submitting':          'Se conectează…',
+
+    // ── Auth ─────────────────────────────────────────────────────────────────
+    'auth.signIn':               'Conectare',
+    'auth.createAccount':        'Creează cont',
+    'auth.myProfile':            'Profilul meu',
+    'auth.email':                'Email',
+    'auth.password':             'Parolă',
+    'auth.name':                 'Nume',
+    'auth.namePlaceholder':      'Numele tău',
+    'auth.passwordHint':         'Minim 8 caractere',
+    'auth.noAccount':            'Nu ai cont?',
+    'auth.haveAccount':          'Ai deja cont?',
+
+    // ── User profile ──────────────────────────────────────────────────────────
+    'user.profile':              'Profilul meu',
+    'user.editProfile':          'Editează profilul',
+    'user.subscription':         'Abonament',
+    'user.children':             'Copii',
+    'user.noChildren':           'Niciun copil adăugat încă.',
+    'user.addChild':             'Adaugă copil',
+    'user.childName':            'Numele copilului',
+    'user.birthYear':            'Anul nașterii',
+    'user.savedHikes':           'Trasee salvate',
+    'user.savedRestaurants':     'Restaurante salvate',
+    'user.savedPois':            'Puncte de interes salvate',
+    'user.noSaved':              'Nimic salvat încă.',
+    'user.myTracks':             'Drumețiile mele GPS',
+    'user.myTracksDesc':         'Înregistrează drumeții GPS cu urmărire în timp real.',
+
+    // ── Save button ───────────────────────────────────────────────────────────
+    'save.save':                 'Salvează',
+    'save.saved':                'Salvat',
+    'save.unsave':               'Elimină din salvate',
 
     // ── GPS Tracker ───────────────────────────────────────────────────────────
     'track.title':               'Drumețiile mele',
@@ -423,6 +472,22 @@ const TRANSLATIONS = {
     'location.notFound':         'Location not found',
     'location.yourLocation':     'Your location',
 
+    // ── Sort ────────────────────────────────────────────────────────────────
+    'sort.label':         'Sort:',
+    'sort.trails':        'trails',
+    'sort.of':            'of',
+    'sort.default':       'Default',
+    'sort.nameAsc':       'Name A→Z',
+    'sort.nameDesc':      'Name Z→A',
+    'sort.distanceAsc':   'Distance ↑ shortest',
+    'sort.distanceDesc':  'Distance ↓ longest',
+    'sort.timeAsc':       'Duration ↑ shortest',
+    'sort.timeDesc':      'Duration ↓ longest',
+    'sort.elevationAsc':  'Elevation ↑ lowest',
+    'sort.elevationDesc': 'Elevation ↓ highest',
+    'sort.difficultyAsc': 'Difficulty: easy first',
+    'sort.closest':       'Closest to me',
+
     // ── Navigation ──────────────────────────────────────────────────────────
     'nav.trails':                'Explore Trails',
     'nav.about':                 'About',
@@ -565,6 +630,39 @@ const TRANSLATIONS = {
     'login.password':            `Password`,
     'login.submit':              `Sign in`,
     'login.submitting':          `Signing in…`,
+
+    // ── Auth ─────────────────────────────────────────────────────────────────
+    'auth.signIn':               'Sign in',
+    'auth.createAccount':        'Create account',
+    'auth.myProfile':            'My profile',
+    'auth.email':                'Email',
+    'auth.password':             'Password',
+    'auth.name':                 'Name',
+    'auth.namePlaceholder':      'Your name',
+    'auth.passwordHint':         'At least 8 characters',
+    'auth.noAccount':            "Don't have an account?",
+    'auth.haveAccount':          'Already have an account?',
+
+    // ── User profile ──────────────────────────────────────────────────────────
+    'user.profile':              'My Profile',
+    'user.editProfile':          'Edit Profile',
+    'user.subscription':         'Subscription',
+    'user.children':             'Children',
+    'user.noChildren':           'No children added yet.',
+    'user.addChild':             'Add child',
+    'user.childName':            "Child's name",
+    'user.birthYear':            'Birth year',
+    'user.savedHikes':           'Saved Hikes',
+    'user.savedRestaurants':     'Saved Restaurants',
+    'user.savedPois':            'Saved Points of Interest',
+    'user.noSaved':              'Nothing saved yet.',
+    'user.myTracks':             'My GPS Tracks',
+    'user.myTracksDesc':         'Record hikes with real-time GPS tracking.',
+
+    // ── Save button ───────────────────────────────────────────────────────────
+    'save.save':                 'Save',
+    'save.saved':                'Saved',
+    'save.unsave':               'Remove from saved',
 
     // ── GPS Tracker ───────────────────────────────────────────────────────────
     'track.title':               'My Hikes',

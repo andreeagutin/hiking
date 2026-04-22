@@ -5,6 +5,7 @@ import WeatherForecast from './WeatherForecast.jsx';
 import SiteFooter from './SiteFooter.jsx';
 import t from '../i18n.js';
 import useLang from '../hooks/useLang.js';
+import { isUserLoggedIn, getSaved, saveItem, unsaveItem } from '../api/users.js';
 
 const SITE_BASE_URL = 'https://hiking-high.netlify.app';
 
@@ -83,6 +84,8 @@ export default function PoiDetail({ id }) {
   const [hikes, setHikes]           = useState([]);
   const [error, setError]           = useState('');
   const [lightboxIdx, setLightboxIdx] = useState(null);
+  const [saved, setSaved]           = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
 
   useEffect(() => {
     fetchPoi(id)
@@ -95,6 +98,32 @@ export default function PoiDetail({ id }) {
       )))
       .catch(() => {});
   }, [id]);
+
+  useEffect(() => {
+    if (!isUserLoggedIn()) return;
+    getSaved().then(data => {
+      setSaved(data.pois.some(p => p._id === id || p.slug === id));
+    }).catch(() => {});
+  }, [id]);
+
+  async function toggleSave() {
+    if (!isUserLoggedIn()) return;
+    setSaveLoading(true);
+    try {
+      const poiId = poi?._id || id;
+      if (saved) {
+        await unsaveItem('poi', poiId);
+        setSaved(false);
+      } else {
+        await saveItem('poi', poiId);
+        setSaved(true);
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaveLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!poi) return;
@@ -220,7 +249,19 @@ export default function PoiDetail({ id }) {
             <div className="detail-hero-crumbs">
               {poi.mountains && <span className="detail-crumb">{poi.mountains}</span>}
             </div>
-            <h1 className="detail-hero-title">{poi.name}</h1>
+            <div className="detail-hero-title-row">
+              <h1 className="detail-hero-title">{poi.name}</h1>
+              {isUserLoggedIn() && (
+                <button
+                  className={`detail-save-btn${saved ? ' detail-save-btn-saved' : ''}`}
+                  onClick={toggleSave}
+                  disabled={saveLoading}
+                  title={saved ? t('save.unsave') : t('save.save')}
+                >
+                  🔖 {saved ? t('save.saved') : t('save.save')}
+                </button>
+              )}
+            </div>
             {(poi.poiType || poi.rockType) && (
               <div className="detail-hero-badges">
                 {poi.poiType && <span className="badge status-Done">{poi.poiType}</span>}

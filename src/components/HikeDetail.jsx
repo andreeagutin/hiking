@@ -5,6 +5,7 @@ import WeatherForecast from './WeatherForecast.jsx';
 import SiteFooter from './SiteFooter.jsx';
 import t from '../i18n.js';
 import useLang from '../hooks/useLang.js';
+import { isUserLoggedIn, getSaved, saveItem, unsaveItem } from '../api/users.js';
 
 const SITE_BASE_URL = 'https://hiking-high.netlify.app';
 
@@ -115,6 +116,8 @@ export default function HikeDetail({ id }) {
   const [hike, setHike]         = useState(null);
   const [error, setError]       = useState('');
   const [lightbox, setLightbox] = useState(null);
+  const [saved, setSaved]       = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const closeLightbox = useCallback(() => setLightbox(null), []);
   useEffect(() => {
@@ -127,6 +130,32 @@ export default function HikeDetail({ id }) {
   useEffect(() => {
     fetchHike(id).then(setHike).catch((e) => setError(e.message));
   }, [id]);
+
+  useEffect(() => {
+    if (!isUserLoggedIn()) return;
+    getSaved().then(data => {
+      setSaved(data.hikes.some(h => h._id === id || h.slug === id));
+    }).catch(() => {});
+  }, [id]);
+
+  async function toggleSave() {
+    if (!isUserLoggedIn()) { window.location.href = '/'; return; }
+    setSaveLoading(true);
+    try {
+      const hikeId = hike?._id || id;
+      if (saved) {
+        await unsaveItem('hike', hikeId);
+        setSaved(false);
+      } else {
+        await saveItem('hike', hikeId);
+        setSaved(true);
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaveLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!hike) return;
@@ -269,6 +298,16 @@ export default function HikeDetail({ id }) {
             </div>
             <div className="detail-hero-title-row">
               <h1 className="detail-hero-title">{hike.name}</h1>
+              {isUserLoggedIn() && (
+                <button
+                  className={`detail-save-btn${saved ? ' detail-save-btn-saved' : ''}`}
+                  onClick={toggleSave}
+                  disabled={saveLoading}
+                  title={saved ? t('save.unsave') : t('save.save')}
+                >
+                  {saved ? '🔖' : '🔖'} {saved ? t('save.saved') : t('save.save')}
+                </button>
+              )}
               {hike.trailMarkers && hike.trailMarkers.length > 0 && (
                 <div className="detail-hero-markers">
                   {hike.trailMarkers.map((id) => (
